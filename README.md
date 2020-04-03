@@ -1,5 +1,5 @@
 # Four-in-a-Row Online
-
+![Protocol Example](example.jpg)
 The goal of the project is to desing and implement a client-server application for the &quot;Four-in-a-Row&quot; game.
 
 **Constraint:**
