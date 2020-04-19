@@ -1,0 +1,24 @@
+title Rank Protocol
+
+client->server: RANK_REQ
+server->client: RANK_UPDATE / ERROR
+
+[message format]
+
+RANK
+{
+	Message_Type: 1 byte
+	Timestamp: 8 byte
+}CIFRED[AES session key]
+
+RANK_UPDATE
+{
+	Message_Type: 1 byte
+	Rank_List: 0-16384 byte
+}CIFRED[AES session key]
+
+ERROR
+{
+	Message_Type: 1 byte
+	Error_type: 1 byte
+}CIFRED[AES session key]

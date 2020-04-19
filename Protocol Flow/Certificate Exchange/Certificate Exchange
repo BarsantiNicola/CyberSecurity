@@ -1,0 +1,16 @@
+title Certificate Exchange
+
+client->server: CERTIFICATE_REQUEST
+server->client: CERTIFICATE
+
+[message format]
+
+CERTIFICATE_REQUEST
+{
+	Message_Type: 1 byte
+}
+
+CERTIFICATE
+{
+	Server_RSA_Certificate: 0-4096 byte
+}

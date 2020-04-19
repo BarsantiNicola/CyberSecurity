@@ -1,0 +1,92 @@
+title Game Protocol
+
+note over client,server,client2: Challenge Protocol
+server->client: ACCEPT
+server->client: GAME_PARAM
+client->server: GAME_OK
+server->client2: GAME_PARAM
+client2->server: GAME_OK
+client2-->client: KEY_EXCHANGE
+client-->client2: KEY_EXCHANGE
+client2-->client: ACK
+client2-->client: MOVE
+client-->client2: ACK
+client-->client2: MOVE
+client2-->client: ACK
+opt
+client-->client2: CHAT
+client2-->client: ACK
+client-->client2: CHAT
+client2-->client: ACK
+client2-->client: CHAT
+client->>client2: ACK
+end
+opt
+client->server: DISCONNECT_REQ
+server->client2: DISCONNECT_REQ
+end
+opt client2 crash
+server->client: DISCONNECT_REQ
+end
+opt client crash
+server->client2: DISCONNECT_REQ
+end
+client->server: GAME_END
+server->client2: GAME_END
+
+[message format]
+
+GAME PARAM
+{
+	Message_Type: 1 byte
+	Address: 15 byte
+	Key: 1024 byte
+}CIFRED[AES server session key]
+
+GAME_OK
+{
+	Message_Type: 1 byte
+	Timestamp: 8 byte
+}CIFRED[AES server session key]
+
+KEY_EXCHANGE
+{
+	Message_Type: 1 byte
+	Reject_type: 1 byte
+	Acknowledgement: 4 byte
+}CIFRED[AES session key]
+
+ACK
+{
+	Message_Type: 1 byte
+	Acknowledgement: 4 byte
+}CIFRED[AES session key]
+
+MOVE
+{
+	Message_Type: 1 byte
+	Move: 4 byte
+	Current_Token: 4 byte
+	Next_Token: 4 byte
+	Acknowledgement: 4 byte
+}CIFRED[AES session key]
+
+CHAT
+{
+	Message_Type: 1 byte
+	Message: 1-320 byte
+	Acknowledgement: 4 byte
+}CIFRED[AES session key]
+
+DISCONNECT_REQ
+{
+	Message_Type: 1 byte
+	Timestamp: 8 byte
+}CIFRED[AES session key]
+
+GAME_END
+{
+	Message_Type: 1 byte
+	Username: 30 byte
+}CIFRED[AES session key]
+

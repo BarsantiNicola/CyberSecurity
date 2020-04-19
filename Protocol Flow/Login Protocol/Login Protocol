@@ -1,0 +1,29 @@
+title Login Protocol
+
+client->server: LOGIN_REQ
+server->client: LOGIN_OK / LOGIN_FAIL
+
+[message format]
+
+LOGIN_REQ
+{
+	Message_Type: 1 byte
+	Plain_Username: 30 byte 
+	Cipher_Username: 30 byte {CIFRED[Client RSA private key]}
+	Timestamp: 8 byte
+}CIFRED[Server RSA public key]
+
+LOGIN_OK
+{
+	Message_Type: 1 byte
+	Session_key: 16 byte {CIFRED[Client RSA public key]}
+	Timestamp: 8 byte    
+}CIFRED[Server RSA public key]
+
+LOGIN_FAIL
+{
+	Message_Type: 1 byte
+	Error_type: 1 byte
+	Timestamp: 8 byte
+}CIFRED[Server RSA private key]
+
