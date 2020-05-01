@@ -10,12 +10,14 @@ class Message{
 	
 	private: 
 		MessageType type;
+		long int timestamp;
 		
 	public:
 		Message( MessageType );
 		Message( char* ,int );
 		NetMessage* stringify();
 		MessageType getType();
+		long int getTimeStamp();
 		
 };
 

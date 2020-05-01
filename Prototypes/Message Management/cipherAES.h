@@ -17,6 +17,7 @@ class cipherAES{
 	
 	private:
 		unsigned char* key;
+		
 	public:
 		NetMessage* encryptMessage( Message );
 		Message* decryptMessage( NetMessage );

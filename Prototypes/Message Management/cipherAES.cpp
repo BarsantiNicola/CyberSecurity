@@ -73,7 +73,8 @@ Message* cipherAES::decryptMessage( NetMessage message ){
 int main(){
 	
 	cipherAES* aes = new cipherAES( "password" );
-	Message* msg = new Message(MessageType::LOGIN_FAIL);
+	Message* msg = new Message(MessageType::LOGIN_OK);
+
 	NetMessage* cMsg = aes->encryptMessage( *msg );
 	cout<<cMsg->getMessage()<<endl;
 	msg = aes->decryptMessage( *cMsg );
@@ -96,6 +97,7 @@ int main(){
 		default: 
 			cout<<"MessageType not defined"<<endl;
 	}
+
 	return 0;
 	
 }
