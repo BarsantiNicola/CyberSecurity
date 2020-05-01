@@ -1,0 +1,5 @@
+#!/bin/bash
+gcc cipherAES.cpp NetMessage.cpp Message.cpp -o test -lcrypto -lstdc++
+./test
+
+

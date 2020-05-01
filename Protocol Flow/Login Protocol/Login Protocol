@@ -8,9 +8,9 @@ server->client: LOGIN_OK / LOGIN_FAIL
 LOGIN_REQ
 {
 	Message_Type: 1 byte
-	Plain_Username: 30 byte 
-	Cipher_Username: 30 byte {CIFRED[Client RSA private key]}
+	Username: 30 byte 
 	Timestamp: 8 byte
+	Signature: 4 byte {CIFRED[Client RSA private key]}
 }CIFRED[Server RSA public key]
 
 LOGIN_OK
