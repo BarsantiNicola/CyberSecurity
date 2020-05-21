@@ -1,27 +1,26 @@
 title Game Protocol
-
-note over client,server,client2: Challenge Protocol
-server->client: ACCEPT
+note left of client
+    ACCEPT received
+end note
 server->client: GAME_PARAM
 client->server: GAME_OK
 server->client2: GAME_PARAM
 client2->server: GAME_OK
-client2-->client: KEY_EXCHANGE
-client-->client2: KEY_EXCHANGE
-client2-->client: ACK
+note over client,server,client2: Key Exchange Protocol
+
 client2-->client: MOVE
 client-->client2: ACK
 client-->client2: MOVE
 client2-->client: ACK
-opt
+opt chat messages
 client-->client2: CHAT
 client2-->client: ACK
 client-->client2: CHAT
 client2-->client: ACK
 client2-->client: CHAT
-client->>client2: ACK
+client-->client2: ACK
 end
-opt
+opt game end, player exits
 client->server: DISCONNECT_REQ
 server->client2: DISCONNECT_REQ
 end
@@ -33,6 +32,7 @@ server->client2: DISCONNECT_REQ
 end
 client->server: GAME_END
 server->client2: GAME_END
+
 
 [message format]
 
