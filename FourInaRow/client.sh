@@ -1,7 +1,12 @@
 #!/bin/bash 
 
-cd src/client
-g++ TextualInterfaceManager.cpp main.cpp -o client 
+CPATH=src/client
+export CPATH
+
+CLIENT_PACKAGE="src/client/TextualInterfaceManager.cpp src/client/main.cpp"
+
+g++ $CLIENT_PACKAGE -o client # -lssl -lcrypto
+
 ./client
 rm client
-cd ../..
+
