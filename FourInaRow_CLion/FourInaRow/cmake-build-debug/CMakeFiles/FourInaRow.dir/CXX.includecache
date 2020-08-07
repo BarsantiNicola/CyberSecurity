@@ -1,0 +1,40 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/root/CLionProjects/FourInaRow/Logger.cpp
+cstring
+-
+Logger.h
+/root/CLionProjects/FourInaRow/Logger.h
+
+/root/CLionProjects/FourInaRow/Logger.h
+iostream
+-
+utility/NetMessage.h
+/root/CLionProjects/FourInaRow/utility/NetMessage.h
+
+/root/CLionProjects/FourInaRow/main.cpp
+iostream
+-
+utility/NetMessage.h
+/root/CLionProjects/FourInaRow/utility/NetMessage.h
+Logger.h
+/root/CLionProjects/FourInaRow/Logger.h
+
+/root/CLionProjects/FourInaRow/utility/NetMessage.cpp
+ostream
+-
+cstring
+-
+NetMessage.h
+/root/CLionProjects/FourInaRow/utility/NetMessage.h
+../Logger.h
+/root/CLionProjects/FourInaRow/Logger.h
+
+/root/CLionProjects/FourInaRow/utility/NetMessage.h
+
