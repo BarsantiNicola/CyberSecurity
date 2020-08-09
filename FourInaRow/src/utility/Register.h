@@ -1,11 +1,10 @@
 #include<stdexcept>
-#include"Logger.h"
 #include<vector>
-template<typename T>
+using namespace std;
 namespace utility{
+
+ template<typename T>
  class Register{
-  private:
-    Verbose threshold = VERBOSE;
   protected:
    vector<T> dataList;
   public:
@@ -16,3 +15,5 @@ namespace utility{
    bool addData(T);
    T getData(int);
  };
+}
+

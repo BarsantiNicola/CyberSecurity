@@ -1,26 +1,29 @@
 #include"Register.h"
 #include<limits.h>
-using namespace std;
+//using namespace std;
+
 namespace utility
-{
-  Register::Register(){
-
+{ 
+ /* template<typename T>
+   Register::Register(){
+  
    // Tramite logger scrivere che l'oggetto è stato creato correttamente
-  }
+  }*/
 
-
-  T Register::getData(int pos)
+  template<typename T>
+  T Register<T>::getData(int pos)
   {
     if(pos>= dataList.size())
     {
       //posizione non presente
+      
       return NULL;
     }
     else
       return dataList[pos];
   }
-
-  bool Register::removeData(T data)
+  template<typename T>
+  bool Register<T>::removeData(T data)
   {
     for(int i=0;i<dataList.size();i++)
     {
@@ -33,8 +36,8 @@ namespace utility
     }
     return false;
   }
-
-  bool Register::addData(T data)
+  template<typename T>
+  bool Register<T>::addData(T data)
   {
     try
     {
@@ -48,8 +51,8 @@ namespace utility
     // scrivere che il dato è stato 
     return true;
   }
-
-  Register:~Register()
+  template<typename T>
+  Register<T>::~Register()
   {
     vector<T>().swap(dataList);
   }
