@@ -8,7 +8,18 @@ CMakeFiles/FourInaRow.dir/Logger.cpp.o
 CMakeFiles/FourInaRow.dir/main.cpp.o
  /root/CLionProjects/FourInaRow/Logger.h
  /root/CLionProjects/FourInaRow/main.cpp
+ /root/CLionProjects/FourInaRow/utility/Converter.h
+ /root/CLionProjects/FourInaRow/utility/Message.h
  /root/CLionProjects/FourInaRow/utility/NetMessage.h
+CMakeFiles/FourInaRow.dir/utility/Converter.cpp.o
+ /root/CLionProjects/FourInaRow/Logger.h
+ /root/CLionProjects/FourInaRow/utility/Converter.cpp
+ /root/CLionProjects/FourInaRow/utility/Converter.h
+ /root/CLionProjects/FourInaRow/utility/Message.h
+ /root/CLionProjects/FourInaRow/utility/NetMessage.h
+CMakeFiles/FourInaRow.dir/utility/Message.cpp.o
+ /root/CLionProjects/FourInaRow/utility/Message.cpp
+ /root/CLionProjects/FourInaRow/utility/Message.h
 CMakeFiles/FourInaRow.dir/utility/NetMessage.cpp.o
  /root/CLionProjects/FourInaRow/Logger.h
  /root/CLionProjects/FourInaRow/utility/NetMessage.cpp

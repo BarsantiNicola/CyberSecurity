@@ -197,6 +197,33 @@ main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/FourInaRow.dir/build.make CMakeFiles/FourInaRow.dir/main.cpp.s
 .PHONY : main.cpp.s
 
+utility/Converter.o: utility/Converter.cpp.o
+
+.PHONY : utility/Converter.o
+
+# target to build an object file
+utility/Converter.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/FourInaRow.dir/build.make CMakeFiles/FourInaRow.dir/utility/Converter.cpp.o
+.PHONY : utility/Converter.cpp.o
+
+utility/Converter.i: utility/Converter.cpp.i
+
+.PHONY : utility/Converter.i
+
+# target to preprocess a source file
+utility/Converter.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/FourInaRow.dir/build.make CMakeFiles/FourInaRow.dir/utility/Converter.cpp.i
+.PHONY : utility/Converter.cpp.i
+
+utility/Converter.s: utility/Converter.cpp.s
+
+.PHONY : utility/Converter.s
+
+# target to generate assembly for a file
+utility/Converter.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/FourInaRow.dir/build.make CMakeFiles/FourInaRow.dir/utility/Converter.cpp.s
+.PHONY : utility/Converter.cpp.s
+
 utility/Message.o: utility/Message.cpp.o
 
 .PHONY : utility/Message.o
@@ -266,6 +293,9 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... utility/Converter.o"
+	@echo "... utility/Converter.i"
+	@echo "... utility/Converter.s"
 	@echo "... utility/Message.o"
 	@echo "... utility/Message.i"
 	@echo "... utility/Message.s"

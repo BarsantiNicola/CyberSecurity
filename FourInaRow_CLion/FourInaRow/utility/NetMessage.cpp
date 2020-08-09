@@ -1,9 +1,4 @@
-
-
-#include <ostream>
-#include <cstring>
 #include "NetMessage.h"
-#include "../Logger.h"
 
 namespace utility {
 
@@ -24,7 +19,7 @@ namespace utility {
 
     void NetMessage::test(){
 
-        NetMessage msg((unsigned char*)"messaggio di prova" , sizeof("ciao ciao" ));
+        NetMessage msg((unsigned char*)"messaggio di prova" , sizeof("messaggio di prova" ));
         cout<<"CONTENT: " << msg.getMessage()<<" LENGTH: "<<msg.length()<<endl;
 
     }

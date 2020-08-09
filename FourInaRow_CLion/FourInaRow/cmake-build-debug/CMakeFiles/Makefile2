@@ -94,12 +94,12 @@ clean: CMakeFiles/FourInaRow.dir/clean
 CMakeFiles/FourInaRow.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/FourInaRow.dir/build.make CMakeFiles/FourInaRow.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/FourInaRow.dir/build.make CMakeFiles/FourInaRow.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/root/CLionProjects/FourInaRow/cmake-build-debug/CMakeFiles --progress-num=1,2,3,4,5 "Built target FourInaRow"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/root/CLionProjects/FourInaRow/cmake-build-debug/CMakeFiles --progress-num=1,2,3,4,5,6 "Built target FourInaRow"
 .PHONY : CMakeFiles/FourInaRow.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/FourInaRow.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /root/CLionProjects/FourInaRow/cmake-build-debug/CMakeFiles 5
+	$(CMAKE_COMMAND) -E cmake_progress_start /root/CLionProjects/FourInaRow/cmake-build-debug/CMakeFiles 6
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/FourInaRow.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /root/CLionProjects/FourInaRow/cmake-build-debug/CMakeFiles 0
 .PHONY : CMakeFiles/FourInaRow.dir/rule

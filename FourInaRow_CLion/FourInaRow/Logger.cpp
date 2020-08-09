@@ -1,8 +1,12 @@
 
-#include <cstring>
+
 #include "Logger.h"
 
+Verbose threshold = VERY_VERBOSE;
 
+void Logger::setThreshold( Verbose t){
+    threshold = threshold;
+}
 Logger::Logger( Verbose level ){
     this->level = level;
 }

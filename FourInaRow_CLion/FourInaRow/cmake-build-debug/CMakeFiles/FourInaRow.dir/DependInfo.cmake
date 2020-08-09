@@ -6,6 +6,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_CHECK_CXX
   "/root/CLionProjects/FourInaRow/Logger.cpp" "/root/CLionProjects/FourInaRow/cmake-build-debug/CMakeFiles/FourInaRow.dir/Logger.cpp.o"
   "/root/CLionProjects/FourInaRow/main.cpp" "/root/CLionProjects/FourInaRow/cmake-build-debug/CMakeFiles/FourInaRow.dir/main.cpp.o"
+  "/root/CLionProjects/FourInaRow/utility/Converter.cpp" "/root/CLionProjects/FourInaRow/cmake-build-debug/CMakeFiles/FourInaRow.dir/utility/Converter.cpp.o"
   "/root/CLionProjects/FourInaRow/utility/Message.cpp" "/root/CLionProjects/FourInaRow/cmake-build-debug/CMakeFiles/FourInaRow.dir/utility/Message.cpp.o"
   "/root/CLionProjects/FourInaRow/utility/NetMessage.cpp" "/root/CLionProjects/FourInaRow/cmake-build-debug/CMakeFiles/FourInaRow.dir/utility/NetMessage.cpp.o"
   )

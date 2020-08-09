@@ -91,6 +91,12 @@
 		<Unit filename="/root/CLionProjects/FourInaRow/main.cpp">
 			<Option target="FourInaRow"/>
 		</Unit>
+		<Unit filename="/root/CLionProjects/FourInaRow/utility/Converter.cpp">
+			<Option target="FourInaRow"/>
+		</Unit>
+		<Unit filename="/root/CLionProjects/FourInaRow/utility/Converter.h">
+			<Option target="FourInaRow"/>
+		</Unit>
 		<Unit filename="/root/CLionProjects/FourInaRow/utility/Message.cpp">
 			<Option target="FourInaRow"/>
 		</Unit>

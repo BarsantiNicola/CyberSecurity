@@ -7,8 +7,6 @@
 #IncludeRegexTransform: 
 
 /root/CLionProjects/FourInaRow/Logger.cpp
-cstring
--
 Logger.h
 /root/CLionProjects/FourInaRow/Logger.h
 
@@ -25,16 +23,36 @@ utility/NetMessage.h
 /root/CLionProjects/FourInaRow/utility/NetMessage.h
 Logger.h
 /root/CLionProjects/FourInaRow/Logger.h
+utility/Message.h
+/root/CLionProjects/FourInaRow/utility/Message.h
+utility/Converter.h
+/root/CLionProjects/FourInaRow/utility/Converter.h
+
+/root/CLionProjects/FourInaRow/utility/Converter.cpp
+Converter.h
+/root/CLionProjects/FourInaRow/utility/Converter.h
+
+/root/CLionProjects/FourInaRow/utility/Converter.h
+NetMessage.h
+/root/CLionProjects/FourInaRow/utility/NetMessage.h
+Message.h
+/root/CLionProjects/FourInaRow/utility/Message.h
+
+/root/CLionProjects/FourInaRow/utility/Message.h
+string
+-
+openssl/evp.h
+-
 
 /root/CLionProjects/FourInaRow/utility/NetMessage.cpp
+NetMessage.h
+/root/CLionProjects/FourInaRow/utility/NetMessage.h
+
+/root/CLionProjects/FourInaRow/utility/NetMessage.h
 ostream
 -
 cstring
 -
-NetMessage.h
-/root/CLionProjects/FourInaRow/utility/NetMessage.h
 ../Logger.h
 /root/CLionProjects/FourInaRow/Logger.h
-
-/root/CLionProjects/FourInaRow/utility/NetMessage.h
 

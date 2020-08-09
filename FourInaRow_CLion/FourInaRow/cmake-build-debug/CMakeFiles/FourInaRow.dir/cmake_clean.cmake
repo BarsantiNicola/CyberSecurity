@@ -1,6 +1,7 @@
 file(REMOVE_RECURSE
   "CMakeFiles/FourInaRow.dir/Logger.cpp.o"
   "CMakeFiles/FourInaRow.dir/main.cpp.o"
+  "CMakeFiles/FourInaRow.dir/utility/Converter.cpp.o"
   "CMakeFiles/FourInaRow.dir/utility/Message.cpp.o"
   "CMakeFiles/FourInaRow.dir/utility/NetMessage.cpp.o"
   "FourInaRow"

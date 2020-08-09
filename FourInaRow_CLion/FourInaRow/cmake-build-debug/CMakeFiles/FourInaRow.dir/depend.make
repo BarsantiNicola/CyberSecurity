@@ -7,7 +7,18 @@ CMakeFiles/FourInaRow.dir/Logger.cpp.o: ../utility/NetMessage.h
 
 CMakeFiles/FourInaRow.dir/main.cpp.o: ../Logger.h
 CMakeFiles/FourInaRow.dir/main.cpp.o: ../main.cpp
+CMakeFiles/FourInaRow.dir/main.cpp.o: ../utility/Converter.h
+CMakeFiles/FourInaRow.dir/main.cpp.o: ../utility/Message.h
 CMakeFiles/FourInaRow.dir/main.cpp.o: ../utility/NetMessage.h
+
+CMakeFiles/FourInaRow.dir/utility/Converter.cpp.o: ../Logger.h
+CMakeFiles/FourInaRow.dir/utility/Converter.cpp.o: ../utility/Converter.cpp
+CMakeFiles/FourInaRow.dir/utility/Converter.cpp.o: ../utility/Converter.h
+CMakeFiles/FourInaRow.dir/utility/Converter.cpp.o: ../utility/Message.h
+CMakeFiles/FourInaRow.dir/utility/Converter.cpp.o: ../utility/NetMessage.h
+
+CMakeFiles/FourInaRow.dir/utility/Message.cpp.o: ../utility/Message.cpp
+CMakeFiles/FourInaRow.dir/utility/Message.cpp.o: ../utility/Message.h
 
 CMakeFiles/FourInaRow.dir/utility/NetMessage.cpp.o: ../Logger.h
 CMakeFiles/FourInaRow.dir/utility/NetMessage.cpp.o: ../utility/NetMessage.cpp
