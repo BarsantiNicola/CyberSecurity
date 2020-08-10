@@ -13,7 +13,7 @@ namespace utility
   template<typename T>
   T Register<T>::getData(int pos)
   {
-    if(pos>= dataList.size())
+    if(pos>= dataList.size()||pos<0)
     {
       //posizione non presente
       
@@ -48,7 +48,7 @@ namespace utility
       //scrivere l'errore nel log
       return false;
     }
-    // scrivere che il dato è stato 
+    // scrivere che il dato è stato inserito correttamente
     return true;
   }
   template<typename T>
