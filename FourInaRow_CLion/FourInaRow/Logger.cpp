@@ -2,10 +2,10 @@
 
 #include "Logger.h"
 
-Verbose threshold = VERY_VERBOSE;
+static Verbose threshold = VERY_VERBOSE;
 
 void Logger::setThreshold( Verbose t){
-    threshold = threshold;
+    threshold = t;
 }
 Logger::Logger( Verbose level ){
     this->level = level;
@@ -89,17 +89,17 @@ Logger Logger::operator<<(const char* value){
 
 void Logger::test(){
 
-    threshold = VERY_VERBOSE;
+    Logger::setThreshold( NO_VERBOSE );
     base << "Test very_verbose"<<'\n';
     base <<"\t---BASE OK"<<'\n';
     verbose <<"\t---VERBOSE OK"<<'\n';
     vverbose <<"\t---VERY VERBOSE OK"<<'\n';
-    threshold = VERBOSE;
+    Logger::setThreshold( VERBOSE );
     base << "Test verbose"<<'\n';
     base <<"\t---BASE OK"<<'\n';
     verbose <<"\t---VERBOSE OK"<<'\n';
     vverbose <<"\t---VERY VERBOSE ERROR"<<'\n';
-    threshold = NO_VERBOSE;
+    Logger::setThreshold( VERY_VERBOSE);
     base << "Test no verbose"<<'\n';
     base <<"\t---BASE OK"<<'\n';
     verbose <<"\t---VERBOSE ERROR"<<'\n';

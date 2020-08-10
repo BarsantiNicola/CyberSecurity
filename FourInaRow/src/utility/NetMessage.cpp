@@ -1,17 +1,17 @@
-
-
-#include <ostream>
-#include <cstring>
 #include "NetMessage.h"
-#include "../Logger.h"
 
 namespace utility {
 
     NetMessage::NetMessage(unsigned char *message, int length) {
 
-        this->message = message;
+        this->message = new unsigned char[length];
+        strcpy((char*)this->message,(const char*)message);
         this->len = length;
 
+    }
+
+    NetMessage::~NetMessage(){
+   //     delete[] message;
     }
 
     unsigned char* NetMessage::getMessage(){
@@ -24,7 +24,7 @@ namespace utility {
 
     void NetMessage::test(){
 
-        NetMessage msg((unsigned char*)"messaggio di prova" , sizeof("ciao ciao" ));
+        NetMessage msg((unsigned char*)"messaggio di prova" , sizeof("messaggio di prova" ));
         cout<<"CONTENT: " << msg.getMessage()<<" LENGTH: "<<msg.length()<<endl;
 
     }

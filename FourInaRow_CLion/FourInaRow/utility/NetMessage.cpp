@@ -4,9 +4,14 @@ namespace utility {
 
     NetMessage::NetMessage(unsigned char *message, int length) {
 
-        this->message = message;
+        this->message = new unsigned char[length];
+        strcpy((char*)this->message,(const char*)message);
         this->len = length;
 
+    }
+
+    NetMessage::~NetMessage(){
+   //     delete[] message;
     }
 
     unsigned char* NetMessage::getMessage(){

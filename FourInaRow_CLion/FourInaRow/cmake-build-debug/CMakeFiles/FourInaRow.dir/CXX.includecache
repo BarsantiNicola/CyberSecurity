@@ -6,10 +6,6 @@
 
 #IncludeRegexTransform: 
 
-/root/CLionProjects/FourInaRow/Logger.cpp
-Logger.h
-/root/CLionProjects/FourInaRow/Logger.h
-
 /root/CLionProjects/FourInaRow/Logger.h
 iostream
 -
@@ -28,10 +24,6 @@ utility/Message.h
 utility/Converter.h
 /root/CLionProjects/FourInaRow/utility/Converter.h
 
-/root/CLionProjects/FourInaRow/utility/Converter.cpp
-Converter.h
-/root/CLionProjects/FourInaRow/utility/Converter.h
-
 /root/CLionProjects/FourInaRow/utility/Converter.h
 NetMessage.h
 /root/CLionProjects/FourInaRow/utility/NetMessage.h
@@ -43,10 +35,6 @@ string
 -
 openssl/evp.h
 -
-
-/root/CLionProjects/FourInaRow/utility/NetMessage.cpp
-NetMessage.h
-/root/CLionProjects/FourInaRow/utility/NetMessage.h
 
 /root/CLionProjects/FourInaRow/utility/NetMessage.h
 ostream

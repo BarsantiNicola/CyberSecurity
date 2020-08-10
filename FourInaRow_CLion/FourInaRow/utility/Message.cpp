@@ -3,6 +3,18 @@
 
 namespace utility {
 
+    Message::~Message(){
+    /*    if( nonce != NULL )
+            delete nonce;
+        if( current_token != NULL )
+            delete current_token;
+        if( chosen_column != NULL )
+            delete chosen_column;*/
+    }
+    void Message::setMessageType( MessageType t ){
+        this->messageType = t;
+    }
+
     void Message::setUsername(string username ){
         this->username = username;
     }
@@ -21,11 +33,11 @@ namespace utility {
         *(this->nonce) = nonce;
     }
 
-    void Message::setServer_Certificate(unsigned char* certificate ){
+    void Message::setServer_Certificate( string certificate ){
         this->server_certificate = certificate;
     }
 
-    void Message::setPubKey(unsigned char* key ){
+    void Message::setPubKey( string key ){
         this->pub_Key = key;
     }
 
@@ -33,23 +45,23 @@ namespace utility {
         this->net_informations = IP;
     }
 
-    void Message::setCurrent_Token(int current_token ){
+    void Message::setCurrent_Token( int current_token ){
         if( this->current_token == NULL )
             this->current_token = new int();
         *(this->current_token) = current_token;
     }
 
-    void Message::setChosenColumn(int chosen_column ){
+    void Message::setChosenColumn( int chosen_column ){
         if( this->chosen_column== NULL )
             this->chosen_column = new int();
         *(this->chosen_column) = chosen_column;
     }
 
-    void Message::setMessage(string message ){
+    void Message::setMessage( string message ){
         this->message = message;
     }
 
-    void Message::set_DH_key(unsigned char* key ){
+    void Message::set_DH_key( string key ){
         this->DH_key = key;
     }
 
@@ -61,7 +73,7 @@ namespace utility {
         this->rank_list = rank_list;
     }
 
-    void Message::setSignature(unsigned char* signature ){
+    void Message::setSignature( string signature ){
         this->signature = signature;
     }
 
@@ -84,11 +96,11 @@ namespace utility {
         return this->nonce;
     }
 
-    unsigned char*  Message::getServer_Certificate(){
+    string  Message::getServer_Certificate(){
         return this->server_certificate;
     }
 
-    unsigned char* Message::getPubKey(){
+    string Message::getPubKey(){
         return this->pub_Key;
     }
 
@@ -109,7 +121,7 @@ namespace utility {
         return this->message;
     }
 
-    unsigned char* Message::get_DH_key(){
+    string Message::get_DH_key(){
         return this->DH_key;
     }
 
@@ -121,7 +133,7 @@ namespace utility {
         return this->rank_list;
     }
 
-    unsigned char* Message::getSignature(){
+    string Message::getSignature(){
         return this->signature;
     }
 

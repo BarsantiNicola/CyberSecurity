@@ -1,10 +1,10 @@
 
+
 #ifndef FOURINAROW_LOGGER_H
 #define FOURINAROW_LOGGER_H
 
 #include <iostream>
 #include "utility/NetMessage.h"
-
 using namespace std;
 
 enum Verbose{
@@ -13,13 +13,21 @@ enum Verbose{
     VERY_VERBOSE
 };
 
+    /////////////////////////////////////////////////////////////////////////////////////
+    //                                                                                 //
+    //                                   LOGGER                                        //
+    //    Implements a simple Logger of three level of verbosity. It will be used      //
+    //    in all the classes to organize the output of the program.                    //
+    //                                                                                 //
+    /////////////////////////////////////////////////////////////////////////////////////
+
 class Logger{
     private:
-        Verbose level;                            //  verbose level of the Logger
+        Verbose level;
 
     public:
-        Logger( Verbose level );                  
-        Logger operator<<(int value);             //  some ridefinitions for the operator <<, more will be added soon
+        Logger( Verbose level );
+        Logger operator<<(int value);
         Logger operator<<(double value);
         Logger operator<<(bool value);
         Logger operator<<(char* value);
@@ -28,15 +36,13 @@ class Logger{
         Logger operator<<(char value);
         Logger operator<<(string value);
         Logger operator<<(Verbose value);
-        static void test();                       //  test module
-
-
+        static void setThreshold(Verbose threshold);        //  set the global verbose threshold
+        static void test();                                 //  test function
 
 };
 
-extern Verbose threshold;                         //  global variable which defines the verbosity of the program, need just to be redefined to be used(example in the main.cpp)
-static Logger base(NO_VERBOSE);                   //  global loggers to write in the three types of verbosity
-static Logger verbose(VERBOSE);
-static Logger vverbose(VERY_VERBOSE);
+static Logger base(NO_VERBOSE);         //  Logger for basic output(it will be showed everytime)
+static Logger verbose(VERBOSE);         //  Logger for verbosing output(it will be showed only if threshold>=VERBOSE)
+static Logger vverbose(VERY_VERBOSE);   //  Logger very verbosing output(it will be showed only if threshold=VERY_VERBOSE)
 
 #endif //FOURINAROW_LOGGER_H

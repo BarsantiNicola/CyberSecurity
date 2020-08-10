@@ -13,13 +13,13 @@ enum Verbose{
     VERY_VERBOSE
 };
 
-/////////////////////////////////////////////////////////////////////////////////////
-//                                                                                 //
-//                                   LOGGER                                        //
-//    Implements a simple Logger of three level of verbosity. It will be used      //
-//    in all the classes to organize the output of the program.                    //
-//                                                                                 //
-/////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////
+    //                                                                                 //
+    //                                   LOGGER                                        //
+    //    Implements a simple Logger of three level of verbosity. It will be used      //
+    //    in all the classes to organize the output of the program.                    //
+    //                                                                                 //
+    /////////////////////////////////////////////////////////////////////////////////////
 
 class Logger{
     private:
@@ -36,15 +36,13 @@ class Logger{
         Logger operator<<(char value);
         Logger operator<<(string value);
         Logger operator<<(Verbose value);
-        static void setThreshold(Verbose threshold);
-        static void test();
-
-
+        static void setThreshold(Verbose threshold);        //  set the global verbose threshold
+        static void test();                                 //  test function
 
 };
 
-static Logger base(NO_VERBOSE);
-static Logger verbose(VERBOSE);
-static Logger vverbose(VERY_VERBOSE);
+static Logger base(NO_VERBOSE);         //  Logger for basic output(it will be showed everytime)
+static Logger verbose(VERBOSE);         //  Logger for verbosing output(it will be showed only if threshold>=VERBOSE)
+static Logger vverbose(VERY_VERBOSE);   //  Logger very verbosing output(it will be showed only if threshold=VERY_VERBOSE)
 
 #endif //FOURINAROW_LOGGER_H
