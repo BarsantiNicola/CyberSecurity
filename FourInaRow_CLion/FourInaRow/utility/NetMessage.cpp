@@ -3,10 +3,11 @@
 namespace utility {
 
     NetMessage::NetMessage(unsigned char *message, int length) {
-
+        vverbose<<"-->[NetMessage][Costructor] Generation of message: "<<message<<'\n';
         this->message = new unsigned char[length];
         strcpy((char*)this->message,(const char*)message);
         this->len = length;
+        vverbose<<"-->[NetMessage][Costructor] Message generated"<<'\n';
 
     }
 

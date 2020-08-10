@@ -7,7 +7,7 @@
 using namespace utility;
 
     int main() {
-        Logger::setThreshold( NO_VERBOSE );
+        Logger::setThreshold( VERBOSE );
         base<<Converter::test()<<'\n';
         return 0;
     }
