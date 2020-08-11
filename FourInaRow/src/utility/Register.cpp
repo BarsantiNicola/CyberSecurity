@@ -1,21 +1,22 @@
 #include"Register.h"
 #include<limits.h>
+
 //using namespace std;
 
 namespace utility
 { 
- /* template<typename T>
+   template<typename T>
    Register::Register(){
   
-   // Tramite logger scrivere che l'oggetto è stato creato correttamente
-  }*/
+   vverbose<<"-->[Register][Costructor] Object created<<'\n';
+  }
 
   template<typename T>
   T Register<T>::getData(int pos)
   {
     if(pos>= dataList.size()||pos<0)
     {
-      //posizione non presente
+      verbose<<"-->[Register][getData] Position: "<<pos <<" not valid"<<'\n';
       
       return NULL;
     }
@@ -29,11 +30,12 @@ namespace utility
     {
       if(dataList[i]==data)
       {
-         //scrivere nel log che il dato è stato eliminato
+         vverbose<<"-->[Register][removeData] the data was removed successfully"<<'\n';
          dataList.erase(i);
          return true;
       }
     }
+    verbose<<"-->[Register][removeData] data not found"<<'\n';
     return false;
   }
   template<typename T>
@@ -45,10 +47,10 @@ namespace utility
     }
     catch(const bad_alloc& e)
     {
-      //scrivere l'errore nel log
+      vverbose<<"-->[Register][addData] Error bad allocation"<<'\n';
       return false;
     }
-    // scrivere che il dato è stato inserito correttamente
+    vverbose<<"-->[Register][addData] the data was added successfully"<<'\n';
     return true;
   }
   template<typename T>

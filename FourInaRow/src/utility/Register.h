@@ -1,5 +1,8 @@
 #include<stdexcept>
 #include<vector>
+#include <ostream>
+#include <cstring>
+#include "../Logger.h"
 using namespace std;
 namespace utility{
 
