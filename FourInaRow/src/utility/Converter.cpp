@@ -210,7 +210,7 @@ namespace utility{
                 break;
             case CERTIFICATE:
                 vverbose<<"--> [Converter][encodeMessage] Encoding CERTIFICATE"<<'\n';
-                value.append("&c=\"");
+                value.append("\"&c=\"");
                 value.append(msg.getServer_Certificate());
                 value.append("\"&n=\"");
                 value.append(to_string(*(msg.getNonce())));
@@ -350,7 +350,7 @@ namespace utility{
                 vverbose<<"--> [Converter][encodeMessage] Encoding MOVE"<<'\n';
                 value.append("\"&t=\"");
                 value.append(to_string(*(msg.getCurrent_Token())));
-                value.append("\"&c=\"");
+                value.append("\"&v=\"");
                 value.append(to_string(*(msg.getChosenColumn())));
                 value.append("\"");
                 break;
@@ -358,12 +358,15 @@ namespace utility{
                 vverbose<<"--> [Converter][encodeMessage] Encoding CHAT"<<'\n';
                 value.append("\"&t=\"");
                 value.append(to_string(*(msg.getCurrent_Token())));
+                value.append("\"&h=\"");
+                value.append(msg.getMessage());
                 value.append("\"");
                 break;
             case ACK:
                 vverbose<<"--> [Converter][encodeMessage] Encoding ACK"<<'\n';
                 value.append("\"&t=\"");
                 value.append(to_string(*(msg.getCurrent_Token())));
+                value.append("\"");
                 break;
             case DISCONNECT:
                 vverbose<<"--> [Converter][encodeMessage] Encoding DISCONNECT"<<'\n';
@@ -373,7 +376,7 @@ namespace utility{
                 break;
             default:
                 verbose<<"--> [Converter][encodeMessage] Error Undefined MessageType"<<type<<'\n';
-                return NULL;
+                return nullptr;
         }
 
         vverbose<<"--> [Converter][encodeMessage] Encoded completed, encoded message: "<<value<<'\n';
@@ -497,9 +500,17 @@ namespace utility{
                 vverbose<<"--> [Converter][setField] Identified variable: CurrentToken"<<'\n';
                 msg->setCurrent_Token(stoi(string(reinterpret_cast<char*>(fieldValue))));
                 break;
+            case 'v':
+                vverbose<<"--> [Converter][setField] Identified variable: ChosenColumn"<<'\n';
+                msg->setChosenColumn(stoi(string(reinterpret_cast<char*>(fieldValue))));
+                break;
             case 'u':
                 vverbose<<"--> [Converter][setField] Identified variable: Username"<<'\n';
                 msg->setUsername(string(reinterpret_cast<char*>(fieldValue)));
+                break;
+            case 'h':
+                vverbose<<"--> [Converter][setField] Identified variable: Message"<<'\n';
+                msg->setMessage(string(reinterpret_cast<char*>(fieldValue)));
                 break;
             case 'y':
                 vverbose<<"--> [Converter][setField] Identified variable: MessageType"<<'\n';
@@ -515,7 +526,7 @@ namespace utility{
     }
 
     //  verify the presence of the &" sequence into a given field
-    bool Converter::checkField( unsigned char* field , int len){
+    bool Converter::checkField( unsigned const char* field , int len){
         vverbose<<"--> [Converter][checkField] Verification of Message consistence"<<'\n';
         bool warn = false;
 
@@ -524,8 +535,9 @@ namespace utility{
                 if( warn ) {
                     verbose<<"--> [Converter][checkField] Error, sequence \"& founded into the field"<<'\n';
                     return true;
-                }else
+                }else {
                     continue;
+                }
             if( field[a] == '"' )
                 warn = true;
             else
@@ -539,6 +551,7 @@ namespace utility{
         Message* m = new Message();
         m->setSignature( "signature" );
         Message* m2 = new Message();
+        NetMessage* encoded;
 
         m->setUsername( "username");
         m->setAdversary_1( "adv_1" );
@@ -568,43 +581,219 @@ namespace utility{
         m2->setUserList( "user_list\"&" );
         m2->setRankList( "rank_\"&list" );
 
-        if( Converter::encodeMessage(CERTIFICATE_REQ,*m)== NULL) return false;
-        if( Converter::encodeMessage(CERTIFICATE,*m)== NULL) return false;
-        if( Converter::encodeMessage(LOGIN_REQ,*m)== NULL) return false;
-        if( Converter::encodeMessage(LOGIN_OK,*m)== NULL) return false;
-        if( Converter::encodeMessage(LOGIN_FAIL,*m)== NULL) return false;
-        if( Converter::encodeMessage(KEY_EXCHANGE,*m)== NULL) return false;
-        if( Converter::encodeMessage(USER_LIST_REQ,*m)== NULL) return false;
-        if( Converter::encodeMessage(USER_LIST,*m)== NULL) return false;
-        if( Converter::encodeMessage(RANK_LIST_REQ,*m)== NULL) return false;
-        if( Converter::encodeMessage(RANK_LIST,*m)== NULL) return false;
-        if( Converter::encodeMessage(MATCH,*m)== NULL) return false;
-        if( Converter::encodeMessage(ACCEPT,*m)== NULL) return false;
-        if( Converter::encodeMessage(REJECT,*m)== NULL) return false;
-        if( Converter::encodeMessage(WITHDRAW_REQ,*m)== NULL) return false;
-        if( Converter::encodeMessage(WITHDRAW_OK,*m)== NULL) return false;
-        if( Converter::encodeMessage(LOGOUT_REQ,*m)== NULL) return false;
-        if( Converter::encodeMessage(LOGOUT_OK,*m)== NULL) return false;
-        if( Converter::encodeMessage(GAME_PARAM,*m)== NULL) return false;
-        if( Converter::encodeMessage(MOVE,*m)== NULL) return false;
-        if( Converter::encodeMessage(ACK,*m)== NULL) return false;
-        if( Converter::encodeMessage(CHAT,*m)== NULL) return false;
-        if( Converter::encodeMessage(DISCONNECT,*m)== NULL) return false;
+        if( Converter::encodeMessage(CERTIFICATE_REQ,*m)== nullptr) return false;
+        if( Converter::encodeMessage(CERTIFICATE,*m)== nullptr) return false;
+        if( Converter::encodeMessage(LOGIN_REQ,*m)== nullptr) return false;
+        if( Converter::encodeMessage(LOGIN_OK,*m)== nullptr) return false;
+        if( Converter::encodeMessage(LOGIN_FAIL,*m)== nullptr) return false;
+        if( Converter::encodeMessage(KEY_EXCHANGE,*m)== nullptr) return false;
+        if( Converter::encodeMessage(USER_LIST_REQ,*m)== nullptr) return false;
+        if( Converter::encodeMessage(USER_LIST,*m)== nullptr) return false;
+        if( Converter::encodeMessage(RANK_LIST_REQ,*m)== nullptr) return false;
+        if( Converter::encodeMessage(RANK_LIST,*m)== nullptr) return false;
+        if( Converter::encodeMessage(MATCH,*m)== nullptr) return false;
+        if( Converter::encodeMessage(ACCEPT,*m)== nullptr) return false;
+        if( Converter::encodeMessage(REJECT,*m)== nullptr) return false;
+        if( Converter::encodeMessage(WITHDRAW_REQ,*m)== nullptr) return false;
+        if( Converter::encodeMessage(WITHDRAW_OK,*m)== nullptr) return false;
+        if( Converter::encodeMessage(LOGOUT_REQ,*m)== nullptr) return false;
+        if( Converter::encodeMessage(LOGOUT_OK,*m)== nullptr) return false;
+        if( Converter::encodeMessage(GAME_PARAM,*m)== nullptr) return false;
+        if( Converter::encodeMessage(MOVE,*m)== nullptr) return false;
+        if( Converter::encodeMessage(ACK,*m)== nullptr) return false;
+        if( Converter::encodeMessage(CHAT,*m)== nullptr) return false;
+        if( Converter::encodeMessage(DISCONNECT,*m)== nullptr) return false;
 
-        if( Converter::encodeMessage(CERTIFICATE,*m2)!= NULL) return false;
-        if( Converter::encodeMessage(LOGIN_REQ,*m2)!= NULL) return false;
-        if( Converter::encodeMessage(LOGIN_OK,*m2)!= NULL) return false;
-        if( Converter::encodeMessage(LOGIN_FAIL,*m2)!= NULL) return false;
-        if( Converter::encodeMessage(KEY_EXCHANGE,*m2)!= NULL) return false;
-        if( Converter::encodeMessage(USER_LIST,*m2)!= NULL) return false;
-        if( Converter::encodeMessage(RANK_LIST,*m2)!= NULL) return false;
-        if( Converter::encodeMessage(MATCH,*m2)!= NULL) return false;
-        if( Converter::encodeMessage(GAME_PARAM,*m2)!= NULL) return false;
-        if( Converter::encodeMessage(CHAT,*m2)!= NULL) return false;
+        if( Converter::encodeMessage(CERTIFICATE,*m2)!= nullptr) return false;
+        if( Converter::encodeMessage(LOGIN_REQ,*m2)!= nullptr) return false;
+        if( Converter::encodeMessage(LOGIN_OK,*m2)!= nullptr) return false;
+        if( Converter::encodeMessage(LOGIN_FAIL,*m2)!= nullptr) return false;
+        if( Converter::encodeMessage(KEY_EXCHANGE,*m2)!= nullptr) return false;
+        if( Converter::encodeMessage(USER_LIST,*m2)!= nullptr) return false;
+        if( Converter::encodeMessage(RANK_LIST,*m2)!= nullptr) return false;
+        if( Converter::encodeMessage(MATCH,*m2)!= nullptr) return false;
+        if( Converter::encodeMessage(GAME_PARAM,*m2)!= nullptr) return false;
+        if( Converter::encodeMessage(CHAT,*m2)!= nullptr) return false;
+        delete m2;
 
+        encoded = Converter::encodeMessage(CERTIFICATE_REQ,*m);
+        verbose<<encoded->getMessage()<<'\n';
+        m2 = Converter::decodeMessage(*encoded);
+        if( m2->getMessageType() != CERTIFICATE_REQ || m2->getNonce() == nullptr )  return false;
+        delete m2;
+        delete encoded;
+        verbose<<"CERTIFICATE_REQ"<<'\n';
+
+        encoded = Converter::encodeMessage(CERTIFICATE,*m);
+        verbose<<encoded->getMessage()<<'\n';
+        m2 = Converter::decodeMessage(*encoded);
+        if( m2->getMessageType() != CERTIFICATE || m2->getNonce() == nullptr || m2->getServer_Certificate().empty() || m2->getSignature().empty())  return false;
+        delete m2;
+        delete encoded;
+        verbose<<"CERTIFICATE"<<'\n';
+
+        encoded = Converter::encodeMessage(LOGIN_REQ,*m);
+        verbose<<encoded->getMessage()<<'\n';
+        m2 = Converter::decodeMessage(*encoded);
+        if( m2->getMessageType() != LOGIN_REQ || m2->getNonce() == nullptr || m2->getUsername().empty() || m2->getSignature().empty())  return false;
+        delete m2;
+        delete encoded;
+        verbose<<"LOGIN_REQ"<<'\n';
+
+        encoded = Converter::encodeMessage(LOGIN_OK,*m);
+        verbose<<encoded->getMessage()<<'\n';
+        m2 = Converter::decodeMessage(*encoded);
+        if( m2->getMessageType() != LOGIN_OK || m2->getNonce() == nullptr || m2->getSignature().empty())  return false;
+        delete m2;
+        delete encoded;
+        verbose<<"LOGIN_OK"<<'\n';
+
+        encoded = Converter::encodeMessage(LOGIN_FAIL,*m);
+        verbose<<encoded->getMessage()<<'\n';
+        m2 = Converter::decodeMessage(*encoded);
+        if( m2->getMessageType() != LOGIN_FAIL || m2->getNonce() == nullptr || m2->getSignature().empty())  return false;
+        delete m2;
+        delete encoded;
+        verbose<<"LOGIN_FAIL"<<'\n';
+
+        encoded = Converter::encodeMessage(KEY_EXCHANGE,*m);
+        verbose<<encoded->getMessage()<<'\n';
+        m2 = Converter::decodeMessage(*encoded);
+        if( m2->getMessageType() != KEY_EXCHANGE || m2->getNonce() == nullptr || m2->get_DH_key().empty()  || m2->getSignature().empty())  return false;
+        delete m2;
+        delete encoded;
+        verbose<<"KEY_EXCHANGE"<<'\n';
+
+        encoded = Converter::encodeMessage(USER_LIST_REQ,*m);
+        verbose<<encoded->getMessage()<<'\n';
+        m2 = Converter::decodeMessage(*encoded);
+        if( m2->getMessageType() != USER_LIST_REQ || m2->getNonce() == nullptr )  return false;
+        delete m2;
+        delete encoded;
+        verbose<<"USER_LIST_REQ"<<'\n';
+
+        encoded = Converter::encodeMessage(USER_LIST,*m);
+        verbose<<encoded->getMessage()<<'\n';
+        m2 = Converter::decodeMessage(*encoded);
+        if( m2->getMessageType() != USER_LIST || m2->getNonce() == nullptr || m2->getUserList().empty() )  return false;
+        delete m2;
+        delete encoded;
+        verbose<<"USER_LIST"<<'\n';
+
+        encoded = Converter::encodeMessage(RANK_LIST_REQ,*m);
+        verbose<<encoded->getMessage()<<'\n';
+        m2 = Converter::decodeMessage(*encoded);
+        if( m2->getMessageType() != RANK_LIST_REQ || m2->getNonce() == nullptr  )  return false;
+        delete m2;
+        delete encoded;
+        verbose<<"RANK_LIST_REQ"<<'\n';
+
+        encoded = Converter::encodeMessage(RANK_LIST,*m);
+        verbose<<encoded->getMessage()<<'\n';
+        m2 = Converter::decodeMessage(*encoded);
+        if( m2->getMessageType() != RANK_LIST || m2->getNonce() == nullptr || m2->getRankList().empty() )  return false;
+        delete m2;
+        delete encoded;
+        verbose<<"RANK_LIST"<<'\n';
+
+        encoded = Converter::encodeMessage(MATCH,*m);
+        verbose<<encoded->getMessage()<<'\n';
+        m2 = Converter::decodeMessage(*encoded);
+        if( m2->getMessageType() != MATCH || m2->getNonce() == nullptr || m2->getUsername().empty() )  return false;
+        delete m2;
+        delete encoded;
+        verbose<<"MATCH"<<'\n';
+
+        encoded = Converter::encodeMessage(ACCEPT,*m);
+        verbose<<encoded->getMessage()<<'\n';
+        m2 = Converter::decodeMessage(*encoded);
+        if( m2->getMessageType() != ACCEPT || m2->getNonce() == nullptr || m2->getAdversary_1().empty() || m2->getAdversary_2().empty())  return false;
+        delete m2;
+        delete encoded;
+        verbose<<"ACCEPT"<<'\n';
+
+        encoded = Converter::encodeMessage(REJECT,*m);
+        verbose<<encoded->getMessage()<<'\n';
+        m2 = Converter::decodeMessage(*encoded);
+        if( m2->getMessageType() != REJECT || m2->getNonce() == nullptr || m2->getAdversary_1().empty() || m2->getAdversary_2().empty() )  return false;
+        delete m2;
+        delete encoded;
+        verbose<<"REJECT"<<'\n';
+
+        encoded = Converter::encodeMessage(WITHDRAW_REQ,*m);
+        verbose<<encoded->getMessage()<<'\n';
+        m2 = Converter::decodeMessage(*encoded);
+        if( m2->getMessageType() != WITHDRAW_REQ || m2->getNonce() == nullptr || m2->getUsername().empty() )  return false;
+        delete m2;
+        delete encoded;
+        verbose<<"WITHDRAW_REQ"<<'\n';
+
+        encoded = Converter::encodeMessage(WITHDRAW_OK,*m);
+        verbose<<encoded->getMessage()<<'\n';
+        m2 = Converter::decodeMessage(*encoded);
+        if( m2->getMessageType() != WITHDRAW_OK || m2->getNonce() == nullptr )  return false;
+        delete m2;
+        delete encoded;
+        verbose<<"WITHDRAW_OK"<<'\n';
+
+        encoded = Converter::encodeMessage(LOGOUT_REQ,*m);
+        verbose<<encoded->getMessage()<<'\n';
+        m2 = Converter::decodeMessage(*encoded);
+        if( m2->getMessageType() != LOGOUT_REQ || m2->getNonce() == nullptr )  return false;
+        delete m2;
+        delete encoded;
+        verbose<<"LOGOUT_REQ"<<'\n';
+
+        encoded = Converter::encodeMessage(LOGOUT_OK,*m);
+        verbose<<encoded->getMessage()<<'\n';
+        m2 = Converter::decodeMessage(*encoded);
+        if( m2->getMessageType() != LOGOUT_OK || m2->getNonce() == nullptr )  return false;
+        delete m2;
+        delete encoded;
+        verbose<<"LOGOUT_OK"<<'\n';
+
+        encoded = Converter::encodeMessage(GAME_PARAM,*m);
+        verbose<<encoded->getMessage()<<'\n';
+        m2 = Converter::decodeMessage(*encoded);
+        if( m2->getMessageType() != GAME_PARAM || m2->getNonce() == nullptr || m2->getPubKey().empty() || m2->getNetInformations().empty())  return false;
+        delete m2;
+        delete encoded;
+        verbose<<"GAME_PARAM"<<'\n';
+
+        encoded = Converter::encodeMessage(MOVE,*m);
+        verbose<<encoded->getMessage()<<'\n';
+        m2 = Converter::decodeMessage(*encoded);
+        if( m2->getMessageType() != MOVE || m2->getCurrent_Token() == nullptr || m2->getChosenColumn() == nullptr )  return false;
+        delete m2;
+        delete encoded;
+        verbose<<"MOVE"<<'\n';
+
+        encoded = Converter::encodeMessage(CHAT,*m);
+        verbose<<encoded->getMessage()<<'\n';
+        m2 = Converter::decodeMessage(*encoded);
+        if( m2->getMessageType() != CHAT || m2->getCurrent_Token() == nullptr || m2->getMessage().empty() )  return false;
+        delete m2;
+        delete encoded;
+        verbose<<"CHAT"<<'\n';
+
+        encoded = Converter::encodeMessage(ACK,*m);
+        verbose<<encoded->getMessage()<<'\n';
+        m2 = Converter::decodeMessage(*encoded);
+        if( m2->getMessageType() != ACK  || m2->getCurrent_Token() == nullptr )  return false;
+        delete m2;
+        delete encoded;
+        verbose<<"ACK"<<'\n';
+
+        encoded = Converter::encodeMessage(DISCONNECT,*m);
+        verbose<<encoded->getMessage()<<'\n';
+        m2 = Converter::decodeMessage(*encoded);
+        if( m2->getMessageType() != DISCONNECT || m2->getNonce() == nullptr )  return false;
+        delete m2;
+        delete encoded;
+        verbose<<"DISCONNECT"<<'\n';
 
         delete m;
-        delete m2;
+
         return true;
 
     }

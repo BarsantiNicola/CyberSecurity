@@ -21,7 +21,7 @@ class Converter {
 
     private:
         static bool verifyMessage( MessageType type , Message message );                          //  verify the presence of all the needed fields
-        static bool checkField(unsigned char* field, int len);                                    //  verify a field doesn't contain &"
+        static bool checkField(unsigned const char* field, int len);                                    //  verify a field doesn't contain &"
         static int computeNextField( NetMessage message , int position, Message* newMessage );    //  extract a field from the NetMessage string
         static bool setField( char fieldName, unsigned char* fieldValue , Message* msg );         //  set a field extracted from a NetMessage string
     public:
