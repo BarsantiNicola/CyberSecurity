@@ -1,1 +1,0 @@
-/usr/bin/c++  -g   CMakeFiles/FourInaRow.dir/main.cpp.o CMakeFiles/FourInaRow.dir/utility/NetMessage.cpp.o CMakeFiles/FourInaRow.dir/Logger.cpp.o CMakeFiles/FourInaRow.dir/utility/Message.cpp.o CMakeFiles/FourInaRow.dir/utility/Converter.cpp.o  -o FourInaRow 

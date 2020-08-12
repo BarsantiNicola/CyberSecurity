@@ -4,7 +4,6 @@
 #define FOURINAROW_LOGGER_H
 
 #include <iostream>
-#include "utility/NetMessage.h"
 using namespace std;
 
 enum Verbose{
