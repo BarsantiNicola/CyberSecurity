@@ -6,9 +6,9 @@
 namespace utility
 { 
    template<typename T>
-   Register::Register(){
+   Register<T>::Register(){
   
-   vverbose<<"-->[Register][Costructor] Object created<<'\n';
+   vverbose<<"-->[Register][Costructor] Object created"<<'\n';
   }
 
   template<typename T>
