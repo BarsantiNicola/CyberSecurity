@@ -2,7 +2,7 @@
 
 export 
 
-UTILITY_PACKAGE="src/utility/NetMessage.cpp src/utility/Message.cpp src/utility/Converter.cpp"
+UTILITY_PACKAGE="src/utility/NetMessage.cpp src/utility/Message.cpp src/utility/Converter.cpp src/utility/Register.cpp"
 CIPHER_PACKAGE="src/cipher/CipherRSA.cpp"
 MAIN_PACKAGE="src/main.cpp src/Logger.cpp"
 
