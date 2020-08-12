@@ -7,9 +7,11 @@
 #include "NetMessage.h"
 #include "Message.h"
 #include <iostream>
+#include<vector>
 #include<string>
 #include "Converter.h"
 #include "../Logger.h"
+#define BUFFER_LENGTH 150000
 using namespace std;
 namespace utility
 {
@@ -35,7 +37,7 @@ namespace utility
       Message getMessage(int); 
       bool removeConnection(int);
       bool sendMessage(int,Message);
-      int waitForMessage();
+      vector<int> waitForMessage();
     private:
       bool createListenerTcp();
       bool resendMessage();

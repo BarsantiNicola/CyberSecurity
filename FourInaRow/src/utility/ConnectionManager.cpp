@@ -4,11 +4,13 @@ namespace utility
   ConnectionManager::ConnectionManager(bool isServer,const char* myIP,int myPort)
   { 
     
-
+    
     int ret;
     bool ris;
     FD_ZERO(&master);
     FD_ZERO(&fdRead);
+    FD_SET(fileno(stdin),&master);
+    fd_max=fileno(stdin);
     memset(&my_addr,0,sizeof(my_addr));
     my_addr.sin_family=AF_INET;
     my_addr.sin_port=htons(myPort);
@@ -99,7 +101,7 @@ namespace utility
     vverbose<<"-->[ConnectionManager][createConnectionWithServer] the connection with server was created succesfully idsock:"<<serverSocket<<'\n';
     FD_SET(serverSocket,&master);
     if(serverSocket>fdmax)
-    fdmax=serverSocket;
+      fdmax=serverSocket;
     return true;
   }
 
@@ -108,7 +110,12 @@ namespace utility
     int ret;
     uint16_t lmsg;
     Converter* conv=new Converter();
-    if((isServer&&FD_ISSET(socket,&master))||(!isServer&&serverSocket==socket))
+    if(message.length()>BUFFER_LENGTH)
+    {
+      verbose<<"-->[ConnectionManager][sendMessage] Error Message to long"<<'\n';
+      return false;
+      }   
+    if((isServer&&FD_ISSET(socket,&master))||(!isServer&&serverSocket==socket&&serverSocket!=-2))
     {
       NetMessage* netmess=conv->encodeMessage(message.getMessageType(),message );
       if(netmess==NULL)
@@ -116,7 +123,7 @@ namespace utility
         verbose<<"-->[ConnectionManager][sendMessage] Error conversion"<<'\n';
         return false;
       }
-      lmsg=htons(netmess->length());
+      /*lmsg=htons(netmess->length());
       ret=send(socket,(void*)&lmsg,sizeof(uint16_t),0);
       if(ret==0)
       {
@@ -127,7 +134,7 @@ namespace utility
       {
         verbose<<"-->[ConnectionManager][sendMessage] send message length failed"<<'\n';
         return false;
-      }
+      }*/
       ret=send(socket,(void*)netmess->getMessage());
       if(ret==0)
       {
@@ -159,14 +166,19 @@ namespace utility
         verbose<<"-->[ConnectionManager][sendMessage] Error conversion"<<'\n';
         return false;
       }
-      lmsg=htons(netmess->length());
+      /*lmsg=htons(netmess->length());
       ret=sendto(socket,(void*)&lmsg,sizeof(uint16_t),0,(struct sockaddr*)&reciver_addr,sizeof(reciver_addr));
       if(ret<sizeof(uint16_t))
       {
         verbose<<"-->[ConnectionManager][sendMessage] send message length failed"<<'\n';
         return false;
-      }
+      }*/
       ret=sendto(sock,netmess->getMessage(),&netmess->length(),0,(struct sockaddr*) &reciver_addr, sizeof(reciver_addr));
+      if(ret==0)
+      {
+        verbose<<"-->[ConnectionManager][sendMessage] connection closed"<<'\n';
+        return false;
+      }
       if(ret<netmess->length())
       {
         verbose<<"-->[ConnectionManager][sendMessage] send message failed"<<'\n';
@@ -189,6 +201,42 @@ namespace utility
     }
     return false;
   }
+  //funzione che restituisce un vector di id di socket pronti in caso non ci siano descrittori pronti restituisce un vector vuoto
+  vector<int> ConnectionManager::waitForMessage()
+  {
+    vector<int> descr;
+    fdRead=master;
+    select(fdmax+1,&fdRead,NULL,NULL,NULL);
+    for(i=0;i<=fdmax;i++)
+    {
+      if(FD_ISSET(i,&fdRead))
+      {
+        if(isServer&&i==listener)
+        {
+          struct sockaddr_in cl_addr;
+          int addrlen=sizeof(cl_addr);
+          int newfd=acccept(listener,(struct sockaddr*)&cl_addr,(socklen_t*)&addrlen);
+          FD_SET(newfd,&master);
+          vverbose<<"-->[ConnectionManager][waitForMessage] new connection created"<<'\n';
+          if(newfd>fdmax)
+          {
+                    
+            fdmax=newfd;
+          }
 
+        }          
+        else
+          descr.push_back(i);
+      }
+    }
+    return descr;
+  }
+  Message ConnectionManager::getMessage(int socket)
+  {
+    if((isServer&&FD_ISSET(socket,&master))||(!isServer&&serverSocket==socket&&serverSocket!=-2))
+    {
+      //da completare
+    }
+  }
     
 }
