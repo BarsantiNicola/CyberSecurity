@@ -5,10 +5,12 @@ using namespace std;
 namespace cipher
 {
   class CipherHASH
-  {
+  { 
+      
     public:
-      unsigned char* hashFunction(unsigned char*);
-      unsigned char* hashFunction(unsigned char*,unsigned char*);
+      unsigned char* hashFunction(unsigned char*,int);
+      unsigned char* hashFunction(unsigned char*,int,unsigned char*,int);
+      int hashLength();
 
   };
 
