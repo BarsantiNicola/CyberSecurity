@@ -231,18 +231,105 @@ namespace utility
     return descr;
   }
 
-
-  Message ConnectionManager::getMessage(int socket)
+  /*The fuction return a message Type Message from the socket with identifier socket
+    return false in case on error*/
+  Message* ConnectionManager::getMessage(int socket)
   {
     struct sockaddr_in sender_addr; 
     int addrlen =sizeof(sender_addr);
     if((isServer&&FD_ISSET(socket,&master))||(!isServer&&serverSocket==socket&&serverSocket!=-2))
     {
       int len;
-      unsigned char buffer[BUFFER_LENGTH];
+      unsigned char *buffer=new unsigned char[BUFFER_LENGTH];
+      
+      len=recv(socket,(void*)buffer,BUFFER_LENGTH,0);
+      if(len==0)
+      {
+        verbose<<"-->[ConnectionManager][sendMessage] connection closed"<<'\n';
+        delete[]buffer;
+        return NULL;
+      }
+      if (len<BUFFER_LENGTH)
+      {
+        verbose<<"-->[ConnectionManager][sendMessage] length recived is too short"<<'\n';
+        delete[]buffer;
+        return NULL;
+      }
+      int messLength = ReturnIndexLastSimbolPosition(buffer,BUFFER_LENGTH,(unsigned char) '#');
+      if(messLength==-1)
+      {
+        verbose<<"-->[ConnectionManager][sendMessage] the message is NULL"<<'\n';
+        delete[]buffer;
+        return NULL;
+      }
+      unsigned char* bufMess=new unsigned char[messLength];
+      copyBuffer(bufMess,buffer,messLength,BUFFER_LENGTH);
+      NetMessage netmess(bufMess,messLength);
+      Converter* conv=new Converter();
+      Message* mess=conv->decodeMessage(netmess);
+      if(mess==NULL)
+      {
+        verbose<<"-->[ConnectionManager][sendMessage] the message is NULL"<<'\n';
+        delete[]buffer;
+        delete[]bufMess;
+        delete conv;
+        return NULL;
+      }
+        vverbose<<"-->[ConnectionManager][sendMessage] the message is recived correctly"<<'\n';
+        delete[]buffer;
+        delete[]bufMess;
+        delete conv;
+        return mess;
+    }
+
+    else if(socketUDP==socket)
+    {
+      int len;
+      unsigned char *buffer=new unsigned char[BUFFER_LENGTH];
+      
       len=recvfrom(socket,(void*)buffer,BUFFER_LENGTH,0,(struct sockaddr*)&sender_addr,(socklen_t*)&addrlen);
+      if(len==0)
+      {
+        verbose<<"-->[ConnectionManager][sendMessage] connection closed"<<'\n';
+        delete[]buffer;
+        return NULL;
+      }
+      if (len<BUFFER_LENGTH)
+      {
+        verbose<<"-->[ConnectionManager][sendMessage] length recived is too short"<<'\n';
+        delete[]buffer;
+        return NULL;
+      }
+      int messLength = ReturnIndexLastSimbolPosition(buffer,BUFFER_LENGTH,(unsigned char) '#');
+      if(messLength==-1)
+      {
+        verbose<<"-->[ConnectionManager][sendMessage] the message is NULL"<<'\n';
+        delete[]buffer;
+        return NULL;
+      }
+      unsigned char* bufMess=new unsigned char[messLength];
+      copyBuffer(bufMess,buffer,messLength,BUFFER_LENGTH);
+      NetMessage netmess(bufMess,messLength);
+      Converter* conv=new Converter();
+      Message* mess=conv->decodeMessage( netmess);
+      if(mess==NULL)
+      {
+        verbose<<"-->[ConnectionManager][sendMessage] the message is NULL"<<'\n';
+        delete[]buffer;
+        delete[]bufMess;
+        delete conv;
+        return NULL;
+      }
+        vverbose<<"-->[ConnectionManager][sendMessage] the message is recived correctly"<<'\n';
+        delete[]buffer;
+        delete[]bufMess;
+        delete conv;
+        return mess;
     }
   }
+/**/
+
+
   void ConnectionManager::initArray(unsigned char* array,unsigned char elem,int length)
   {
     for(int i=0;i<length;i++)
@@ -251,7 +338,8 @@ namespace utility
 
 
   void ConnectionManager:: copyBuffer(unsigned char* arrayOne,unsigned char* arrayTwo,int lengthOne,int lengthTwo)
-  {
+  { if(lengthOne<0||lengthTwo<0)
+     return;
     int minI=0;
     if(lengthOne<= lengthTwo)
       minI=lengthOne;
@@ -261,4 +349,16 @@ namespace utility
       arrayOne[i]=arrayTwo[i];
   } 
 
+
+  int ConnectionManager::ReturnIndexLastSimbolPosition(unsigned char* array,int length,unsigned char simbol)
+  {
+    if(length<0)
+     return -1;
+    for(int i=0;i<length;i++)
+    {
+      if(array[i]!=simbol)
+        return i;
+    } 
+    return -1;
+  }
 }

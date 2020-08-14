@@ -34,7 +34,7 @@ namespace utility
       ConnectionManager(bool,const char*,int);
       bool createConnectionWithServerTCP(const char*,int);
       bool registerConnection();
-      Message getMessage(int); 
+      Message* getMessage(int); 
       bool removeConnection(int);
       bool sendMessage(Message,int,const char*,int);
       vector<int> waitForMessage();
@@ -42,6 +42,7 @@ namespace utility
       void copyBuffer(unsigned char*,unsigned char*,int,int);
       void initArray(unsigned char*,unsigned char,int);
       bool createListenerTcp();
+      int ReturnIndexLastSimbolPosition(unsigned char*,int,unsigned char);
       bool resendMessage();
       int udpBind(int);//da verificare se necessaria
       int tcpBind(int);
