@@ -36,9 +36,11 @@ namespace utility
       bool registerConnection();
       Message getMessage(int); 
       bool removeConnection(int);
-      bool sendMessage(int,Message);
+      bool sendMessage(Message,int,const char*,int);
       vector<int> waitForMessage();
     private:
+      void copyBuffer(unsigned char*,unsigned char*,int,int);
+      void initArray(unsigned char*,unsigned char,int);
       bool createListenerTcp();
       bool resendMessage();
       int udpBind(int);//da verificare se necessaria

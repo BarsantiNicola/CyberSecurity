@@ -10,7 +10,7 @@ namespace utility
     FD_ZERO(&master);
     FD_ZERO(&fdRead);
     FD_SET(fileno(stdin),&master);
-    fd_max=fileno(stdin);
+    fdmax=fileno(stdin);
     memset(&my_addr,0,sizeof(my_addr));
     my_addr.sin_family=AF_INET;
     my_addr.sin_port=htons(myPort);
@@ -74,7 +74,7 @@ namespace utility
 
 
 
-  bool ConnectionManager::createConnectionWithServer(const char* IP,int port)
+  bool ConnectionManager::createConnectionWithServerTCP(const char* IP,int port)
   {
      int ret;
      if(isServer)
@@ -85,13 +85,13 @@ namespace utility
     memset(&my_addr,0,sizeof(server_addr));
     server_addr.sin_family=AF_INET;
     server_addr.sin_port=htons(port);
-    ret=inet_pton(AF_INET,myIP,&my_addr.sin_addr);
+    ret=inet_pton(AF_INET,IP,&my_addr.sin_addr);
     if(ret==-1)
     {
       throw invalid_argument("Invalid IP address");
     }
     serverSocket=socket(AF_INET,SOCK_STREAM,0);
-    inet_pton(AF_INET)
+    //inet_pton(AF_INET)
     ret= connect(serverSocket,(struct sockaddr*)&server_addr,sizeof(server_addr));
     if(ret==-1)
     {
@@ -105,52 +105,54 @@ namespace utility
     return true;
   }
 
-  bool ConnectionManager::sendMessage(Message message,int socket,const char recIP,int recPort)
+
+
+
+  bool ConnectionManager::sendMessage(Message message,int socket,const char* recIP,int recPort)
   {  
     int ret;
     uint16_t lmsg;
     Converter* conv=new Converter();
-    if(message.length()>BUFFER_LENGTH)
+    unsigned char* senderBuffer=new unsigned char[BUFFER_LENGTH];
+    initArray(senderBuffer,(unsigned char) '#',BUFFER_LENGTH);
+    NetMessage* netmess=conv->encodeMessage(message.getMessageType(),message );
+    if(netmess->length()>BUFFER_LENGTH)
     {
       verbose<<"-->[ConnectionManager][sendMessage] Error Message to long"<<'\n';
+      delete[]senderBuffer;
       return false;
       }   
+ 
     if((isServer&&FD_ISSET(socket,&master))||(!isServer&&serverSocket==socket&&serverSocket!=-2))
     {
-      NetMessage* netmess=conv->encodeMessage(message.getMessageType(),message );
+      
       if(netmess==NULL)
       {
         verbose<<"-->[ConnectionManager][sendMessage] Error conversion"<<'\n';
+        delete[]senderBuffer;
         return false;
       }
-      /*lmsg=htons(netmess->length());
-      ret=send(socket,(void*)&lmsg,sizeof(uint16_t),0);
+      copyBuffer(senderBuffer,netmess->getMessage(),BUFFER_LENGTH,netmess->length());
+      
+      ret=send(socket,(void*)senderBuffer,BUFFER_LENGTH,0);
       if(ret==0)
       {
         verbose<<"-->[ConnectionManager][sendMessage] connection closed"<<'\n';
+        delete[]senderBuffer;
         return false;
       }
-      if(ret<sizeof(uint16_t))
-      {
-        verbose<<"-->[ConnectionManager][sendMessage] send message length failed"<<'\n';
-        return false;
-      }*/
-      ret=send(socket,(void*)netmess->getMessage());
-      if(ret==0)
-      {
-        verbose<<"-->[ConnectionManager][sendMessage] connection closed"<<'\n';
-        return false;
-      }
-      if(ret<netmess->length())
+      if(ret<BUFFER_LENGTH)
       {
         verbose<<"-->[ConnectionManager][sendMessage] send message failed"<<'\n';
+        delete[]senderBuffer;
         return false;
       }
       return true;
     }
+    
     else if(socketUDP==socket)
     {
-      struct sockaddr reciver_addr;
+      struct sockaddr_in reciver_addr;
       memset(&reciver_addr,0,sizeof(reciver_addr));
       reciver_addr.sin_family=AF_INET;
       reciver_addr.sin_port=htons(recPort);
@@ -160,26 +162,21 @@ namespace utility
         verbose<<"-->[ConnectionManager][sendMessage] bad reciver address "<<'\n';
         return false;
       }
-      NetMessage* netmess=conv->encodeMessage(message.getMessageType(),message );
+      
       if(netmess==NULL)
       {
         verbose<<"-->[ConnectionManager][sendMessage] Error conversion"<<'\n';
         return false;
       }
-      /*lmsg=htons(netmess->length());
-      ret=sendto(socket,(void*)&lmsg,sizeof(uint16_t),0,(struct sockaddr*)&reciver_addr,sizeof(reciver_addr));
-      if(ret<sizeof(uint16_t))
-      {
-        verbose<<"-->[ConnectionManager][sendMessage] send message length failed"<<'\n';
-        return false;
-      }*/
-      ret=sendto(sock,netmess->getMessage(),&netmess->length(),0,(struct sockaddr*) &reciver_addr, sizeof(reciver_addr));
+      copyBuffer(senderBuffer,netmess->getMessage(),BUFFER_LENGTH,netmess->length());
+      int bufferLength=BUFFER_LENGTH;
+      ret=sendto(socket,senderBuffer,bufferLength,0,(struct sockaddr*) &reciver_addr, sizeof(reciver_addr));
       if(ret==0)
       {
         verbose<<"-->[ConnectionManager][sendMessage] connection closed"<<'\n';
         return false;
       }
-      if(ret<netmess->length())
+      if(ret<BUFFER_LENGTH)
       {
         verbose<<"-->[ConnectionManager][sendMessage] send message failed"<<'\n';
         return false;
@@ -188,6 +185,8 @@ namespace utility
     }
   }
  
+
+
   bool ConnectionManager::removeConnection(int socket)
   {
     int ret= close(socket);
@@ -207,7 +206,7 @@ namespace utility
     vector<int> descr;
     fdRead=master;
     select(fdmax+1,&fdRead,NULL,NULL,NULL);
-    for(i=0;i<=fdmax;i++)
+    for(int i=0;i<=fdmax;i++)
     {
       if(FD_ISSET(i,&fdRead))
       {
@@ -215,7 +214,7 @@ namespace utility
         {
           struct sockaddr_in cl_addr;
           int addrlen=sizeof(cl_addr);
-          int newfd=acccept(listener,(struct sockaddr*)&cl_addr,(socklen_t*)&addrlen);
+          int newfd=accept(listener,(struct sockaddr*)&cl_addr,(socklen_t*)&addrlen);
           FD_SET(newfd,&master);
           vverbose<<"-->[ConnectionManager][waitForMessage] new connection created"<<'\n';
           if(newfd>fdmax)
@@ -231,12 +230,35 @@ namespace utility
     }
     return descr;
   }
+
+
   Message ConnectionManager::getMessage(int socket)
   {
+    struct sockaddr_in sender_addr; 
+    int addrlen =sizeof(sender_addr);
     if((isServer&&FD_ISSET(socket,&master))||(!isServer&&serverSocket==socket&&serverSocket!=-2))
     {
-      //da completare
+      int len;
+      unsigned char buffer[BUFFER_LENGTH];
+      len=recvfrom(socket,(void*)buffer,BUFFER_LENGTH,0,(struct sockaddr*)&sender_addr,(socklen_t*)&addrlen);
     }
   }
-    
+  void ConnectionManager::initArray(unsigned char* array,unsigned char elem,int length)
+  {
+    for(int i=0;i<length;i++)
+      array[i]=elem;
+  }
+
+
+  void ConnectionManager:: copyBuffer(unsigned char* arrayOne,unsigned char* arrayTwo,int lengthOne,int lengthTwo)
+  {
+    int minI=0;
+    if(lengthOne<= lengthTwo)
+      minI=lengthOne;
+    else
+      minI=lengthTwo;
+    for(int i=0;i<minI;i++)
+      arrayOne[i]=arrayTwo[i];
+  } 
+
 }
