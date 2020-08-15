@@ -35,7 +35,7 @@ namespace utility
       bool createConnectionWithServerTCP(const char*,int);
       bool registerConnection();
       Message* getMessage(int); 
-      bool removeConnection(int);
+      bool closeConnection(int);
       bool sendMessage(Message,int,const char*,int);
       vector<int> waitForMessage();
     private:

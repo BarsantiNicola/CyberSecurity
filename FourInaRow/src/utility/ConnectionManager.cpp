@@ -67,7 +67,8 @@ namespace utility
       return false;//exit(-1);
     listen(listener,150);
     FD_SET(listener,&master);
-    fdmax=listener;
+    if(fdmax<listener)
+      fdmax=listener;
     return true;
     
   }
@@ -138,6 +139,7 @@ namespace utility
       if(ret==0)
       {
         verbose<<"-->[ConnectionManager][sendMessage] connection closed"<<'\n';
+        closeConnection(socket);
         delete[]senderBuffer;
         return false;
       }
@@ -173,6 +175,7 @@ namespace utility
       ret=sendto(socket,senderBuffer,bufferLength,0,(struct sockaddr*) &reciver_addr, sizeof(reciver_addr));
       if(ret==0)
       {
+        closeConnection(socket);
         verbose<<"-->[ConnectionManager][sendMessage] connection closed"<<'\n';
         return false;
       }
@@ -185,9 +188,10 @@ namespace utility
     }
   }
  
+ /* This function close  a connection and return true in case of success false in case of failure
+*/
 
-
-  bool ConnectionManager::removeConnection(int socket)
+  bool ConnectionManager::closeConnection(int socket)
   {
     int ret= close(socket);
     if(ret==0)
@@ -210,7 +214,7 @@ namespace utility
     {
       if(FD_ISSET(i,&fdRead))
       {
-        if(isServer&&i==listener)
+        if(isServer&&(i==listener))
         {
           struct sockaddr_in cl_addr;
           int addrlen=sizeof(cl_addr);
@@ -327,7 +331,7 @@ namespace utility
         return mess;
     }
   }
-/**/
+/*---------------------------------------------------------------------------------------------*/
 
 
   void ConnectionManager::initArray(unsigned char* array,unsigned char elem,int length)
@@ -335,7 +339,7 @@ namespace utility
     for(int i=0;i<length;i++)
       array[i]=elem;
   }
-
+/*-------------------------------------------------------------------------------------------*/
 
   void ConnectionManager:: copyBuffer(unsigned char* arrayOne,unsigned char* arrayTwo,int lengthOne,int lengthTwo)
   { if(lengthOne<0||lengthTwo<0)
@@ -349,12 +353,12 @@ namespace utility
       arrayOne[i]=arrayTwo[i];
   } 
 
-
+  /*--------------------------------------------------------------------------------------*/
   int ConnectionManager::ReturnIndexLastSimbolPosition(unsigned char* array,int length,unsigned char simbol)
   {
     if(length<0)
      return -1;
-    for(int i=0;i<length;i++)
+    for(int i=(length-1);i>=0;i--)
     {
       if(array[i]!=simbol)
         return i;
