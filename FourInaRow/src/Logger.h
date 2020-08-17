@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include "utility/Message.h"
+
 using namespace std;
 
 enum Verbose{

@@ -23,7 +23,7 @@ namespace utility{
         private:
             unsigned char* message;
             unsigned int len;
-
+            void myCopy( unsigned char* dest, unsigned char* source, int len );
         public:
             NetMessage(unsigned char* message , unsigned int length );  //  COSTRUCTOR FOR CONNECTION_MANAGER
             NetMessage(NetMessage& value);
@@ -32,6 +32,8 @@ namespace utility{
             unsigned char* getMessage();                        //  GIVES THE CONTENT OF THE CLASS
             unsigned int length();                              //  GIVES THE LENGTH OF CONTENT
             static void test();                                 //  TEST FUNCTION
+
+
     };
 
 }

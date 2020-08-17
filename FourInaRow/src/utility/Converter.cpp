@@ -1273,11 +1273,8 @@ namespace utility{
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
-                strcpy( (char*)value , "y=\"");
-                strcat((char*)value, to_string(type).c_str() );
-                strcat( (char*)value , "\"&n=\"");
-                strcat( (char*)value , to_string(*(nonce)).c_str());
-                strcat( (char*)value , "\"");
+                pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0,false  );
+                pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,true  );
                 break;
 
             case CERTIFICATE:
@@ -1288,15 +1285,11 @@ namespace utility{
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 certificate  = message.getServerCertificate();
-                strcpy( (char*)value , "y=\"");
-                strcat((char*)value, to_string(type).c_str() );
-                strcat( (char*)value , "\"&c=\"");
-                strncat( (char*)value , (const char*)certificate , message.getServerCertificateLength()+1);
-                strcat( (char*)value , "\"&n=\"");
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
-                strcat( (char*)value , "\"&s=\"");
-                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
-                strcat( (char*)value , "\"\0");
+                pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeField(value , 'c', certificate,message.getServerCertificateLength(),pos, false  );
+                pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
+
                 delete[] sign;
                 delete[] certificate;
                 break;
@@ -1308,15 +1301,10 @@ namespace utility{
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
-                strcpy( (char*)value , "y=\"");
-                strcat((char*)value, to_string(type).c_str() );
-                strcat( (char*)value , "\"&u=\"");
-                strcat( (char*)value , (char*)message.getUsername().c_str() );
-                strcat( (char*)value , "\"&n=\"");
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
-                strcat( (char*)value , "\"&s=\"");
-                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
-                strcat( (char*)value , "\"");
+                pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeField(value , 'u', (unsigned char*)message.getUsername().c_str(), message.getUsername().length(), pos, false  );
+                pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
 
                 delete[] sign;
                 break;
@@ -1328,13 +1316,9 @@ namespace utility{
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
-                strcpy( (char*)value , "y=\"");
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , "\"&n=\"");
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
-                strcat( (char*)value , "\"&s=\"");
-                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
-                strcat( (char*)value , "\"");
+                pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
                 delete[] sign;
 
                 break;
@@ -1346,13 +1330,9 @@ namespace utility{
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
-                strcpy( (char*)value , "y=\"");
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , "\"&n=\"");
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
-                strcat( (char*)value , "\"&s=\"");
-                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
-                strcat( (char*)value , "\"");
+                pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
                 delete[] sign;
 
                 break;
@@ -1365,15 +1345,10 @@ namespace utility{
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
-                strcpy( (char*)value , "y=\"");
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , "\"&d=\"");
-                strncat( (char*)value , (const char*)key, message.getDHkeyLength());
-                strcat( (char*)value , "\"&n=\"");
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
-                strcat( (char*)value , "\"&s=\"");
-                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
-                strcat( (char*)value , "\"");
+                pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeField(value , 'd', key, message.getDHkeyLength(), pos, false  );
+                pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(), pos,false  );
+                pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
                 delete[] sign;
 
                 delete[] key;
@@ -1386,13 +1361,9 @@ namespace utility{
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
-                strcpy( (char*)value , "y=\"");
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , "\"&n=\"");
-                strcat( (char*)value ,to_string(*(nonce)).c_str() );
-                strcat( (char*)value , "\"&s=\"");
-                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
-                strcat( (char*)value , "\"");
+                pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
                 delete[] sign;
 
                 break;
@@ -1404,15 +1375,10 @@ namespace utility{
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
-                strcpy( (char*)value , "y=\"");
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , "\"&l=\"");
-                strcat( (char*)value , message.getUserList().c_str());
-                strcat( (char*)value , "\"&n=\"");
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
-                strcat( (char*)value , "\"&s=\"");
-                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
-                strcat( (char*)value , "\"");
+                pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeField(value , 'l', (unsigned char*)message.getUserList().c_str(),message.getUserList().length(), pos,false  );
+                pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
                 delete[] sign;
 
                 break;
@@ -1424,13 +1390,9 @@ namespace utility{
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
-                strcpy( (char*)value , "y=\"");
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , "\"&n=\"");
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
-                strcat( (char*)value , "\"&s=\"");
-                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
-                strcat( (char*)value , "\"");
+                pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
                 delete[] sign;
 
                 break;
@@ -1442,15 +1404,10 @@ namespace utility{
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
-                strcpy( (char*)value , "y=\"");
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , "\"&r=\"");
-                strcat( (char*)value , message.getRankList().c_str() );
-                strcat( (char*)value , "\"&n=\"");
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
-                strcat( (char*)value , "\"&s=\"");
-                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
-                strcat( (char*)value , "\"");
+                pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeField(value , 'r', (unsigned char*)message.getRankList().c_str(), message.getRankList().length(), pos,false  );
+                pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(), pos,false  );
+                pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
                 delete[] sign;
 
                 break;
@@ -1462,15 +1419,10 @@ namespace utility{
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
-                strcpy( (char*)value , "y=\"");
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , "\"&u=\"");
-                strcat( (char*)value , message.getUsername().c_str());
-                strcat( (char*)value , "\"&n=\"");
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
-                strcat( (char*)value , "\"&s=\"");
-                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
-                strcat( (char*)value , "\"");
+                pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeField(value , 'u', (unsigned char*)message.getUsername().c_str(), message.getUsername().length(), pos,false  );
+                pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(), pos,false  );
+                pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
                 delete[] sign;
 
                 break;
@@ -1482,17 +1434,11 @@ namespace utility{
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
-                strcpy( (char*)value , "y=\"");
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , "\"&a=\"");
-                strcat( (char*)value , message.getAdversary_1().c_str() );
-                strcat( (char*)value , "\"&b=\"");
-                strcat( (char*)value , message.getAdversary_2().c_str() );
-                strcat( (char*)value , "\"&n=\"");
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
-                strcat( (char*)value , "\"&s=\"");
-                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
-                strcat( (char*)value , "\"");
+                pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeField(value , 'a', (unsigned char*)message.getAdversary_1().c_str(), message.getAdversary_1().length(), pos,false  );
+                pos = writeField(value , 'b', (unsigned char*)message.getAdversary_2().c_str(), message.getAdversary_2().length(), pos,false  );
+                pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(), pos,false  );
+                pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
                 delete[] sign;
 
                 break;
@@ -1504,17 +1450,11 @@ namespace utility{
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
-                strcpy( (char*)value , "y=\"");
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , "\"&a=\"");
-                strcat( (char*)value , message.getAdversary_1().c_str() );
-                strcat( (char*)value , "\"&b=\"");
-                strcat( (char*)value , message.getAdversary_2().c_str() );
-                strcat( (char*)value , "\"&n=\"");
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
-                strcat( (char*)value , "\"&s=\"");
-                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
-                strcat( (char*)value , "\"");
+                pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeField(value , 'a', (unsigned char*)message.getAdversary_1().c_str(), message.getAdversary_1().length(), pos,false  );
+                pos = writeField(value , 'b', (unsigned char*)message.getAdversary_2().c_str(), message.getAdversary_2().length(), pos,false  );
+                pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(), pos,false  );
+                pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
                 delete[] sign;
 
                 break;
@@ -1526,15 +1466,10 @@ namespace utility{
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
-                strcpy( (char*)value , "y=\"");
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , "\"&u=\"");
-                strcat( (char*)value , message.getUsername().c_str() );
-                strcat( (char*)value , "\"&n=\"");
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
-                strcat( (char*)value , "\"&s=\"");
-                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
-                strcat( (char*)value , "\"");
+                pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeField(value , 'u', (unsigned char*)message.getUsername().c_str(), message.getUsername().length(), pos,false  );
+                pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(), pos,false  );
+                pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
                 delete[] sign;
 
                 break;
@@ -1546,13 +1481,9 @@ namespace utility{
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
-                strcpy( (char*)value , "y=\"");
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , "\"&n=\"");
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
-                strcat( (char*)value , "\"&s=\"");
-                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
-                strcat( (char*)value , "\"");
+                pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
                 delete[] sign;
 
                 break;
@@ -1564,13 +1495,9 @@ namespace utility{
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
-                strcpy( (char*)value , "y=\"");
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , "\"&n=\"");
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
-                strcat( (char*)value , "\"&s=\"");
-                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
-                strcat( (char*)value , "\"");
+                pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
                 delete[] sign;
 
                 break;
@@ -1582,13 +1509,9 @@ namespace utility{
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
-                strcpy( (char*)value , "y=\"");
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , "\"&n=\"");
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
-                strcat( (char*)value , "\"&s=\"");
-                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
-                strcat( (char*)value , "\"");
+                pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
                 delete[] sign;
 
                 break;
@@ -1602,19 +1525,12 @@ namespace utility{
                     value[a] = '\0';
                 key = message.getPubKey();
                 net = message.getNetInformations();
-                strcpy( (char*)value , "y=\"");
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , "\"&k=\"");
-                strncat( (char*)value , (const char*)key , message.getPubKeyLength());
-                strcat( (char*)value , "\"&i=\"");
-                strncat( (char*)value , (const char*)net, message.getNetInformationsLength());
-                strcat( (char*)value , "\"&n=\"");
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
-                strcat( (char*)value , "\"&s=\"");
-                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
-                strcat( (char*)value , "\"");
+                pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeField(value , 'k', key ,message.getPubKeyLength(),pos,false  );
+                pos = writeField(value , 'i', net ,message.getNetInformationsLength(),pos,false  );
+                pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
                 delete[] sign;
-
                 delete[] key;
                 delete[] net;
                 break;
@@ -1627,15 +1543,10 @@ namespace utility{
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
-                strcpy( (char*)value , "y=\"");
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , "\"&t=\"");
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
-                strcat( (char*)value , "\"&v=\"");
-                strncat( (char*)value , (const char*)key, message.getChosenColumnLength());
-                strcat( (char*)value , "\"&s=\"");
-                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
-                strcat( (char*)value , "\"");
+                pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeField(value , 't', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeField(value , 'v', key,message.getChosenColumnLength(),pos,false  );
+                pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
                 delete[] sign;
 
                 delete[] key;
@@ -1649,15 +1560,10 @@ namespace utility{
                 key = message.getMessage();
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
-                strcpy( (char*)value , "y=\"");
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , "\"&t=\"");
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
-                strcat( (char*)value , "\"&h=\"");
-                strncat( (char*)value , (const char*)key, message.getMessageLength());
-                strcat( (char*)value , "\"&s=\"");
-                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
-                strcat( (char*)value , "\"");
+                pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeField(value , 't', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeField(value , 'h', key, message.getMessageLength(), pos,false  );
+                pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
                 delete[] sign;
 
                 delete[] key;
@@ -1670,13 +1576,9 @@ namespace utility{
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
-                strcpy( (char*)value , "y=\"");
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , "\"&t=\"");
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
-                strcat( (char*)value , "\"&s=\"");
-                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
-                strcat( (char*)value , "\"");
+                pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeField(value , 't', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
                 delete[] sign;
 
                 break;
@@ -1688,13 +1590,9 @@ namespace utility{
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
-                strcpy( (char*)value , "y=\"");
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , "\"&n=\"");
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
-                strcat( (char*)value , "\"&s=\"");
-                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
-                strcat( (char*)value , "\"");
+                pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
                 delete[] sign;
 
                 break;
@@ -1887,6 +1785,7 @@ namespace utility{
         return false;
     }
 
+    //  example of usage of the class Converter and testing of its functionality
     bool Converter::test(){
         Message* m = new Message();
         m->setSignature( (unsigned char*)"signature12345" ,14 );
@@ -2378,302 +2277,318 @@ namespace utility{
 
         }
 
-            unsigned char *certificate, *key, *net;
-            int *nonce;
-            int pos;
-            switch (type) {
 
-                case CERTIFICATE_REQ:
-                    nonce = message.getNonce();
-                    len = 1 + to_string(type).length() + to_string(*nonce).length();
-                    value = new unsigned char[len];
-                    for (int a = 0; a < len; a++)
-                        value[a] = '\0';
-                    strcat((char *) value, to_string(type).c_str());
-                    strcat((char *) value, to_string(*(nonce)).c_str());
-                    break;
+        unsigned char* certificate,*key,*net;
+        int* nonce;
+        int pos;
+        switch( type ){
 
-                case CERTIFICATE:
-                    nonce = message.getNonce();
-                    len = 20 + to_string(type).length() + to_string(*nonce).length() +
-                          message.getServerCertificateLength();
-                    value = new unsigned char[len];
-                    for (int a = 0; a < len; a++)
-                        value[a] = '\0';
-                    certificate = message.getServerCertificate();
-                    strcat((char *) value, to_string(type).c_str());
-                    strncat((char *) value, (const char *) certificate, message.getServerCertificateLength() + 1);
-                    strcat((char *) value, to_string(*(nonce)).c_str());
-                    delete[] certificate;
-                    break;
+            case CERTIFICATE_REQ:
+                nonce = message.getNonce();
+                len = 10+to_string(type).length()+to_string(*nonce).length();
+                value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value ,  (unsigned char*)to_string(type).c_str(),to_string(type).length(),0,false  );
+                pos = writeCompactField(value ,  (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,true  );
+                break;
 
-                case LOGIN_REQ:
-                    nonce = message.getNonce();
-                    len = 20 + to_string(type).length() + to_string(*nonce).length() + message.getUsername().length();
-                    value = new unsigned char[len];
-                    for (int a = 0; a < len; a++)
-                        value[a] = '\0';
-                    strcat((char *) value, to_string(type).c_str());
-                    strcat((char *) value, (char *) message.getUsername().c_str());
-                    strcat((char *) value, to_string(*(nonce)).c_str());
+            case CERTIFICATE:
+                nonce = message.getNonce();
+                len = 20+to_string(type).length()+to_string(*nonce).length() + message.getServerCertificateLength()+message.getSignatureLen();
+                value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                certificate  = message.getServerCertificate();
+                pos = writeCompactField(value ,  (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value ,  certificate,message.getServerCertificateLength(),pos, false  );
+                pos = writeCompactField(value ,  (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,true  );
 
-                    break;
+                delete[] certificate;
+                break;
 
-                case LOGIN_OK:
-                    nonce = message.getNonce();
-                    len = 15 + to_string(type).length() + to_string(*nonce).length();
-                    value = new unsigned char[len];
-                    for (int a = 0; a < len; a++)
-                        value[a] = '\0';
-                    strcat((char *) value, to_string(type).c_str());
-                    strcat((char *) value, to_string(*(nonce)).c_str());
+            case LOGIN_REQ:
+                nonce = message.getNonce();
+                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value ,  (unsigned char*)message.getUsername().c_str(), message.getUsername().length(), pos, false  );
+                pos = writeCompactField(value ,  (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,true  );
 
-                    break;
+                break;
 
-                case LOGIN_FAIL:
-                    nonce = message.getNonce();
-                    len = 15 + to_string(type).length() + to_string(*nonce).length();
-                    value = new unsigned char[len];
-                    for (int a = 0; a < len; a++)
-                        value[a] = '\0';
-                    strcat((char *) value, to_string(type).c_str());
-                    strcat((char *) value, to_string(*(nonce)).c_str());
+            case LOGIN_OK:
+                nonce = message.getNonce();
+                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,true  );
 
-                    break;
+                break;
 
-                case KEY_EXCHANGE:
-                    nonce = message.getNonce();
-                    key = message.getDHkey();
-                    len = 20 + to_string(type).length() + to_string(*nonce).length() + message.getDHkeyLength();
-                    value = new unsigned char[len];
-                    for (int a = 0; a < len; a++)
-                        value[a] = '\0';
-                    strcat((char *) value, to_string(type).c_str());
-                    strncat((char *) value, (const char *) key, message.getDHkeyLength());
-                    strcat((char *) value, to_string(*(nonce)).c_str());
+            case LOGIN_FAIL:
+                nonce = message.getNonce();
+                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,true  );
 
-                    delete[] key;
-                    break;
+                break;
 
-                case USER_LIST_REQ:
-                    nonce = message.getNonce();
-                    len = 15 + to_string(type).length() + to_string(*nonce).length();
-                    value = new unsigned char[len];
-                    for (int a = 0; a < len; a++)
-                        value[a] = '\0';
-                    strcat((char *) value, to_string(type).c_str());
-                    strcat((char *) value, to_string(*(nonce)).c_str());
+            case KEY_EXCHANGE:
+                nonce = message.getNonce();
+                key = message.getDHkey();
+                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getDHkeyLength()+message.getSignatureLen();
+                value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , key, message.getDHkeyLength(), pos, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(), pos,true  );
 
-                    break;
+                delete[] key;
+                break;
 
-                case USER_LIST:
-                    nonce = message.getNonce();
-                    len = 20 + to_string(type).length() + to_string(*nonce).length() + message.getUserList().length();
-                    value = new unsigned char[len];
-                    for (int a = 0; a < len; a++)
-                        value[a] = '\0';
-                    strcat((char *) value, to_string(type).c_str());
-                    strcat((char *) value, message.getUserList().c_str());
-                    strcat((char *) value, to_string(*(nonce)).c_str());
+            case USER_LIST_REQ:
+                nonce = message.getNonce();
+                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,true  );
 
-                    break;
+                break;
 
-                case RANK_LIST_REQ:
-                    nonce = message.getNonce();
-                    len = 15 + to_string(type).length() + to_string(*nonce).length();
-                    value = new unsigned char[len];
-                    for (int a = 0; a < len; a++)
-                        value[a] = '\0';
-                    strcat((char *) value, to_string(type).c_str());
-                    strcat((char *) value, to_string(*(nonce)).c_str());
+            case USER_LIST:
+                nonce = message.getNonce();
+                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUserList().length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)message.getUserList().c_str(),message.getUserList().length(), pos,false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,true  );
 
-                    break;
+                break;
 
-                case RANK_LIST:
-                    nonce = message.getNonce();
+            case RANK_LIST_REQ:
+                nonce = message.getNonce();
+                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,true  );
 
-                    len = 20 + to_string(type).length() + to_string(*nonce).length() + message.getRankList().length();
-                    value = new unsigned char[len];
-                    for (int a = 0; a < len; a++)
-                        value[a] = '\0';
-                    strcat((char *) value, to_string(type).c_str());
-                    strcat((char *) value, message.getRankList().c_str());
-                    strcat((char *) value, to_string(*(nonce)).c_str());
+                break;
 
-                    break;
+            case RANK_LIST:
+                nonce = message.getNonce();
+                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getRankList().length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)message.getRankList().c_str(), message.getRankList().length(), pos,false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(), pos,true  );
 
-                case MATCH:
-                    nonce = message.getNonce();
-                    len = 20 + to_string(type).length() + to_string(*nonce).length() + message.getUsername().length();
-                    value = new unsigned char[len];
-                    for (int a = 0; a < len; a++)
-                        value[a] = '\0';
-                    strcat((char *) value, to_string(type).c_str());
-                    strcat((char *) value, message.getUsername().c_str());
-                    strcat((char *) value, to_string(*(nonce)).c_str());
+                break;
 
-                    break;
+            case MATCH:
+                nonce = message.getNonce();
+                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)message.getUsername().c_str(), message.getUsername().length(), pos,false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(), pos,true  );
 
-                case ACCEPT:
-                    nonce = message.getNonce();
+                break;
 
-                    len = 25 + to_string(type).length() + to_string(*nonce).length() +
-                          message.getAdversary_1().length() + message.getAdversary_2().length();
-                    value = new unsigned char[len];
-                    for (int a = 0; a < len; a++)
-                        value[a] = '\0';
-                    strcat((char *) value, to_string(type).c_str());
-                    strcat((char *) value, message.getAdversary_1().c_str());
-                    strcat((char *) value, message.getAdversary_2().c_str());
-                    strcat((char *) value, to_string(*(nonce)).c_str());
+            case ACCEPT:
+                nonce = message.getNonce();
+                len = 25+to_string(type).length()+to_string(*nonce).length()+message.getAdversary_1().length()+message.getAdversary_2().length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)message.getAdversary_1().c_str(), message.getAdversary_1().length(), pos,false  );
+                pos = writeCompactField(value , (unsigned char*)message.getAdversary_2().c_str(), message.getAdversary_2().length(), pos,false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(), pos,true  );
 
+                break;
 
-                    break;
+            case REJECT:
+                nonce = message.getNonce();
+                len = 25+to_string(type).length()+to_string(*nonce).length()+message.getAdversary_1().length()+message.getAdversary_2().length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)message.getAdversary_1().c_str(), message.getAdversary_1().length(), pos,false  );
+                pos = writeCompactField(value , (unsigned char*)message.getAdversary_2().c_str(), message.getAdversary_2().length(), pos,false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(), pos,true  );
 
-                case REJECT:
-                    nonce = message.getNonce();
-                    len = 25 + to_string(type).length() + to_string(*nonce).length() +
-                          message.getAdversary_1().length() + message.getAdversary_2().length();
-                    value = new unsigned char[len];
-                    for (int a = 0; a < len; a++)
-                        value[a] = '\0';
-                    strcat((char *) value, to_string(type).c_str());
-                    strcat((char *) value, message.getAdversary_1().c_str());
-                    strcat((char *) value, message.getAdversary_2().c_str());
-                    strcat((char *) value, to_string(*(nonce)).c_str());
+                break;
 
-                    break;
+            case WITHDRAW_REQ:
+                nonce = message.getNonce();
+                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)message.getUsername().c_str(), message.getUsername().length(), pos,false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(), pos,true  );
 
-                case WITHDRAW_REQ:
-                    nonce = message.getNonce();
-                    len = 20 + to_string(type).length() + to_string(*nonce).length() + message.getUsername().length();
-                    value = new unsigned char[len];
-                    for (int a = 0; a < len; a++)
-                        value[a] = '\0';
+                break;
 
-                    strcat((char *) value, to_string(type).c_str());
-                    strcat((char *) value, message.getUsername().c_str());
-                    strcat((char *) value, to_string(*(nonce)).c_str());
+            case WITHDRAW_OK:
+                nonce = message.getNonce();
+                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,true  );
 
-                    break;
+                break;
 
-                case WITHDRAW_OK:
-                    nonce = message.getNonce();
-                    len = 15 + to_string(type).length() + to_string(*nonce).length();
-                    value = new unsigned char[len];
-                    for (int a = 0; a < len; a++)
-                        value[a] = '\0';
-                    strcat((char *) value, to_string(type).c_str());
-                    strcat((char *) value, to_string(*(nonce)).c_str());
+            case LOGOUT_REQ:
+                nonce = message.getNonce();
+                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,true  );
 
-                    break;
+                break;
 
-                case LOGOUT_REQ:
-                    nonce = message.getNonce();
-                    len = 15 + to_string(type).length() + to_string(*nonce).length();
-                    value = new unsigned char[len];
-                    for (int a = 0; a < len; a++)
-                        value[a] = '\0';
-                    strcat((char *) value, to_string(type).c_str());
-                    strcat((char *) value, to_string(*(nonce)).c_str());
+            case LOGOUT_OK:
+                nonce = message.getNonce();
+                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,true  );
 
-                    break;
+                break;
 
-                case LOGOUT_OK:
-                    nonce = message.getNonce();
+            case GAME_PARAM:
+                nonce = message.getNonce();
+                len = 25+to_string(type).length()+to_string(*nonce).length()+message.getPubKeyLength()+message.getNetInformationsLength()+message.getSignatureLen();
+                value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                key = message.getPubKey();
+                net = message.getNetInformations();
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , key ,message.getPubKeyLength(),pos,false  );
+                pos = writeCompactField(value , net ,message.getNetInformationsLength(),pos,false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,true  );
+                delete[] key;
+                delete[] net;
+                break;
 
-                    len = 15 + to_string(type).length() + to_string(*nonce).length();
-                    value = new unsigned char[len];
-                    for (int a = 0; a < len; a++)
-                        value[a] = '\0';
-                    strcat((char *) value, to_string(type).c_str());
-                    strcat((char *) value, to_string(*(nonce)).c_str());
+            case MOVE:
+                nonce = message.getCurrent_Token();
+                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen();
+                key = message.getChosenColumn();
+                value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeCompactField(value , key,message.getChosenColumnLength(),pos,true  );
 
+                delete[] key;
+                break;
 
-                    break;
+            case CHAT:
+                nonce = message.getCurrent_Token();
+                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getMessageLength()+message.getSignatureLen();
+                value = new unsigned char[len];
+                key = message.getMessage();
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeCompactField(value , key, message.getMessageLength(), pos,true  );
 
-                case GAME_PARAM:
-                    nonce = message.getNonce();
-                    len = 25 + to_string(type).length() + to_string(*nonce).length() + message.getPubKeyLength() +
-                          message.getNetInformationsLength();
-                    value = new unsigned char[len];
-                    for (int a = 0; a < len; a++)
-                        value[a] = '\0';
-                    key = message.getPubKey();
-                    net = message.getNetInformations();
+                delete[] key;
+                break;
 
-                    strcat((char *) value, to_string(type).c_str());
-                    strncat((char *) value, (const char *) key, message.getPubKeyLength());
-                    strncat((char *) value, (const char *) net, message.getNetInformationsLength());
-                    strcat((char *) value, to_string(*(nonce)).c_str());
+            case ACK:
+                nonce = message.getCurrent_Token();
+                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,true  );
 
-                    delete[] key;
-                    delete[] net;
-                    break;
+                break;
 
-                case MOVE:
-                    nonce = message.getCurrent_Token();
-                    len = 20 + to_string(type).length() + to_string(*nonce).length() + message.getChosenColumnLength();
-                    key = message.getChosenColumn();
-                    value = new unsigned char[len];
-                    for (int a = 0; a < len; a++)
-                        value[a] = '\0';
+            case DISCONNECT:
+                nonce = message.getNonce();
+                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,true  );
 
-                    strcat((char *) value, to_string(type).c_str());
-                    strcat((char *) value, to_string(*(nonce)).c_str());
-                    strncat((char *) value, (const char *) key, message.getChosenColumnLength());
+                break;
 
-                    delete[] key;
-                    break;
-
-                case CHAT:
-                    nonce = message.getCurrent_Token();
-                    len = 20 + to_string(type).length() + to_string(*nonce).length() + message.getMessageLength();
-                    value = new unsigned char[len];
-                    key = message.getMessage();
-                    for (int a = 0; a < len; a++)
-                        value[a] = '\0';
-
-                    strcat((char *) value, to_string(type).c_str());
-                    strcat((char *) value, to_string(*(nonce)).c_str());
-                    strncat((char *) value, (const char *) key, message.getMessageLength());
-
-                    delete[] key;
-                    break;
-
-                case ACK:
-                    nonce = message.getCurrent_Token();
-                    len = 15 + to_string(type).length() + to_string(*nonce).length();
-                    value = new unsigned char[len];
-                    for (int a = 0; a < len; a++)
-                        value[a] = '\0';
-
-                    strcat((char *) value, to_string(type).c_str());
-                    strcat((char *) value, to_string(*(nonce)).c_str());
-
-
-                    break;
-
-                case DISCONNECT:
-                    nonce = message.getNonce();
-                    len = 15 + to_string(type).length() + to_string(*nonce).length();
-                    value = new unsigned char[len];
-                    for (int a = 0; a < len; a++)
-                        value[a] = '\0';
-                    strcat((char *) value, to_string(type).c_str());
-
-                    strcat((char *) value, to_string(*(nonce)).c_str());
-
-
-                    break;
-
-                default:
-                    return nullptr;
-            }
-            delete nonce;
-
-            return new NetMessage(value, len);
-
+            default:
+                return nullptr;
         }
+        delete nonce;
+
+        return new NetMessage(value,len);
+
+    }
+
+    int Converter::writeField( unsigned char* value , char fieldTag , unsigned char* field , int len , int pos , bool finish ) {
+
+        value[pos++] = fieldTag;
+        value[pos++] = '=';
+        value[pos++] = '"';
+
+        for (int a = 0; a < len; a++)
+            value[pos + a] = field[a];
+        pos += len;
+        value[pos++] = '"';
+        if (finish)
+            value[pos++] = '\0';
+        else
+            value[pos++] = '&';
+        return pos;
+    }
+
+    int Converter::writeCompactField( unsigned char* value, unsigned char* field , int len , int pos , bool finish ) {
+
+
+        for (int a = 0; a < len; a++)
+            value[pos + a] = field[a];
+        pos += len;
+
+        if (finish)
+            value[pos++] = '\0';
+
+        return pos;
+    }
+
+
 
 }

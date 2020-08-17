@@ -25,7 +25,7 @@ namespace utility {
         this->message = new unsigned char[length];
         if( this->message ) {
 
-            strncpy((char *) this->message, (const char *) mess, length);
+            myCopy( this->message,  mess, length);
             this->len = length;
             vverbose << "-->[NetMessage][Costructor] Message generated" << '\n';
 
@@ -52,12 +52,19 @@ namespace utility {
         this->message = new unsigned char[value.length()];
         if( this->message ) {
 
-            strncpy((char *) this->message, (const char *) value.getMessage(), value.length());
+            myCopy(this->message, value.getMessage(), value.length());
             this->len = value.length();
             vverbose << "-->[NetMessage][Costructor] Message generated" << '\n';
 
         }else
             verbose <<"-->[NetMessage][Costructor] Error during the allocation of memory. Operation Aborted."<<'\n';
+
+    }
+
+    void NetMessage::myCopy( unsigned char* dest, unsigned char* source, int len ){
+
+        for( int a = 0; a<len;a++ )
+            dest[a] = source[a];
 
     }
 
@@ -80,7 +87,7 @@ namespace utility {
         if( !this->message || !this->len ) return nullptr;
 
         unsigned char* ret = new unsigned char[this->len];
-        strncpy( (char*)ret, (const char*) this->message , this->len);
+        myCopy( ret,  this->message , this->len);
 
         return ret;
 
@@ -90,6 +97,13 @@ namespace utility {
     unsigned int NetMessage::length(){
 
         return this->len;
+
+    }
+
+    void myCopy( unsigned char* dest, unsigned char* source, int len ){
+
+        for( int a = 0; a<len;a++ )
+            dest[a] = source[a];
 
     }
 

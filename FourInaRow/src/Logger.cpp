@@ -13,12 +13,22 @@ Logger::Logger( Verbose level ){
 
 Logger Logger::operator<<(int value){
 
+    if( this->level == VERBOSE  && threshold >= this->level ) {
+        cout << "\033[0;31m" << value << "\033[0m";
+        return *this;
+    }
+
     if( threshold >= this->level  )
         cout<<value;
     return *this;
 }
 
 Logger Logger::operator<<(double value){
+
+    if( this->level == VERBOSE  && threshold >= this->level ) {
+        cout << "\033[0;31m" << value << "\033[0m";
+        return *this;
+    }
 
     if( threshold >= this->level  )
         if( value )
@@ -30,6 +40,11 @@ Logger Logger::operator<<(double value){
 
 Logger Logger::operator<<(bool value){
 
+    if( this->level == VERBOSE  && threshold >= this->level ) {
+        cout << "\033[0;31m" << value << "\033[0m";
+        return *this;
+    }
+
     if( threshold >= this->level  )
         if( value )
             cout<<"true";
@@ -40,6 +55,11 @@ Logger Logger::operator<<(bool value){
 
 Logger Logger::operator<<(unsigned int value){
 
+    if( this->level == VERBOSE  && threshold >= this->level ) {
+        cout << "\033[0;31m" << value << "\033[0m";
+        return *this;
+    }
+
     if( threshold >= this->level  )
         if( value )
             cout<<value;
@@ -49,6 +69,11 @@ Logger Logger::operator<<(unsigned int value){
 }
 
 Logger Logger::operator<<(Verbose value){
+
+    if( this->level == VERBOSE  && threshold >= this->level ) {
+        cout << "\033[0;31m" << value << "\033[0m";
+        return *this;
+    }
 
     if( threshold >= this->level  )
         switch(value){
@@ -67,30 +92,57 @@ Logger Logger::operator<<(Verbose value){
 
 Logger Logger::operator<<(unsigned char* value){
 
+    if( this->level == VERBOSE  && threshold >= this->level ) {
+        cout << "\033[0;31m" << value << "\033[0m";
+        return *this;
+    }
+
     if( threshold >= this->level )
         cout<<value;
     return *this;
 }
 
 Logger Logger::operator<<(char* value){
+
+    if( this->level == VERBOSE  && threshold >= this->level ) {
+        cout << "\033[0;31m" << value << "\033[0m";
+        return *this;
+    }
     if( threshold >= this->level )
         cout<<value;
     return *this;
 }
 
 Logger Logger::operator<<(char value){
+
+    if( this->level == VERBOSE  && threshold >= this->level ) {
+        cout << "\033[0;31m" << value << "\033[0m";
+        return *this;
+    }
+
     if( threshold >= this->level )
         cout<<value;
     return *this;
 }
 
 Logger Logger::operator<<(string value){
+
+    if( this->level == VERBOSE  && threshold >= this->level ) {
+        cout << "\033[0;31m" << value << "\033[0m";
+        return *this;
+    }
+
     if( threshold >= this->level )
         cout<<value;
     return *this;
 }
 
 Logger Logger::operator<<(const char* value){
+
+    if( this->level == VERBOSE  && threshold >= this->level ) {
+        cout << "\033[0;31m" << value << "\033[0m";
+        return *this;
+    }
 
     if( threshold >= this->level  )
         cout<<value;

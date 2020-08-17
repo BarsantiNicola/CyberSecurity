@@ -7,31 +7,44 @@
 #include <string>
 #include <cstring>
 #include "../utility/Message.h"
+#include "../utility/Converter.h"
+#include <unordered_map>
 
 using namespace utility;
 
 namespace cipher {
+
+    struct KeyStruct{
+        string username;
+        EVP_PKEY* pKey;
+        KeyStruct* next;
+    };
+
     class CipherRSA {
         private:
-            EVP_PKEY* pubKey;
-            EVP_PKEY* privKey;
+            EVP_PKEY* myPrivKey = nullptr;
+            EVP_PKEY* myPubKey = nullptr;
+            EVP_PKEY* advPubKey = nullptr;
+            EVP_PKEY* caKey = nullptr;
+            EVP_PKEY* pubServerKey = nullptr;
+            std::unordered_map<int,EVP_PKEY*> keyArchive;
 
-            EVP_PKEY* advKey;
-            EVP_PKEY* caKey;
-
-            unsigned char* makeSignature( unsigned char* fields, int& len, EVP_PKEY* privKey  );
+            unsigned char* makeSignature( unsigned char* fields, unsigned int& len, EVP_PKEY* privKey  );
             bool verifySignature( unsigned char* msg, unsigned char* signature , int msgLen, int len, EVP_PKEY* pubKey );
 
         public:
+
             CipherRSA( string username, string password );                            //  costructor for a client
-            CipherRSA( string serverName, string password, string mySqlUsername, string mySqlPassword );  //  costructor for the server
+            CipherRSA( string serverName, string password, string users[], int len );          //  costructor for the server
             ~CipherRSA();
-            void sign( Message *message );
+            bool sign( Message *message );
             bool clientVerifySignature( Message message , bool server );
-            bool serverVerifySignature( Message message, string username );
+            bool serverVerifySignature( Message message, int socket );
             bool verifyCertificate();
             bool setAdversaryKey( EVP_PKEY* signature );
             void unsetAdversaryKey();
+            bool loadUserKey( int socket , int username );
+            static bool test();
 
 
     };

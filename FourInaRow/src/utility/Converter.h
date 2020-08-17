@@ -18,7 +18,9 @@ namespace utility{
 class Converter {
 
     private:
+
         static int writeField( unsigned char* value , char fieldTag , unsigned char* field , int len , int pos , bool finish );
+        static int writeCompactField( unsigned char* value , unsigned char* field , int len , int pos , bool finish );
         static bool verifyMessage( MessageType type , Message message );                             //  verify the presence of all the needed fields
         static bool verifyCompact( MessageType type , Message message );                             //  verify the presence of all the needed fields for a compactMessage
         static bool checkField( const unsigned char* field, int len);                                //  verify a field doesn't contain &"

@@ -142,7 +142,12 @@ namespace utility {
             unsigned char* getSignature();
             unsigned int getSignatureLen();
 
+            void myCopy( unsigned char* dest, unsigned char* source, int len );
+
+
     };
+
+
 
 }
 #endif //FOURINAROW_MESSAGE_H

@@ -240,7 +240,7 @@ namespace utility {
         if( this->server_certificate ) {
 
             vverbose<<"--> [Message][setServerCertificate] Set of Server Certificate Completed"<<'\n';
-            strncpy( (char *) this->server_certificate, (const char *) certificate, certificate_len );
+            myCopy( this->server_certificate,  certificate, certificate_len );
             return true;
 
         }else{
@@ -252,6 +252,8 @@ namespace utility {
         }
     }
 
+
+
     bool Message::setSignature( unsigned char* signature , unsigned int len ){
 
         if( !signature || len == 0 ){
@@ -260,7 +262,9 @@ namespace utility {
             return false;
 
         }
-
+        for( int a = 0; a<len;a++)
+            cout<<(int)signature[a]<< ' ';
+        cout<<endl;
         if( this->signature )
             delete[] this->signature;
 
@@ -271,7 +275,7 @@ namespace utility {
         if( this->signature ) {
 
             vverbose<<"--> [Message][setSignature] Set of Signature Completed"<<'\n';
-            strncpy( (char *) this->signature, (const char *) signature, signature_len );
+            myCopy( this->signature, signature, signature_len );
             return true;
 
         }else{
@@ -303,7 +307,7 @@ namespace utility {
         if( this->pub_Key ) {
 
             vverbose<<"--> [Message][setPubKey] Set of Public Key Completed"<<'\n';
-            strncpy( (char *) this->pub_Key, (const char *) key, pub_key_len );
+            myCopy( this->pub_Key, key, pub_key_len );
             return true;
 
         }else{
@@ -335,7 +339,7 @@ namespace utility {
         if( this->net_informations ) {
 
             vverbose<<"--> [Message][setNetInformations] Set of Network Information Completed"<<'\n';
-            strncpy( (char *) this->net_informations, (const char *) IP, net_informations_len );
+            myCopy( this->net_informations, IP, net_informations_len );
             return true;
 
         }else{
@@ -367,7 +371,7 @@ namespace utility {
         if( this->chosen_column ) {
 
             vverbose<<"--> [Message][setChosenColumn] Set of Chosen Column Completed"<<'\n';
-            strncpy( (char *) this->chosen_column, (const char *) chosen_column, this->chosen_column_size );
+            myCopy( this->chosen_column,  chosen_column, this->chosen_column_size );
             return true;
 
         }else{
@@ -399,7 +403,7 @@ namespace utility {
         if( this->message ) {
 
             vverbose<<"--> [Message][setMessage] Set of Message Completed"<<'\n';
-            strncpy( (char *) this->message, (const char *) message, this->message_size );
+            myCopy( this->message, message, this->message_size );
             return true;
 
         }else{
@@ -409,6 +413,13 @@ namespace utility {
             return false;
 
         }
+
+    }
+
+    void Message::myCopy( unsigned char* dest, unsigned char* source, int len ){
+
+        for( int a = 0; a<len;a++ )
+            dest[a] = source[a];
 
     }
 
@@ -431,7 +442,7 @@ namespace utility {
         if( this->DH_key ) {
 
             vverbose<<"--> [Message][setMessage] Set of Diffie-Hellman Parameter Completed"<<'\n';
-            strncpy( (char *) this->DH_key, (const char *) key, this->dh_key_len );
+            myCopy( this->DH_key, key, this->dh_key_len );
             return true;
 
         }else{
@@ -533,7 +544,7 @@ namespace utility {
             return nullptr;
 
         }
-        strncpy( (char*) ret, (const char*) this->server_certificate, this->certificate_len );
+        myCopy( ret, this->server_certificate, this->certificate_len );
 
         return ret;
 
@@ -556,7 +567,7 @@ namespace utility {
             return nullptr;
 
         }
-        strncpy( (char*) ret, (const char*) this->pub_Key, this->pub_key_len );
+        myCopy(  ret,  this->pub_Key, this->pub_key_len );
 
         return ret;
 
@@ -579,7 +590,7 @@ namespace utility {
             return nullptr;
 
         }
-        strncpy( (char*) ret, (const char*) this->net_informations, this->net_informations_len );
+        myCopy( ret, this->net_informations, this->net_informations_len );
 
         return ret;
 
@@ -602,7 +613,7 @@ namespace utility {
             return nullptr;
 
         }
-        strncpy( (char*) ret, (const char*) this->chosen_column, this->chosen_column_size );
+        myCopy(  ret, this->chosen_column, this->chosen_column_size );
 
         return ret;
 
@@ -625,7 +636,7 @@ namespace utility {
             return nullptr;
 
         }
-        strncpy( (char*) ret, (const char*) this->message, this->message_size );
+        myCopy( ret, this->message, this->message_size );
 
         return ret;
 
@@ -648,7 +659,7 @@ namespace utility {
             return nullptr;
 
         }
-        strncpy( (char*) ret, (const char*) this->DH_key, this->dh_key_len );
+        myCopy(  ret,  this->DH_key, this->dh_key_len );
 
         return ret;
 
@@ -671,7 +682,7 @@ namespace utility {
             return nullptr;
 
         }
-        strncpy( (char*) ret, (const char*) this->signature, this->signature_len );
+        myCopy( ret, this->signature, this->signature_len );
 
         return ret;
 
