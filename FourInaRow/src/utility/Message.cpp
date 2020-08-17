@@ -10,7 +10,31 @@ namespace utility {
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     //  costructor to allow to no-arguments class instantiation
-    Message::Message(){}
+    Message::Message(){
+        nonce = nullptr;
+        current_token = nullptr;
+
+        server_certificate = nullptr;
+        certificate_len = 0;
+
+        signature = nullptr;
+        signature_len = 0;
+
+        pub_Key = nullptr;
+        pub_key_len = 0;
+
+        net_informations = nullptr;
+        net_informations_len = 0;
+
+        chosen_column = nullptr;
+        chosen_column_size = 0;
+
+        message = nullptr;
+        message_size = 0;
+
+        DH_key = nullptr;
+        dh_key_len = 0;
+    }
 
     //  costructor to allow to usage of the class as a no-pointer function argument
     Message::Message(Message& msg ){
@@ -517,7 +541,7 @@ namespace utility {
 
     unsigned int Message::getServerCertificateLength(){
 
-        return this->signature_len;
+        return this->certificate_len;
 
     }
 
@@ -540,7 +564,7 @@ namespace utility {
 
     unsigned int Message::getPubKeyLength(){
 
-        return this->signature_len;
+        return this->pub_key_len;
 
     }
 
@@ -563,7 +587,7 @@ namespace utility {
 
     unsigned int Message::getNetInformationsLength(){
 
-        return this->signature_len;
+        return this->net_informations_len;
 
     }
 
@@ -586,7 +610,7 @@ namespace utility {
 
     unsigned int Message::getChosenColumnLength(){
 
-        return this->signature_len;
+        return this->chosen_column_size;
 
     }
 
@@ -609,7 +633,7 @@ namespace utility {
 
     unsigned int Message::getMessageLength(){
 
-        return this->signature_len;
+        return this->message_size;
 
     }
 
@@ -632,7 +656,7 @@ namespace utility {
 
     unsigned int Message::getDHkeyLength(){
 
-        return this->signature_len;
+        return this->dh_key_len;
 
     }
 

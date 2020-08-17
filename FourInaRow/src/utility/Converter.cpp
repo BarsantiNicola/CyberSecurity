@@ -1249,8 +1249,9 @@ namespace utility{
     //  translate a Message class into a NetMessage after have controlled the validity of the Message fields
     NetMessage* Converter::encodeMessage(MessageType type , Message message){
 
-        int len;
+        int len = 0;
         unsigned char* value;
+
 
         vverbose<<"--> [Converter][encodeMessage] Starting encoding of Message"<<'\n';
 
@@ -1263,12 +1264,15 @@ namespace utility{
 
         unsigned char* certificate,*key,*net,*sign;
         int* nonce;
+        int pos;
         switch( type ){
 
             case CERTIFICATE_REQ:
                 nonce = message.getNonce();
                 len = 10+to_string(type).length()+to_string(*nonce).length();
                 value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
                 strcpy( (char*)value , "y=\"");
                 strcat((char*)value, to_string(type).c_str() );
                 strcat( (char*)value , "\"&n=\"");
@@ -1281,16 +1285,18 @@ namespace utility{
                 sign = message.getSignature();
                 len = 20+to_string(type).length()+to_string(*nonce).length() + message.getServerCertificateLength()+message.getSignatureLen();
                 value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
                 certificate  = message.getServerCertificate();
                 strcpy( (char*)value , "y=\"");
                 strcat((char*)value, to_string(type).c_str() );
                 strcat( (char*)value , "\"&c=\"");
-                strncat( (char*)value , (const char*)certificate , message.getServerCertificateLength());
+                strncat( (char*)value , (const char*)certificate , message.getServerCertificateLength()+1);
                 strcat( (char*)value , "\"&n=\"");
                 strcat( (char*)value , to_string(*(nonce)).c_str() );
                 strcat( (char*)value , "\"&s=\"");
                 strncat( (char*)value , (const char*)sign, message.getSignatureLen());
-                strcat( (char*)value , "\"");
+                strcat( (char*)value , "\"\0");
                 delete[] sign;
                 delete[] certificate;
                 break;
@@ -1300,6 +1306,8 @@ namespace utility{
                 sign = message.getSignature();
                 len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
                 strcpy( (char*)value , "y=\"");
                 strcat((char*)value, to_string(type).c_str() );
                 strcat( (char*)value , "\"&u=\"");
@@ -1318,6 +1326,8 @@ namespace utility{
                 sign = message.getSignature();
                 len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
                 strcpy( (char*)value , "y=\"");
                 strcat((char*)value, to_string(type).c_str());
                 strcat( (char*)value , "\"&n=\"");
@@ -1334,6 +1344,8 @@ namespace utility{
                 sign = message.getSignature();
                 len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
                 strcpy( (char*)value , "y=\"");
                 strcat((char*)value, to_string(type).c_str());
                 strcat( (char*)value , "\"&n=\"");
@@ -1347,10 +1359,12 @@ namespace utility{
 
             case KEY_EXCHANGE:
                 nonce = message.getNonce();
-                sign = (unsigned char*)message.getSignature();
-                len = 16+to_string(type).length()+to_string(*nonce).length()+message.getDHkeyLength()+message.getSignatureLen();
-                value = new unsigned char[len];
+                sign = message.getSignature();
                 key = message.getDHkey();
+                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getDHkeyLength()+message.getSignatureLen();
+                value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
                 strcpy( (char*)value , "y=\"");
                 strcat((char*)value, to_string(type).c_str());
                 strcat( (char*)value , "\"&d=\"");
@@ -1370,6 +1384,8 @@ namespace utility{
                 sign = message.getSignature();
                 len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
                 strcpy( (char*)value , "y=\"");
                 strcat((char*)value, to_string(type).c_str());
                 strcat( (char*)value , "\"&n=\"");
@@ -1386,6 +1402,8 @@ namespace utility{
                 sign = message.getSignature();
                 len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUserList().length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
                 strcpy( (char*)value , "y=\"");
                 strcat((char*)value, to_string(type).c_str());
                 strcat( (char*)value , "\"&l=\"");
@@ -1404,6 +1422,8 @@ namespace utility{
                 sign = message.getSignature();
                 len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
                 strcpy( (char*)value , "y=\"");
                 strcat((char*)value, to_string(type).c_str());
                 strcat( (char*)value , "\"&n=\"");
@@ -1420,6 +1440,8 @@ namespace utility{
                 sign = message.getSignature();
                 len = 20+to_string(type).length()+to_string(*nonce).length()+message.getRankList().length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
                 strcpy( (char*)value , "y=\"");
                 strcat((char*)value, to_string(type).c_str());
                 strcat( (char*)value , "\"&r=\"");
@@ -1438,6 +1460,8 @@ namespace utility{
                 sign = message.getSignature();
                 len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
                 strcpy( (char*)value , "y=\"");
                 strcat((char*)value, to_string(type).c_str());
                 strcat( (char*)value , "\"&u=\"");
@@ -1456,6 +1480,8 @@ namespace utility{
                 sign = message.getSignature();
                 len = 25+to_string(type).length()+to_string(*nonce).length()+message.getAdversary_1().length()+message.getAdversary_2().length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
                 strcpy( (char*)value , "y=\"");
                 strcat((char*)value, to_string(type).c_str());
                 strcat( (char*)value , "\"&a=\"");
@@ -1476,6 +1502,8 @@ namespace utility{
                 sign = message.getSignature();
                 len = 25+to_string(type).length()+to_string(*nonce).length()+message.getAdversary_1().length()+message.getAdversary_2().length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
                 strcpy( (char*)value , "y=\"");
                 strcat((char*)value, to_string(type).c_str());
                 strcat( (char*)value , "\"&a=\"");
@@ -1496,6 +1524,8 @@ namespace utility{
                 sign = message.getSignature();
                 len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
                 strcpy( (char*)value , "y=\"");
                 strcat((char*)value, to_string(type).c_str());
                 strcat( (char*)value , "\"&u=\"");
@@ -1514,6 +1544,8 @@ namespace utility{
                 sign = (unsigned char*)message.getSignature();
                 len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
                 strcpy( (char*)value , "y=\"");
                 strcat((char*)value, to_string(type).c_str());
                 strcat( (char*)value , "\"&n=\"");
@@ -1530,6 +1562,8 @@ namespace utility{
                 sign = message.getSignature();
                 len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
                 strcpy( (char*)value , "y=\"");
                 strcat((char*)value, to_string(type).c_str());
                 strcat( (char*)value , "\"&n=\"");
@@ -1546,6 +1580,8 @@ namespace utility{
                 sign = message.getSignature();
                 len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
                 strcpy( (char*)value , "y=\"");
                 strcat((char*)value, to_string(type).c_str());
                 strcat( (char*)value , "\"&n=\"");
@@ -1562,6 +1598,8 @@ namespace utility{
                 sign = message.getSignature();
                 len = 25+to_string(type).length()+to_string(*nonce).length()+message.getPubKeyLength()+message.getNetInformationsLength()+message.getSignatureLen();
                 value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
                 key = message.getPubKey();
                 net = message.getNetInformations();
                 strcpy( (char*)value , "y=\"");
@@ -1587,6 +1625,8 @@ namespace utility{
                 len = 20+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen();
                 key = message.getChosenColumn();
                 value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
                 strcpy( (char*)value , "y=\"");
                 strcat((char*)value, to_string(type).c_str());
                 strcat( (char*)value , "\"&t=\"");
@@ -1607,6 +1647,8 @@ namespace utility{
                 len = 20+to_string(type).length()+to_string(*nonce).length()+message.getMessageLength()+message.getSignatureLen();
                 value = new unsigned char[len];
                 key = message.getMessage();
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
                 strcpy( (char*)value , "y=\"");
                 strcat((char*)value, to_string(type).c_str());
                 strcat( (char*)value , "\"&t=\"");
@@ -1626,6 +1668,8 @@ namespace utility{
                 sign = message.getSignature();
                 len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
                 strcpy( (char*)value , "y=\"");
                 strcat((char*)value, to_string(type).c_str());
                 strcat( (char*)value , "\"&t=\"");
@@ -1642,6 +1686,8 @@ namespace utility{
                 sign = message.getSignature();
                 len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
                 strcpy( (char*)value , "y=\"");
                 strcat((char*)value, to_string(type).c_str());
                 strcat( (char*)value , "\"&n=\"");
@@ -1700,7 +1746,7 @@ namespace utility{
         lowPos = position;
         while( position < msg.length() ){
 
-            if( text[position] == '"' && position >= msg.length()-3 ){
+            if( text[position] == '"' && position == msg.length()-2 ){
                 vverbose<<"--> [Converter][computeNextField] Field founded, Position: "<<position<<'\n';
                 highPos = position-1;
                 position = position + 2;
@@ -1843,15 +1889,15 @@ namespace utility{
 
     bool Converter::test(){
         Message* m = new Message();
-        m->setSignature( (unsigned char*)"signature" ,10 );
+        m->setSignature( (unsigned char*)"signature12345" ,14 );
         Message* m2 = new Message();
         NetMessage* encoded;
 
-        m->setUsername( "username");
+        m->setUsername( "username_prova");
         m->setAdversary_1( "adv_1" );
         m->setAdversary_2( "adv_2" );
         m->setNonce( 13 );
-        m->setServer_Certificate( (unsigned char*)"certificate" ,11);
+        m->setServer_Certificate( (unsigned char*)"certifirrrrcate" ,15);
         m->setPubKey( (unsigned char*)"pub_key" ,7 );
         m->setNetInformations( (unsigned char*)"127.0.0.1", 9 );
         m->setCurrent_Token( 13 );
@@ -2321,250 +2367,313 @@ namespace utility{
     NetMessage* Converter::compactForm(MessageType type, Message message ) {
 
         int len;
-        unsigned char* value;
+        unsigned char *value;
 
-        vverbose<<"--> [Converter][encodeMessage] Starting encoding of Message"<<'\n';
+        vverbose << "--> [Converter][compactForm] Starting encoding of Message" << '\n';
 
-        if(!verifyCompact( type, message )){
+        if (!verifyCompact(type, message)){
 
-            verbose<<"--> [Converter][encodeMessage] Error during the verification of the message"<<'\n';
+            verbose<<"--> [Converter][compactForm] Error during the verification of the message"<<'\n';
             return nullptr;
 
         }
 
-        unsigned char* certificate,*key,*net;
-        int* nonce;
-        switch( type ){
+            unsigned char *certificate, *key, *net;
+            int *nonce;
+            int pos;
+            switch (type) {
 
-            case CERTIFICATE_REQ:
-                nonce = message.getNonce();
-                len = 1+to_string(type).length()+to_string(*nonce).length();
-                value = new unsigned char[len];
-                strcat((char*)value, to_string(type).c_str() );
-                strcat( (char*)value , to_string(*(nonce)).c_str());
-                break;
+                case CERTIFICATE_REQ:
+                    nonce = message.getNonce();
+                    len = 1 + to_string(type).length() + to_string(*nonce).length();
+                    value = new unsigned char[len];
+                    for (int a = 0; a < len; a++)
+                        value[a] = '\0';
+                    strcat((char *) value, to_string(type).c_str());
+                    strcat((char *) value, to_string(*(nonce)).c_str());
+                    break;
 
-            case CERTIFICATE:
-                nonce = message.getNonce();
-                len = 1+to_string(type).length()+to_string(*nonce).length() + message.getServerCertificateLength()+message.getSignatureLen();
-                value = new unsigned char[len];
-                certificate  = message.getServerCertificate();
-                strcat((char*)value, to_string(type).c_str() );
-                strncat( (char*)value , (const char*)certificate , message.getServerCertificateLength());
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
-                delete[] certificate;
-                break;
+                case CERTIFICATE:
+                    nonce = message.getNonce();
+                    len = 20 + to_string(type).length() + to_string(*nonce).length() +
+                          message.getServerCertificateLength();
+                    value = new unsigned char[len];
+                    for (int a = 0; a < len; a++)
+                        value[a] = '\0';
+                    certificate = message.getServerCertificate();
+                    strcat((char *) value, to_string(type).c_str());
+                    strncat((char *) value, (const char *) certificate, message.getServerCertificateLength() + 1);
+                    strcat((char *) value, to_string(*(nonce)).c_str());
+                    delete[] certificate;
+                    break;
 
-            case LOGIN_REQ:
-                nonce = message.getNonce();
-                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
-                value = new unsigned char[len];
-                strcat((char*)value, to_string(type).c_str() );
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                case LOGIN_REQ:
+                    nonce = message.getNonce();
+                    len = 20 + to_string(type).length() + to_string(*nonce).length() + message.getUsername().length();
+                    value = new unsigned char[len];
+                    for (int a = 0; a < len; a++)
+                        value[a] = '\0';
+                    strcat((char *) value, to_string(type).c_str());
+                    strcat((char *) value, (char *) message.getUsername().c_str());
+                    strcat((char *) value, to_string(*(nonce)).c_str());
 
-                break;
+                    break;
 
-            case LOGIN_OK:
-                nonce = message.getNonce();
-                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
-                value = new unsigned char[len];
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                case LOGIN_OK:
+                    nonce = message.getNonce();
+                    len = 15 + to_string(type).length() + to_string(*nonce).length();
+                    value = new unsigned char[len];
+                    for (int a = 0; a < len; a++)
+                        value[a] = '\0';
+                    strcat((char *) value, to_string(type).c_str());
+                    strcat((char *) value, to_string(*(nonce)).c_str());
 
-                break;
+                    break;
 
-            case LOGIN_FAIL:
-                nonce = message.getNonce();
-                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
-                value = new unsigned char[len];
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                case LOGIN_FAIL:
+                    nonce = message.getNonce();
+                    len = 15 + to_string(type).length() + to_string(*nonce).length();
+                    value = new unsigned char[len];
+                    for (int a = 0; a < len; a++)
+                        value[a] = '\0';
+                    strcat((char *) value, to_string(type).c_str());
+                    strcat((char *) value, to_string(*(nonce)).c_str());
 
-                break;
+                    break;
 
-            case KEY_EXCHANGE:
-                nonce = message.getNonce();
-                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getDHkeyLength()+message.getSignatureLen();
-                value = new unsigned char[len];
-                key = message.getDHkey();
-                strcat((char*)value, to_string(type).c_str());
-                strncat( (char*)value , (const char*)key, message.getDHkeyLength());
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                case KEY_EXCHANGE:
+                    nonce = message.getNonce();
+                    key = message.getDHkey();
+                    len = 20 + to_string(type).length() + to_string(*nonce).length() + message.getDHkeyLength();
+                    value = new unsigned char[len];
+                    for (int a = 0; a < len; a++)
+                        value[a] = '\0';
+                    strcat((char *) value, to_string(type).c_str());
+                    strncat((char *) value, (const char *) key, message.getDHkeyLength());
+                    strcat((char *) value, to_string(*(nonce)).c_str());
 
-                delete[] key;
-                break;
+                    delete[] key;
+                    break;
 
-            case USER_LIST_REQ:
-                nonce = message.getNonce();
-                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
-                value = new unsigned char[len];
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value ,to_string(*(nonce)).c_str() );
-                strcat( (char*)value , "\"&s=\"");
+                case USER_LIST_REQ:
+                    nonce = message.getNonce();
+                    len = 15 + to_string(type).length() + to_string(*nonce).length();
+                    value = new unsigned char[len];
+                    for (int a = 0; a < len; a++)
+                        value[a] = '\0';
+                    strcat((char *) value, to_string(type).c_str());
+                    strcat((char *) value, to_string(*(nonce)).c_str());
 
-                break;
+                    break;
 
-            case USER_LIST:
-                nonce = message.getNonce();
-                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getUserList().length()+message.getSignatureLen();
-                value = new unsigned char[len];
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , message.getUserList().c_str());
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                case USER_LIST:
+                    nonce = message.getNonce();
+                    len = 20 + to_string(type).length() + to_string(*nonce).length() + message.getUserList().length();
+                    value = new unsigned char[len];
+                    for (int a = 0; a < len; a++)
+                        value[a] = '\0';
+                    strcat((char *) value, to_string(type).c_str());
+                    strcat((char *) value, message.getUserList().c_str());
+                    strcat((char *) value, to_string(*(nonce)).c_str());
 
-                break;
+                    break;
 
-            case RANK_LIST_REQ:
-                nonce = message.getNonce();
-                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
-                value = new unsigned char[len];
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                case RANK_LIST_REQ:
+                    nonce = message.getNonce();
+                    len = 15 + to_string(type).length() + to_string(*nonce).length();
+                    value = new unsigned char[len];
+                    for (int a = 0; a < len; a++)
+                        value[a] = '\0';
+                    strcat((char *) value, to_string(type).c_str());
+                    strcat((char *) value, to_string(*(nonce)).c_str());
 
-                break;
+                    break;
 
-            case RANK_LIST:
-                nonce = message.getNonce();
-                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getRankList().length()+message.getSignatureLen();
-                value = new unsigned char[len];
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , message.getRankList().c_str() );
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                case RANK_LIST:
+                    nonce = message.getNonce();
 
-                break;
+                    len = 20 + to_string(type).length() + to_string(*nonce).length() + message.getRankList().length();
+                    value = new unsigned char[len];
+                    for (int a = 0; a < len; a++)
+                        value[a] = '\0';
+                    strcat((char *) value, to_string(type).c_str());
+                    strcat((char *) value, message.getRankList().c_str());
+                    strcat((char *) value, to_string(*(nonce)).c_str());
 
-            case MATCH:
-                nonce = message.getNonce();
-                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
-                value = new unsigned char[len];
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , message.getUsername().c_str());
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                    break;
 
-                break;
+                case MATCH:
+                    nonce = message.getNonce();
+                    len = 20 + to_string(type).length() + to_string(*nonce).length() + message.getUsername().length();
+                    value = new unsigned char[len];
+                    for (int a = 0; a < len; a++)
+                        value[a] = '\0';
+                    strcat((char *) value, to_string(type).c_str());
+                    strcat((char *) value, message.getUsername().c_str());
+                    strcat((char *) value, to_string(*(nonce)).c_str());
 
-            case ACCEPT:
-                nonce = message.getNonce();
-                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getAdversary_1().length()+message.getAdversary_2().length()+message.getSignatureLen();
-                value = new unsigned char[len];
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , message.getAdversary_1().c_str() );
-                strcat( (char*)value , message.getAdversary_2().c_str() );
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                    break;
 
-                break;
+                case ACCEPT:
+                    nonce = message.getNonce();
 
-            case REJECT:
-                nonce = message.getNonce();
-                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getAdversary_1().length()+message.getAdversary_2().length()+message.getSignatureLen();
-                value = new unsigned char[len];
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , message.getAdversary_1().c_str() );
-                strcat( (char*)value , message.getAdversary_2().c_str() );
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                    len = 25 + to_string(type).length() + to_string(*nonce).length() +
+                          message.getAdversary_1().length() + message.getAdversary_2().length();
+                    value = new unsigned char[len];
+                    for (int a = 0; a < len; a++)
+                        value[a] = '\0';
+                    strcat((char *) value, to_string(type).c_str());
+                    strcat((char *) value, message.getAdversary_1().c_str());
+                    strcat((char *) value, message.getAdversary_2().c_str());
+                    strcat((char *) value, to_string(*(nonce)).c_str());
 
-                break;
 
-            case WITHDRAW_REQ:
-                nonce = message.getNonce();
-                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
-                value = new unsigned char[len];
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , message.getUsername().c_str() );
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                    break;
 
-                break;
+                case REJECT:
+                    nonce = message.getNonce();
+                    len = 25 + to_string(type).length() + to_string(*nonce).length() +
+                          message.getAdversary_1().length() + message.getAdversary_2().length();
+                    value = new unsigned char[len];
+                    for (int a = 0; a < len; a++)
+                        value[a] = '\0';
+                    strcat((char *) value, to_string(type).c_str());
+                    strcat((char *) value, message.getAdversary_1().c_str());
+                    strcat((char *) value, message.getAdversary_2().c_str());
+                    strcat((char *) value, to_string(*(nonce)).c_str());
 
-            case WITHDRAW_OK:
-                nonce = message.getNonce();
-                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
-                value = new unsigned char[len];
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                    break;
 
-                break;
+                case WITHDRAW_REQ:
+                    nonce = message.getNonce();
+                    len = 20 + to_string(type).length() + to_string(*nonce).length() + message.getUsername().length();
+                    value = new unsigned char[len];
+                    for (int a = 0; a < len; a++)
+                        value[a] = '\0';
 
-            case LOGOUT_REQ:
-                nonce = message.getNonce();
-                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
-                value = new unsigned char[len];
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                    strcat((char *) value, to_string(type).c_str());
+                    strcat((char *) value, message.getUsername().c_str());
+                    strcat((char *) value, to_string(*(nonce)).c_str());
 
-                break;
+                    break;
 
-            case LOGOUT_OK:
-                nonce = message.getNonce();
-                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
-                value = new unsigned char[len];
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                case WITHDRAW_OK:
+                    nonce = message.getNonce();
+                    len = 15 + to_string(type).length() + to_string(*nonce).length();
+                    value = new unsigned char[len];
+                    for (int a = 0; a < len; a++)
+                        value[a] = '\0';
+                    strcat((char *) value, to_string(type).c_str());
+                    strcat((char *) value, to_string(*(nonce)).c_str());
 
-                break;
+                    break;
 
-            case GAME_PARAM:
-                nonce = message.getNonce();
-                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getPubKeyLength()+message.getNetInformationsLength()+message.getSignatureLen();
-                value = new unsigned char[len];
-                key = message.getPubKey();
-                net = message.getNetInformations();
-                strcat((char*)value, to_string(type).c_str());
-                strncat( (char*)value , (const char*)key , message.getPubKeyLength());
-                strncat( (char*)value , (const char*)net, message.getNetInformationsLength());
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                case LOGOUT_REQ:
+                    nonce = message.getNonce();
+                    len = 15 + to_string(type).length() + to_string(*nonce).length();
+                    value = new unsigned char[len];
+                    for (int a = 0; a < len; a++)
+                        value[a] = '\0';
+                    strcat((char *) value, to_string(type).c_str());
+                    strcat((char *) value, to_string(*(nonce)).c_str());
 
-                delete[] key;
-                delete[] net;
-                break;
+                    break;
 
-            case MOVE:
-                nonce = message.getCurrent_Token();
-                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen();
-                key = message.getChosenColumn();
-                value = new unsigned char[len];
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
-                strncat( (char*)value , (const char*)key, message.getChosenColumnLength());
+                case LOGOUT_OK:
+                    nonce = message.getNonce();
 
-                delete[] key;
-                break;
+                    len = 15 + to_string(type).length() + to_string(*nonce).length();
+                    value = new unsigned char[len];
+                    for (int a = 0; a < len; a++)
+                        value[a] = '\0';
+                    strcat((char *) value, to_string(type).c_str());
+                    strcat((char *) value, to_string(*(nonce)).c_str());
 
-            case CHAT:
-                nonce = message.getCurrent_Token();
-                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getMessageLength()+message.getSignatureLen();
-                value = new unsigned char[len];
-                key = message.getMessage();
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
-                strncat( (char*)value , (const char*)key, message.getMessageLength());
 
-                delete[] key;
-                break;
+                    break;
 
-            case ACK:
-                nonce = message.getCurrent_Token();
-                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
-                value = new unsigned char[len];
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                case GAME_PARAM:
+                    nonce = message.getNonce();
+                    len = 25 + to_string(type).length() + to_string(*nonce).length() + message.getPubKeyLength() +
+                          message.getNetInformationsLength();
+                    value = new unsigned char[len];
+                    for (int a = 0; a < len; a++)
+                        value[a] = '\0';
+                    key = message.getPubKey();
+                    net = message.getNetInformations();
 
-                break;
+                    strcat((char *) value, to_string(type).c_str());
+                    strncat((char *) value, (const char *) key, message.getPubKeyLength());
+                    strncat((char *) value, (const char *) net, message.getNetInformationsLength());
+                    strcat((char *) value, to_string(*(nonce)).c_str());
 
-            case DISCONNECT:
-                nonce = message.getNonce();
-                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
-                value = new unsigned char[len];
-                strcat((char*)value, to_string(type).c_str());
-                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                    delete[] key;
+                    delete[] net;
+                    break;
 
-                break;
+                case MOVE:
+                    nonce = message.getCurrent_Token();
+                    len = 20 + to_string(type).length() + to_string(*nonce).length() + message.getChosenColumnLength();
+                    key = message.getChosenColumn();
+                    value = new unsigned char[len];
+                    for (int a = 0; a < len; a++)
+                        value[a] = '\0';
 
-            default:
-                return nullptr;
+                    strcat((char *) value, to_string(type).c_str());
+                    strcat((char *) value, to_string(*(nonce)).c_str());
+                    strncat((char *) value, (const char *) key, message.getChosenColumnLength());
+
+                    delete[] key;
+                    break;
+
+                case CHAT:
+                    nonce = message.getCurrent_Token();
+                    len = 20 + to_string(type).length() + to_string(*nonce).length() + message.getMessageLength();
+                    value = new unsigned char[len];
+                    key = message.getMessage();
+                    for (int a = 0; a < len; a++)
+                        value[a] = '\0';
+
+                    strcat((char *) value, to_string(type).c_str());
+                    strcat((char *) value, to_string(*(nonce)).c_str());
+                    strncat((char *) value, (const char *) key, message.getMessageLength());
+
+                    delete[] key;
+                    break;
+
+                case ACK:
+                    nonce = message.getCurrent_Token();
+                    len = 15 + to_string(type).length() + to_string(*nonce).length();
+                    value = new unsigned char[len];
+                    for (int a = 0; a < len; a++)
+                        value[a] = '\0';
+
+                    strcat((char *) value, to_string(type).c_str());
+                    strcat((char *) value, to_string(*(nonce)).c_str());
+
+
+                    break;
+
+                case DISCONNECT:
+                    nonce = message.getNonce();
+                    len = 15 + to_string(type).length() + to_string(*nonce).length();
+                    value = new unsigned char[len];
+                    for (int a = 0; a < len; a++)
+                        value[a] = '\0';
+                    strcat((char *) value, to_string(type).c_str());
+
+                    strcat((char *) value, to_string(*(nonce)).c_str());
+
+
+                    break;
+
+                default:
+                    return nullptr;
+            }
+            delete nonce;
+
+            return new NetMessage(value, len);
+
         }
-        delete nonce;
-
-        return new NetMessage(value,len);
-    }
 
 }

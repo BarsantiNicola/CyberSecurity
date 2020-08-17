@@ -29,17 +29,10 @@
   <component name="ChangeListManager">
     <list default="true" id="4cbb8ddf-e807-44fa-ae33-bda27674b47b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Logger.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Logger.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Logger.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Logger.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/cipher/CipherRSA.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/cipher/CipherRSA.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/cipher/CipherRSA.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/cipher/CipherRSA.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/utility/Converter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/utility/Converter.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/utility/Converter.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/utility/Converter.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/utility/Message.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/utility/Message.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utility/Message.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/utility/Message.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utility/NetMessage.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/utility/NetMessage.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utility/NetMessage.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/utility/NetMessage.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -72,9 +65,9 @@
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
   </component>
   <component name="RunManager">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
   </component>
@@ -98,6 +91,7 @@
       <workItem from="1597585455835" duration="4091000" />
       <workItem from="1597589991704" duration="23282000" />
       <workItem from="1597620047670" duration="6720000" />
+      <workItem from="1597663032651" duration="11168000" />
     </task>
     <servers />
   </component>
