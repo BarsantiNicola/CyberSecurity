@@ -38,6 +38,16 @@ Logger Logger::operator<<(bool value){
     return *this;
 }
 
+Logger Logger::operator<<(unsigned int value){
+
+    if( threshold >= this->level  )
+        if( value )
+            cout<<value;
+        else
+            cout<<value;
+    return *this;
+}
+
 Logger Logger::operator<<(Verbose value){
 
     if( threshold >= this->level  )

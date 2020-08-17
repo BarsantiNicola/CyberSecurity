@@ -2,31 +2,102 @@
 
 namespace utility {
 
-    NetMessage::NetMessage(unsigned char *message, int length) {
-        vverbose<<"-->[NetMessage][Costructor] Generation of message: "<<message<<'\n';
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    //                                                                                           //
+    //                                   COSTRUCTORS/DESTRUCTORS                                 //
+    //                                                                                           //
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+
+    //  costructor for generation of a NetMessage starting from the byte array received by the Connection Manager
+    NetMessage::NetMessage(unsigned char *mess, unsigned int length) {
+
+        if( !mess || length == 0 ){
+
+            verbose << "-->[NetMessage][Costructor] Error invalid arguments. Operation Aborted" << '\n';
+            this->message = nullptr;
+            this->len = 0;
+            return;
+
+        }
+
+        vverbose<<"-->[NetMessage][Costructor] Generation of message: "<<mess<<'\t'<<" LEN: "<<length<<'\n';
         this->message = new unsigned char[length];
-        strcpy((char*)this->message,(const char*)message);
-        this->len = length;
-        vverbose<<"-->[NetMessage][Costructor] Message generated"<<'\n';
+        if( this->message ) {
+
+            strncpy((char *) this->message, (const char *) mess, length);
+            this->len = length;
+            vverbose << "-->[NetMessage][Costructor] Message generated" << '\n';
+
+        }else {
+
+            this->message = nullptr;
+            this->len = 0;
+            verbose << "-->[NetMessage][Costructor] Error during the allocation of memory. Operation Aborted." << '\n';
+
+        }
+
+    }
+
+    //  costructor to allow the passage of NetMessage as a non-pointer function argument
+    NetMessage::NetMessage(NetMessage& value ){
+
+        if( !value.getMessage() ){
+            vverbose << "-->[NetMessage][Costructor] Message generated" << '\n';
+            this->message = nullptr;
+            this->len = 0;
+            return;
+        }
+
+        this->message = new unsigned char[value.length()];
+        if( this->message ) {
+
+            strncpy((char *) this->message, (const char *) value.getMessage(), value.length());
+            this->len = value.length();
+            vverbose << "-->[NetMessage][Costructor] Message generated" << '\n';
+
+        }else
+            verbose <<"-->[NetMessage][Costructor] Error during the allocation of memory. Operation Aborted."<<'\n';
 
     }
 
     NetMessage::~NetMessage(){
-   //     delete[] message;
+
+        delete[] this->message;
+        vverbose<<"-->[NetMessage][Destructor] Message destroyed"<<'\n';
+
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    //                                                                                           //
+    //                                            GETTERS                                        //
+    //                                                                                           //
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    //  return the content of the netmessage as an unsigned char* array
     unsigned char* NetMessage::getMessage(){
-        return this->message;
+
+        if( !this->message || !this->len ) return nullptr;
+
+        unsigned char* ret = new unsigned char[this->len];
+        strncpy( (char*)ret, (const char*) this->message , this->len);
+
+        return ret;
+
     }
 
-    int NetMessage::length(){
+    //  return the length of the getMessage unsigned char* array
+    unsigned int NetMessage::length(){
+
         return this->len;
+
     }
 
+    //  function with an example of usage of the class which performs a test for its correctness
     void NetMessage::test(){
 
-        NetMessage msg((unsigned char*)"messaggio di prova" , sizeof("messaggio di prova" ));
-        cout<<"CONTENT: " << msg.getMessage()<<" LENGTH: "<<msg.length()<<endl;
+        NetMessage msg((unsigned char*)"messaggio di prova" , strlen("messaggio di prova"));
+        base<<"CONTENT: " << msg.getMessage()<<" LENGTH: "<<msg.length()<<'\n';
 
     }
 

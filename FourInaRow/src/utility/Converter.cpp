@@ -1,190 +1,713 @@
-//
-// Created by root on 09/08/20.
-//
 
 #include "Converter.h"
 
 namespace utility{
 
     //  verifies the presence of all the fields needed to a given MessageType and that these don't contain a &" element
-    bool Converter::verifyMessage(MessageType type , Message message ){
+    bool Converter::verifyMessage(MessageType type , Message message  ){
+
         vverbose<<"--> [Converter][verifyMessage] Verification of message"<<'\n';
+        int* nonce;
+        unsigned char* nonceString, *server_certificate,*signature,*key,*net,*chosen_column,*chat;
+        const char* app,*app2;
         switch( type ){
+
             case CERTIFICATE_REQ:
+
                 vverbose<<"--> [Converter][verifyMessage] Check CERTIFICATE_REQ"<<'\n';
-                if( message.getNonce() == nullptr || Converter::checkField((unsigned char*)to_string(*message.getNonce()).c_str(),to_string(*(message.getNonce())).length())) {
-                    verbose<<"--> [Converter][verifyMessage] Verification failure"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                if( Converter::checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Presence of <\"&>"<<'\n';
                     return false;
                 }
                 vverbose<<"--> [Converter][verifyMessage] Verification CERTIFICATE_REQ success"<<'\n';
                 break;
+
             case CERTIFICATE:
                 vverbose<<"--> [Converter][verifyMessage] Check CERTIFICATE"<<'\n';
-                if( message.getNonce() == nullptr || message.getServer_Certificate().empty() || message.getSignature().empty()  || checkField( (unsigned char*)message.getServer_Certificate().c_str(), message.getServer_Certificate().length()) || checkField( (unsigned char*)message.getSignature().c_str(),message.getSignature().length())  || checkField((unsigned char*)to_string(*message.getNonce()).c_str(),to_string(*(message.getNonce())).length())){
-                    verbose<<"--> [Converter][verifyMessage] Verification failure"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
                     return false;
                 }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                server_certificate = message.getServerCertificate();
+                if( !server_certificate ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Server Certificate"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                signature = message.getSignature();
+                if( !signature ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Signature"<<'\n';
+                    delete nonce;
+                    delete[] server_certificate;
+                    return false;
+                }
+
+                if( checkField( server_certificate, message.getServerCertificateLength()) || checkField( signature, message.getSignatureLen())  || checkField(nonceString, to_string(*nonce).length())){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Presence of <\"&>"<<'\n';
+                    delete[] server_certificate;
+                    delete nonce;
+                    return false;
+                }
+
                 vverbose<<"--> [Converter][verifyMessage] Verification CERTIFICATE success"<<'\n';
+                delete[] server_certificate;
+                delete nonce;
                 break;
+
             case LOGIN_REQ:
                 vverbose<<"--> [Converter][verifyMessage] Check LOGIN_REQ"<<'\n';
-                if( message.getNonce() == nullptr || message.getUsername().empty() || message.getSignature().empty() || checkField((unsigned char*)message.getUsername().c_str(),message.getUsername().length()) || checkField( (unsigned char*)message.getSignature().c_str(),message.getSignature().length())  || checkField((unsigned char*)to_string(*message.getNonce()).c_str(),to_string(*(message.getNonce())).length())) {
-                    verbose<<"--> [Converter][verifyMessage] Verification failure"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
                     return false;
                 }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                if( message.getUsername().empty() ){
+
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Username"<<'\n';
+                    return false;
+                }
+                app = message.getUsername().c_str();
+
+                signature = message.getSignature();
+
+                if (!signature) {
+                    verbose << "--> [Converter][verifyMessage] Verification failure: Missing Signature" << '\n';
+                    delete nonce;
+                    return false;
+                }
+
+                if( checkField((const unsigned char*)app,message.getUsername().length()) || checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    return false;
+                }
+                delete[] signature;
+                delete nonce;
                 vverbose<<"--> [Converter][verifyMessage] Verification LOGIN_REQ success"<<'\n';
                 break;
+
             case LOGIN_OK:
                 vverbose<<"--> [Converter][verifyMessage] Check LOGIN_OK"<<'\n';
-                if( message.getNonce() == nullptr || message.getSignature().empty()  || checkField( (unsigned char*)message.getSignature().c_str(),message.getSignature().length())   || checkField((unsigned char*)to_string(*message.getNonce()).c_str(),to_string(*(message.getNonce())).length())){
-                    verbose<<"--> [Converter][verifyMessage] Verification failure"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
                     return false;
                 }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                signature = message.getSignature();
+                if( !signature ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Signature"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                if( checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    return false;
+                }
+                delete[] signature;
+                delete nonce;
                 vverbose<<"--> [Converter][verifyMessage] Verification LOGIN_OK success"<<'\n';
                 break;
+
             case LOGIN_FAIL:
                 vverbose<<"--> [Converter][verifyMessage] Check LOGIN_FAIL"<<'\n';
-                if( message.getNonce() == nullptr || message.getSignature().empty() || checkField( (unsigned char*)message.getSignature().c_str(),message.getSignature().length())   || checkField((unsigned char*)to_string(*message.getNonce()).c_str(),to_string(*(message.getNonce())).length())) {
-                    verbose<<"--> [Converter][verifyMessage] Verification failure"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
                     return false;
                 }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                signature = message.getSignature();
+                if( !signature ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Signature"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                if( checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    return false;
+                }
+                delete[] signature;
+                delete nonce;
                 vverbose<<"--> [Converter][verifyMessage] Verification LOGIN_FAIL success"<<'\n';
                 break;
+
             case KEY_EXCHANGE:
                 vverbose<<"--> [Converter][verifyMessage] Check KEY_EXCHANGE"<<'\n';
-                if( message.getNonce() == nullptr || message.get_DH_key().empty() || message.getSignature().empty()|| checkField( (unsigned char*)message.get_DH_key().c_str() , message.get_DH_key().length()) || checkField( (unsigned char*)message.getSignature().c_str(),message.getSignature().length())  || checkField((unsigned char*)to_string(*message.getNonce()).c_str(),to_string(*(message.getNonce())).length())) {
-                    verbose<<"--> [Converter][verifyMessage] Verification failure"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                signature = message.getSignature();
+                if( !signature ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Signature"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                key = message.getDHkey();
+                if( !key ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Diffie-Hellman Parameter"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    return false;
+                }
+
+                if( checkField( key , message.getDHkeyLength()) || checkField(signature,message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    delete[] key;
                     return false;
                 }
                 vverbose<<"--> [Converter][verifyMessage] Verification KEY_EXCHANGE success"<<'\n';
+                delete nonce;
+                delete[] signature;
+                delete[] key;
                 break;
+
             case USER_LIST_REQ:
                 vverbose<<"--> [Converter][verifyMessage] Check USER_LIST_REQ"<<'\n';
-                if( message.getNonce() == nullptr ||  checkField((unsigned char*)to_string(*message.getNonce()).c_str(),to_string(*(message.getNonce())).length())) {
-                    verbose<<"--> [Converter][verifyMessage] Verification failure"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
                     return false;
                 }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                signature = message.getSignature();
+                if( !signature ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Signature"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                if( checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    return false;
+                }
+                delete[] signature;
+                delete nonce;
                 vverbose<<"--> [Converter][verifyMessage] Verification USER_LIST_REQ success"<<'\n';
                 break;
+
             case USER_LIST:
                 vverbose<<"--> [Converter][verifyMessage] Check USER_LIST"<<'\n';
-                if( message.getNonce() == nullptr || message.getUserList().empty() || checkField((unsigned char*)message.getUserList().c_str(),message.getUserList().length()) ||  checkField((unsigned char*)to_string(*message.getNonce()).c_str(),to_string(*(message.getNonce())).length())) {
-                    verbose << "--> [Converter][verifyMessage] Verification failure" << '\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
                     return false;
                 }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                signature = message.getSignature();
+                if( !signature ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Signature"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                app = message.getUserList().c_str();
+                if( checkField((const unsigned char*)app,message.getUserList().length()) || checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    return false;
+                }
+                delete[] signature;
+                delete nonce;
+
                 vverbose<<"--> [Converter][verifyMessage] Verification USER_LIST success"<<'\n';
                 break;
+
             case RANK_LIST_REQ:
                 vverbose<<"--> [Converter][verifyMessage] Check RANK_LIST_REQ"<<'\n';
-                if( message.getNonce() == nullptr ||  checkField((unsigned char*)to_string(*message.getNonce()).c_str(),to_string(*(message.getNonce())).length())) {
-                    verbose<<"--> [Converter][verifyMessage] Verification failure"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
                     return false;
                 }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                signature = message.getSignature();
+                if( !signature ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Signature"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                if( checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    return false;
+                }
+                delete[] signature;
+                delete nonce;
                 vverbose<<"--> [Converter][verifyMessage] Verification RANK_LIST_REQ success"<<'\n';
                 break;
+
             case RANK_LIST:
                 vverbose<<"--> [Converter][verifyMessage] Check RANK_LIST"<<'\n';
-                if( message.getNonce() == nullptr || message.getRankList().empty() || checkField((unsigned char*)message.getRankList().c_str(),message.getRankList().length()) ||  checkField((unsigned char*)to_string(*message.getNonce()).c_str(),to_string(*(message.getNonce())).length())) {
-                    verbose<<"--> [Converter][verifyMessage] Verification failure"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
                     return false;
                 }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                signature = message.getSignature();
+                if( !signature ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Signature"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                app = message.getRankList().c_str();
+                if( checkField((const unsigned char*)app,message.getRankList().length()) || checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    return false;
+                }
+                delete[] signature;
+                delete nonce;
                 vverbose<<"--> [Converter][verifyMessage] Verification RANK_LIST success"<<'\n';
                 break;
+
             case MATCH:
                 vverbose<<"--> [Converter][verifyMessage] Check MATCH"<<'\n';
-                if( message.getNonce() == nullptr || message.getUsername().empty() || checkField((unsigned char*)message.getUsername().c_str(),message.getUsername().length()) ||  checkField((unsigned char*)to_string(*message.getNonce()).c_str(),to_string(*(message.getNonce())).length())) {
-                    verbose<<"--> [Converter][verifyMessage] Verification failure"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
                     return false;
                 }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                signature = message.getSignature();
+                if( !signature ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Signature"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                app = message.getUsername().c_str();
+                if( checkField((const unsigned char*)app,message.getUsername().length()) || checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    return false;
+                }
+                delete[] signature;
+                delete nonce;
+
                 vverbose<<"--> [Converter][verifyMessage] Verification MATCH success"<<'\n';
                 break;
+
             case ACCEPT:
                 vverbose<<"--> [Converter][verifyMessage] Check ACCEPT"<<'\n';
-                if( message.getNonce() == nullptr || message.getAdversary_1().empty() || message.getAdversary_2().empty() || checkField((unsigned char*)message.getAdversary_1().c_str(),message.getAdversary_1().length()) || checkField((unsigned char*)message.getAdversary_2().c_str(),message.getAdversary_2().length()) ||  checkField((unsigned char*)to_string(*message.getNonce()).c_str(),to_string(*(message.getNonce())).length())) {
-                    verbose<<"--> [Converter][verifyMessage] Verification failure"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
                     return false;
                 }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                signature = message.getSignature();
+                if( !signature ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Signature"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                if( message.getAdversary_1().empty()){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Adversary1"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                app = message.getAdversary_1().c_str();
+
+                if( message.getAdversary_2().empty()){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Adversary2"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                app2 = message.getAdversary_2().c_str();
+
+                if( checkField((const unsigned char*)app,message.getAdversary_1().length()) || checkField((const unsigned char*)app2,message.getAdversary_2().length())  || checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    return false;
+                }
+                delete[] signature;
+                delete nonce;
                 vverbose<<"--> [Converter][verifyMessage] Verification ACCEPT success"<<'\n';
                 break;
+
             case REJECT:
                 vverbose<<"--> [Converter][verifyMessage] Check REJECT"<<'\n';
-                if( message.getNonce() == nullptr || message.getAdversary_1().empty() || message.getAdversary_2().empty() || checkField((unsigned char*)message.getAdversary_1().c_str(),message.getAdversary_1().length()) || checkField((unsigned char*)message.getAdversary_2().c_str(),message.getAdversary_2().length()) ||  checkField((unsigned char*)to_string(*message.getNonce()).c_str(),to_string(*(message.getNonce())).length())) {
-                    verbose<<"--> [Converter][verifyMessage] Verification failure"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
                     return false;
                 }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                signature = message.getSignature();
+                if( !signature ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Signature"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                if( message.getAdversary_1().empty()){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Adversary1"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                app = message.getAdversary_1().c_str();
+
+                if( message.getAdversary_2().empty()){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Adversary2"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                app2 = message.getAdversary_2().c_str();
+
+                if( checkField((const unsigned char*)app,message.getAdversary_1().length()) || checkField((const unsigned char*)app2,message.getAdversary_2().length())  || checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    return false;
+                }
+                delete[] signature;
+                delete nonce;
                 vverbose<<"--> [Converter][verifyMessage] Verification REJECT success"<<'\n';
                 break;
+
             case WITHDRAW_REQ:
                 vverbose<<"--> [Converter][verifyMessage] Check WITHDRAW_REQ"<<'\n';
-                if( message.getUsername().empty() || message.getNonce() == nullptr || checkField((unsigned char*)message.getUsername().c_str(),message.getUsername().length()) ||  checkField((unsigned char*)to_string(*message.getNonce()).c_str(),to_string(*(message.getNonce())).length())) {
-                    verbose << "--> [Converter][verifyMessage] Verification failure" << '\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
                     return false;
                 }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                signature = message.getSignature();
+                if( !signature ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Signature"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                if( checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    return false;
+                }
+                delete[] signature;
+                delete nonce;
+
                 vverbose<<"--> [Converter][verifyMessage] Verification WITHDRAW_REQ success"<<'\n';
                 break;
+
             case WITHDRAW_OK:
                 vverbose<<"--> [Converter][verifyMessage] Check WITHDRAW_OK"<<'\n';
-                if( message.getNonce()== nullptr ||  checkField((unsigned char*)to_string(*message.getNonce()).c_str(),to_string(*(message.getNonce())).length())) {
-                    verbose<<"--> [Converter][verifyMessage] Verification failure"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
                     return false;
                 }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                signature = message.getSignature();
+                if( !signature ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Signature"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                if( checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    return false;
+                }
+                delete[] signature;
+                delete nonce;
                 vverbose<<"--> [Converter][verifyMessage] Verification WITHDRAW_OK success"<<'\n';
                 break;
+
             case LOGOUT_REQ:
                 vverbose<<"--> [Converter][verifyMessage] Check LOGOUT_REQ"<<'\n';
-                if( message.getNonce() == nullptr ||  checkField((unsigned char*)to_string(*message.getNonce()).c_str(),to_string(*(message.getNonce())).length())) {
-                    verbose << "--> [Converter][verifyMessage] Verification failure" << '\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
                     return false;
                 }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                signature = message.getSignature();
+                if( !signature ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Signature"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                if( checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    return false;
+                }
+                delete[] signature;
+                delete nonce;
                 vverbose<<"--> [Converter][verifyMessage] Verification LOGOUT_REQ success"<<'\n';
                 break;
+
             case LOGOUT_OK:
                 vverbose<<"--> [Converter][verifyMessage] Check LOGOUT_OK"<<'\n';
-                if( message.getNonce() == nullptr ||  checkField((unsigned char*)to_string(*message.getNonce()).c_str(),to_string(*(message.getNonce())).length())) {
-                    verbose << "--> [Converter][verifyMessage] Verification failure" << '\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
                     return false;
                 }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                signature = message.getSignature();
+                if( !signature ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Signature"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                if( checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    return false;
+                }
+                delete[] signature;
+                delete nonce;
                 vverbose<<"--> [Converter][verifyMessage] Verification LOGOUT_OK success"<<'\n';
                 break;
+
             case GAME_PARAM:
                 vverbose<<"--> [Converter][verifyMessage] Check GAME_PARAM"<<'\n';
-                if( message.getNonce() == nullptr || message.getNetInformations().empty() || message.getPubKey().empty() || checkField((unsigned char*)message.getNetInformations().c_str(),message.getNetInformations().length()) || checkField((unsigned char*)message.getPubKey().c_str(),message.getPubKey().length()) ||  checkField((unsigned char*)to_string(*message.getNonce()).c_str(),to_string(*(message.getNonce())).length())) {
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                signature = message.getSignature();
+                if( !signature ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Signature"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                net = message.getNetInformations();
+                if( !net ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Net Informations"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    return false;
+                }
+
+                key = message.getPubKey();
+                if( !key ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Public Key"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    delete[] net;
+                    return false;
+                }
+
+                if( checkField( signature, message.getSignatureLen())  || checkField(net,message.getNetInformationsLength()) || checkField(key,message.getPubKeyLength()) ||  checkField(nonceString,to_string(*nonce).length())) {
                     verbose << "--> [Converter][verifyMessage] Verification failure" << '\n';
                     return false;
                 }
                 vverbose<<"--> [Converter][verifyMessage] Verification GAME_PARAM success"<<'\n';
                 break;
+
             case MOVE:
                 vverbose<<"--> [Converter][verifyMessage] Check MOVE"<<'\n';
-                if( message.getCurrent_Token() == nullptr || message.getChosenColumn() == nullptr || checkField((unsigned char*)to_string(*message.getCurrent_Token()).c_str(),to_string(*message.getCurrent_Token()).length()) || checkField((unsigned char*)to_string(*message.getChosenColumn()).c_str(),to_string(*message.getChosenColumn()).length())) {
+
+                nonce = message.getCurrent_Token();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                signature = message.getSignature();
+                if( !signature ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Signature"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                chosen_column = message.getChosenColumn();
+                if( !chosen_column ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Misssing Chosen Column"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    return false;
+                }
+
+                if( checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length()) || checkField(chosen_column,message.getChosenColumnLength())) {
                     verbose<<"--> [Converter][verifyMessage] Verification failure"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    delete[] chosen_column;
                     return false;
                 }
                 vverbose<<"--> [Converter][verifyMessage] Verification MOVE success"<<'\n';
+                delete nonce;
+                delete[] signature;
+                delete[] chosen_column;
                 break;
+
             case CHAT:
                 vverbose<<"--> [Converter][verifyMessage] Check CHAT"<<'\n';
-                if( message.getCurrent_Token() == nullptr || message.getMessage().empty() || checkField((unsigned char*)message.getMessage().c_str(),message.getMessage().length()) || checkField((unsigned char*)to_string(*message.getCurrent_Token()).c_str(),to_string(*message.getCurrent_Token()).length())) {
+
+                nonce = message.getCurrent_Token();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                signature = message.getSignature();
+                if( !signature ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Signature"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                chat = message.getMessage();
+                if( !chat ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Message"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    return false;
+                }
+
+                if( checkField( signature, message.getSignatureLen())  || checkField(chat,message.getMessageLength()) || checkField(nonceString,to_string(*nonce).length())) {
                     verbose<<"--> [Converter][verifyMessage] Verification failure"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    delete[] chat;
                     return false;
                 }
                 vverbose<<"--> [Converter][verifyMessage] Verification CHAT success"<<'\n';
+                delete nonce;
+                delete[] signature;
+                delete[] chat;
                 break;
+
             case ACK:
                 vverbose<<"--> [Converter][verifyMessage] Check ACK"<<'\n';
-                if( message.getCurrent_Token() == nullptr || checkField((unsigned char*)to_string(*message.getCurrent_Token()).c_str(),to_string(*message.getCurrent_Token()).length())) {
+
+                nonce = message.getCurrent_Token();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                signature = message.getSignature();
+                if( !signature ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Signature"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                if( checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length())) {
                     verbose<<"--> [Converter][verifyMessage] Verification failure"<<'\n';
+                    delete nonce;
+                    delete[] signature;
                     return false;
                 }
                 vverbose<<"--> [Converter][verifyMessage] Verification ACK success"<<'\n';
+                delete nonce;
+                delete[] signature;
                 break;
+
             case DISCONNECT:
                 vverbose<<"--> [Converter][verifyMessage] Check DISCONNECT"<<'\n';
-                if( message.getNonce() == nullptr || checkField((unsigned char*)to_string(*message.getNonce()).c_str(),to_string(*(message.getNonce())).length())) {
-                    verbose<<"--> [Converter][verifyMessage] Verification failure"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
                     return false;
                 }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                signature = message.getSignature();
+                if( !signature ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Signature"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                if( checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    return false;
+                }
+                delete[] signature;
+                delete nonce;
+                vverbose<<"--> [Converter][verifyMessage] Verification DISCONNECT success"<<'\n';
                 break;
+
             default:
                 verbose<<"--> [Converter][verifyMessage] Error message type undefined: " <<type <<'\n';
                 return false;
@@ -192,195 +715,951 @@ namespace utility{
         return true;
     }
 
+    //  verifies the presence of all the fields needed to a given MessageType and that these don't contain a &" element
+    bool Converter::verifyCompact(MessageType type , Message message  ){
+        vverbose<<"--> [Converter][verifyMessage] Verification of message"<<'\n';
+        int* nonce;
+        unsigned char* nonceString, *server_certificate,*key,*net,*chosen_column,*chat;
+        const char* app,*app2;
+        switch( type ){
+
+            case CERTIFICATE_REQ:
+
+                vverbose<<"--> [Converter][verifyCompact] Check CERTIFICATE_REQ"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                if( Converter::checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Presence of <\"&>"<<'\n';
+                    return false;
+                }
+                vverbose<<"--> [Converter][verifyCompact] Verification CERTIFICATE_REQ success"<<'\n';
+                break;
+
+            case CERTIFICATE:
+                vverbose<<"--> [Converter][verifyCompact] Check CERTIFICATE"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                server_certificate = message.getServerCertificate();
+                if( !server_certificate ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Server Certificate"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                if( checkField( server_certificate, message.getServerCertificateLength()) || checkField(nonceString, to_string(*nonce).length())){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Presence of <\"&>"<<'\n';
+                    delete[] server_certificate;
+                    delete nonce;
+                    return false;
+                }
+
+                vverbose<<"--> [Converter][verifyCompact] Verification CERTIFICATE success"<<'\n';
+                delete[] server_certificate;
+                delete nonce;
+                break;
+
+            case LOGIN_REQ:
+                vverbose<<"--> [Converter][verifyCompact] Check LOGIN_REQ"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                if( message.getUsername().empty() ){
+
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Username"<<'\n';
+                    return false;
+                }
+                app = message.getUsername().c_str();
+
+
+                if( checkField((const unsigned char*)app,message.getUsername().length()) || checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                delete nonce;
+                vverbose<<"--> [Converter][verifyCompact] Verification LOGIN_REQ success"<<'\n';
+                break;
+
+            case LOGIN_OK:
+                vverbose<<"--> [Converter][verifyCompact] Check LOGIN_OK"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                if( checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                delete nonce;
+                vverbose<<"--> [Converter][verifyCompact] Verification LOGIN_OK success"<<'\n';
+                break;
+
+            case LOGIN_FAIL:
+                vverbose<<"--> [Converter][verifyCompact] Check LOGIN_FAIL"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                if( checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                delete nonce;
+                vverbose<<"--> [Converter][verifyCompact] Verification LOGIN_FAIL success"<<'\n';
+                break;
+
+            case KEY_EXCHANGE:
+                vverbose<<"--> [Converter][verifyCompact] Check KEY_EXCHANGE"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                key = message.getDHkey();
+                if( !key ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Diffie-Hellman Parameter"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                if( checkField( key , message.getDHkeyLength()) || checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    delete[] key;
+                    return false;
+                }
+                vverbose<<"--> [Converter][verifyCompact] Verification KEY_EXCHANGE success"<<'\n';
+                delete nonce;
+                delete[] key;
+                break;
+
+            case USER_LIST_REQ:
+                vverbose<<"--> [Converter][verifyCompact] Check USER_LIST_REQ"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                if(  checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                delete nonce;
+                vverbose<<"--> [Converter][verifyCompact] Verification USER_LIST_REQ success"<<'\n';
+                break;
+
+            case USER_LIST:
+                vverbose<<"--> [Converter][verifyCompact] Check USER_LIST"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                app = message.getUserList().c_str();
+                if( checkField((const unsigned char*)app,message.getUserList().length()) || checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                delete nonce;
+
+                vverbose<<"--> [Converter][verifyCompact] Verification USER_LIST success"<<'\n';
+                break;
+
+            case RANK_LIST_REQ:
+                vverbose<<"--> [Converter][verifyCompact] Check RANK_LIST_REQ"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                if( checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                delete nonce;
+                vverbose<<"--> [Converter][verifyCompact] Verification RANK_LIST_REQ success"<<'\n';
+                break;
+
+            case RANK_LIST:
+                vverbose<<"--> [Converter][verifyCompact] Check RANK_LIST"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                app = message.getRankList().c_str();
+                if( checkField((const unsigned char*)app,message.getRankList().length()) || checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                delete nonce;
+                vverbose<<"--> [Converter][verifyCompact] Verification RANK_LIST success"<<'\n';
+                break;
+
+            case MATCH:
+                vverbose<<"--> [Converter][verifyCompact] Check MATCH"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                app = message.getUsername().c_str();
+                if( checkField((const unsigned char*)app,message.getUsername().length()) || checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                delete nonce;
+
+                vverbose<<"--> [Converter][verifyCompact] Verification MATCH success"<<'\n';
+                break;
+
+            case ACCEPT:
+                vverbose<<"--> [Converter][verifyCompact] Check ACCEPT"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                if( message.getAdversary_1().empty()){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Adversary1"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                app = message.getAdversary_1().c_str();
+
+                if( message.getAdversary_2().empty()){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Adversary2"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                app2 = message.getAdversary_2().c_str();
+
+                if( checkField((const unsigned char*)app,message.getAdversary_1().length()) || checkField((const unsigned char*)app2,message.getAdversary_2().length())   || checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                delete nonce;
+                vverbose<<"--> [Converter][verifyCompact] Verification ACCEPT success"<<'\n';
+                break;
+
+            case REJECT:
+                vverbose<<"--> [Converter][verifyCompact] Check REJECT"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                if( message.getAdversary_1().empty()){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Adversary1"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                app = message.getAdversary_1().c_str();
+
+                if( message.getAdversary_2().empty()){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Adversary2"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                app2 = message.getAdversary_2().c_str();
+
+                if( checkField((const unsigned char*)app,message.getAdversary_1().length()) || checkField((const unsigned char*)app2,message.getAdversary_2().length())  || checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                delete nonce;
+                vverbose<<"--> [Converter][verifyCompact] Verification REJECT success"<<'\n';
+                break;
+
+            case WITHDRAW_REQ:
+                vverbose<<"--> [Converter][verifyCompact] Check WITHDRAW_REQ"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                if( checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                delete nonce;
+
+                vverbose<<"--> [Converter][verifyCompact] Verification WITHDRAW_REQ success"<<'\n';
+                break;
+
+            case WITHDRAW_OK:
+                vverbose<<"--> [Converter][verifyCompact] Check WITHDRAW_OK"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                if( checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                delete nonce;
+                vverbose<<"--> [Converter][verifyCompact] Verification WITHDRAW_OK success"<<'\n';
+                break;
+
+            case LOGOUT_REQ:
+                vverbose<<"--> [Converter][verifyCompact] Check LOGOUT_REQ"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                if( checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                delete nonce;
+                vverbose<<"--> [Converter][verifyCompact] Verification LOGOUT_REQ success"<<'\n';
+                break;
+
+            case LOGOUT_OK:
+                vverbose<<"--> [Converter][verifyCompact] Check LOGOUT_OK"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                if( checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                delete nonce;
+                vverbose<<"--> [Converter][verifyCompact] Verification LOGOUT_OK success"<<'\n';
+                break;
+
+            case GAME_PARAM:
+                vverbose<<"--> [Converter][verifyCompact] Check GAME_PARAM"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                net = message.getNetInformations();
+                if( !net ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Net Informations"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                key = message.getPubKey();
+                if( !key ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Public Key"<<'\n';
+                    delete nonce;
+                    delete[] net;
+                    return false;
+                }
+
+                if( checkField(net,message.getNetInformationsLength()) || checkField(key,message.getPubKeyLength()) ||  checkField(nonceString,to_string(*nonce).length())) {
+                    verbose << "--> [Converter][verifyCompact] Verification failure" << '\n';
+                    delete nonce;
+                    delete[] net;
+                    delete[] key;
+                    return false;
+                }
+                vverbose<<"--> [Converter][verifyCompact] Verification GAME_PARAM success"<<'\n';
+                delete nonce;
+                delete[] net;
+                delete[] key;
+                break;
+
+            case MOVE:
+                vverbose<<"--> [Converter][verifyCompact] Check MOVE"<<'\n';
+
+                nonce = message.getCurrent_Token();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                chosen_column = message.getChosenColumn();
+                if( !chosen_column ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Misssing Chosen Column"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                if( checkField(nonceString,to_string(*nonce).length()) || checkField(chosen_column,message.getChosenColumnLength())) {
+                    verbose<<"--> [Converter][verifyCompact] Verification failure"<<'\n';
+                    delete nonce;
+                    delete[] chosen_column;
+                    return false;
+                }
+                vverbose<<"--> [Converter][verifyCompact] Verification MOVE success"<<'\n';
+                delete nonce;
+                delete[] chosen_column;
+                break;
+
+            case CHAT:
+                vverbose<<"--> [Converter][verifyCompact] Check CHAT"<<'\n';
+
+                nonce = message.getCurrent_Token();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                chat = message.getMessage();
+                if( !chat ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Message"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                if( checkField(chat,message.getMessageLength()) || checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyCompact] Verification failure"<<'\n';
+                    delete nonce;
+                    delete[] chat;
+                    return false;
+                }
+                vverbose<<"--> [Converter][verifyCompact] Verification CHAT success"<<'\n';
+                delete nonce;
+                delete[] chat;
+                break;
+
+            case ACK:
+                vverbose<<"--> [Converter][verifyCompact] Check ACK"<<'\n';
+
+                nonce = message.getCurrent_Token();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                if( checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyCompact] Verification failure"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                vverbose<<"--> [Converter][verifyCompact] Verification ACK success"<<'\n';
+                delete nonce;
+                break;
+
+            case DISCONNECT:
+                vverbose<<"--> [Converter][verifyCompact] Check DISCONNECT"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                if( checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Presence of <\"&>"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                delete nonce;
+                vverbose<<"--> [Converter][verifyCompact] Verification DISCONNECT success"<<'\n';
+                break;
+
+            default:
+                verbose<<"--> [Converter][verifyCompact] Error message type undefined: " <<type <<'\n';
+                return false;
+        }
+        return true;
+    }
+
     //  translate a Message class into a NetMessage after have controlled the validity of the Message fields
-    NetMessage* Converter::encodeMessage(MessageType type , Message msg ){
+    NetMessage* Converter::encodeMessage(MessageType type , Message message){
+
+        int len;
+        unsigned char* value;
+
         vverbose<<"--> [Converter][encodeMessage] Starting encoding of Message"<<'\n';
-        if( !verifyMessage(type,msg))
+
+        if(!verifyMessage( type, message )){
+
+            verbose<<"--> [Converter][encodeMessage] Error during the verification of the message"<<'\n';
             return nullptr;
 
-        string value = "y=\"";
-        value.append(to_string(type));
-
-        switch (type){
-            case CERTIFICATE_REQ:
-                vverbose<<"--> [Converter][encodeMessage] Encoding CERTIFICATE_REQ"<<'\n';
-                value.append("\"&n=\"");
-                value.append(to_string(*(msg.getNonce())));
-                value.append("\"");
-                break;
-            case CERTIFICATE:
-                vverbose<<"--> [Converter][encodeMessage] Encoding CERTIFICATE"<<'\n';
-                value.append("\"&c=\"");
-                value.append(msg.getServer_Certificate());
-                value.append("\"&n=\"");
-                value.append(to_string(*(msg.getNonce())));
-                value.append("\"&s=\"");
-                value.append(msg.getSignature());
-                value.append("\"");
-                break;
-            case LOGIN_REQ:
-                vverbose<<"--> [Converter][encodeMessage] Encoding LOGIN_REQ"<<'\n';
-                value.append("\"&u=\"");
-                value.append(msg.getUsername());
-                value.append("\"&n=\"");
-                value.append(to_string(*(msg.getNonce())));
-                value.append("\"&s=\"");
-                value.append(msg.getSignature());
-                value.append("\"");
-                break;
-            case LOGIN_OK:
-                vverbose<<"--> [Converter][encodeMessage] Encoding LOGIN_OK"<<'\n';
-                value.append("\"&n=\"");
-                value.append(to_string(*(msg.getNonce())));
-                value.append("\"&s=\"");
-                value.append(msg.getSignature());
-                value.append("\"");
-                break;
-            case LOGIN_FAIL:
-                vverbose<<"--> [Converter][encodeMessage] Encoding LOGIN_FAIL"<<'\n';
-                value.append("\"&n=\"");
-                value.append(to_string(*(msg.getNonce())));
-                value.append("\"&s=\"");
-                value.append(msg.getSignature());
-                value.append("\"");
-                break;
-            case KEY_EXCHANGE:
-                vverbose<<"--> [Converter][encodeMessage] Encoding KEY_EXCHANGE"<<'\n';
-                value.append("\"&d=\"");
-                value.append(msg.get_DH_key());
-                value.append("\"&n=\"");
-                value.append(to_string(*(msg.getNonce())));
-                value.append("\"&s=\"");
-                value.append(msg.getSignature());
-                value.append("\"");
-                break;
-            case USER_LIST_REQ:
-                vverbose<<"--> [Converter][encodeMessage] Encoding USER_LIST_REQ"<<'\n';
-                value.append("\"&n=\"");
-                value.append(to_string(*(msg.getNonce())));
-                value.append("\"");
-                break;
-            case USER_LIST:
-                vverbose<<"--> [Converter][encodeMessage] Encoding USER_LIST"<<'\n';
-                value.append("\"&l=\"");
-                value.append(msg.getUserList());
-                value.append("\"&n=\"");
-                value.append(to_string(*(msg.getNonce())));
-                value.append("\"");
-                break;
-            case RANK_LIST_REQ:
-                vverbose<<"--> [Converter][encodeMessage] Encoding RANK_LIST_REQ"<<'\n';
-                value.append("\"&n=\"");
-                value.append(to_string(*(msg.getNonce())));
-                value.append("\"");
-                break;
-            case RANK_LIST:
-                vverbose<<"--> [Converter][encodeMessage] Encoding RANK_LIST"<<'\n';
-                value.append("\"&r=\"");
-                value.append(msg.getRankList());
-                value.append("\"&n=\"");
-                value.append(to_string(*(msg.getNonce())));
-                value.append("\"");
-                break;
-            case MATCH:
-                vverbose<<"--> [Converter][encodeMessage] Encoding MATCH"<<'\n';
-                value.append("\"&u=\"");
-                value.append(msg.getUsername());
-                value.append("\"&n=\"");
-                value.append(to_string(*(msg.getNonce())));
-                value.append("\"");
-                break;
-            case ACCEPT:
-                vverbose<<"--> [Converter][encodeMessage] Encoding ACCEPT"<<'\n';
-                value.append("\"&a=\"");
-                value.append(msg.getAdversary_1());
-                value.append("\"&b=\"");
-                value.append(msg.getAdversary_2());
-                value.append("\"&n=\"");
-                value.append(to_string(*(msg.getNonce())));
-                value.append("\"");
-                break;
-            case REJECT:
-                vverbose<<"--> [Converter][encodeMessage] Encoding REJECT"<<'\n';
-                value.append("\"&a=\"");
-                value.append(msg.getAdversary_1());
-                value.append("\"&b=\"");
-                value.append(msg.getAdversary_2());
-                value.append("\"&n=\"");
-                value.append(to_string(*(msg.getNonce())));
-                value.append("\"");
-                break;
-            case WITHDRAW_REQ:
-                vverbose<<"--> [Converter][encodeMessage] Encoding WITHDRAW_REQ"<<'\n';
-                value.append("\"&u=\"");
-                value.append(msg.getUsername());
-                value.append("\"&n=\"");
-                value.append(to_string(*(msg.getNonce())));
-                value.append("\"");
-                break;
-            case WITHDRAW_OK:
-                vverbose<<"--> [Converter][encodeMessage] Encoding WITHDRAW_OK"<<'\n';
-                value.append("\"&n=\"");
-                value.append(to_string(*(msg.getNonce())));
-                value.append("\"");
-                break;
-            case LOGOUT_REQ:
-                vverbose<<"--> [Converter][encodeMessage] Encoding LOGOUT_REQ"<<'\n';
-                value.append("\"&n=\"");
-                value.append(to_string(*(msg.getNonce())));
-                value.append("\"");
-                break;
-            case LOGOUT_OK:
-                vverbose<<"--> [Converter][encodeMessage] Encoding LOGOUT_OK"<<'\n';
-                value.append("\"&n=\"");
-                value.append(to_string(*(msg.getNonce())));
-                value.append("\"");
-                break;
-            case GAME_PARAM:
-                vverbose<<"--> [Converter][encodeMessage] Encoding GAME_PARAM"<<'\n';
-                value.append("\"&k=\"");
-                value.append(msg.getPubKey());
-                value.append("\"&i=\"");
-                value.append(msg.getNetInformations());
-                value.append("\"&n=\"");
-                value.append(to_string(*(msg.getNonce())));
-                value.append("\"");
-                break;
-            case MOVE:
-                vverbose<<"--> [Converter][encodeMessage] Encoding MOVE"<<'\n';
-                value.append("\"&t=\"");
-                value.append(to_string(*(msg.getCurrent_Token())));
-                value.append("\"&v=\"");
-                value.append(to_string(*(msg.getChosenColumn())));
-                value.append("\"");
-                break;
-            case CHAT:
-                vverbose<<"--> [Converter][encodeMessage] Encoding CHAT"<<'\n';
-                value.append("\"&t=\"");
-                value.append(to_string(*(msg.getCurrent_Token())));
-                value.append("\"&h=\"");
-                value.append(msg.getMessage());
-                value.append("\"");
-                break;
-            case ACK:
-                vverbose<<"--> [Converter][encodeMessage] Encoding ACK"<<'\n';
-                value.append("\"&t=\"");
-                value.append(to_string(*(msg.getCurrent_Token())));
-                value.append("\"");
-                break;
-            case DISCONNECT:
-                vverbose<<"--> [Converter][encodeMessage] Encoding DISCONNECT"<<'\n';
-                value.append("\"&n=\"");
-                value.append(to_string(*(msg.getNonce())));
-                value.append("\"");
-                break;
-            default:
-                verbose<<"--> [Converter][encodeMessage] Error Undefined MessageType"<<type<<'\n';
-                return nullptr;
         }
 
-        vverbose<<"--> [Converter][encodeMessage] Encoded completed, encoded message: "<<value<<'\n';
-        return new NetMessage( (unsigned char*)value.c_str(), value.length());
+        unsigned char* certificate,*key,*net,*sign;
+        int* nonce;
+        switch( type ){
+
+            case CERTIFICATE_REQ:
+                nonce = message.getNonce();
+                len = 10+to_string(type).length()+to_string(*nonce).length();
+                value = new unsigned char[len];
+                strcpy( (char*)value , "y=\"");
+                strcat((char*)value, to_string(type).c_str() );
+                strcat( (char*)value , "\"&n=\"");
+                strcat( (char*)value , to_string(*(nonce)).c_str());
+                strcat( (char*)value , "\"");
+                break;
+
+            case CERTIFICATE:
+                nonce = message.getNonce();
+                sign = message.getSignature();
+                len = 20+to_string(type).length()+to_string(*nonce).length() + message.getServerCertificateLength()+message.getSignatureLen();
+                value = new unsigned char[len];
+                certificate  = message.getServerCertificate();
+                strcpy( (char*)value , "y=\"");
+                strcat((char*)value, to_string(type).c_str() );
+                strcat( (char*)value , "\"&c=\"");
+                strncat( (char*)value , (const char*)certificate , message.getServerCertificateLength());
+                strcat( (char*)value , "\"&n=\"");
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                strcat( (char*)value , "\"&s=\"");
+                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
+                strcat( (char*)value , "\"");
+                delete[] sign;
+                delete[] certificate;
+                break;
+
+            case LOGIN_REQ:
+                nonce = message.getNonce();
+                sign = message.getSignature();
+                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcpy( (char*)value , "y=\"");
+                strcat((char*)value, to_string(type).c_str() );
+                strcat( (char*)value , "\"&u=\"");
+                strcat( (char*)value , (char*)message.getUsername().c_str() );
+                strcat( (char*)value , "\"&n=\"");
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                strcat( (char*)value , "\"&s=\"");
+                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
+                strcat( (char*)value , "\"");
+
+                delete[] sign;
+                break;
+
+            case LOGIN_OK:
+                nonce = message.getNonce();
+                sign = message.getSignature();
+                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcpy( (char*)value , "y=\"");
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , "\"&n=\"");
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                strcat( (char*)value , "\"&s=\"");
+                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
+                strcat( (char*)value , "\"");
+                delete[] sign;
+
+                break;
+
+            case LOGIN_FAIL:
+                nonce = message.getNonce();
+                sign = message.getSignature();
+                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcpy( (char*)value , "y=\"");
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , "\"&n=\"");
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                strcat( (char*)value , "\"&s=\"");
+                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
+                strcat( (char*)value , "\"");
+                delete[] sign;
+
+                break;
+
+            case KEY_EXCHANGE:
+                nonce = message.getNonce();
+                sign = (unsigned char*)message.getSignature();
+                len = 16+to_string(type).length()+to_string(*nonce).length()+message.getDHkeyLength()+message.getSignatureLen();
+                value = new unsigned char[len];
+                key = message.getDHkey();
+                strcpy( (char*)value , "y=\"");
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , "\"&d=\"");
+                strncat( (char*)value , (const char*)key, message.getDHkeyLength());
+                strcat( (char*)value , "\"&n=\"");
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                strcat( (char*)value , "\"&s=\"");
+                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
+                strcat( (char*)value , "\"");
+                delete[] sign;
+
+                delete[] key;
+                break;
+
+            case USER_LIST_REQ:
+                nonce = message.getNonce();
+                sign = message.getSignature();
+                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcpy( (char*)value , "y=\"");
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , "\"&n=\"");
+                strcat( (char*)value ,to_string(*(nonce)).c_str() );
+                strcat( (char*)value , "\"&s=\"");
+                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
+                strcat( (char*)value , "\"");
+                delete[] sign;
+
+                break;
+
+            case USER_LIST:
+                nonce = message.getNonce();
+                sign = message.getSignature();
+                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUserList().length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcpy( (char*)value , "y=\"");
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , "\"&l=\"");
+                strcat( (char*)value , message.getUserList().c_str());
+                strcat( (char*)value , "\"&n=\"");
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                strcat( (char*)value , "\"&s=\"");
+                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
+                strcat( (char*)value , "\"");
+                delete[] sign;
+
+                break;
+
+            case RANK_LIST_REQ:
+                nonce = message.getNonce();
+                sign = message.getSignature();
+                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcpy( (char*)value , "y=\"");
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , "\"&n=\"");
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                strcat( (char*)value , "\"&s=\"");
+                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
+                strcat( (char*)value , "\"");
+                delete[] sign;
+
+                break;
+
+            case RANK_LIST:
+                nonce = message.getNonce();
+                sign = message.getSignature();
+                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getRankList().length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcpy( (char*)value , "y=\"");
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , "\"&r=\"");
+                strcat( (char*)value , message.getRankList().c_str() );
+                strcat( (char*)value , "\"&n=\"");
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                strcat( (char*)value , "\"&s=\"");
+                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
+                strcat( (char*)value , "\"");
+                delete[] sign;
+
+                break;
+
+            case MATCH:
+                nonce = message.getNonce();
+                sign = message.getSignature();
+                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcpy( (char*)value , "y=\"");
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , "\"&u=\"");
+                strcat( (char*)value , message.getUsername().c_str());
+                strcat( (char*)value , "\"&n=\"");
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                strcat( (char*)value , "\"&s=\"");
+                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
+                strcat( (char*)value , "\"");
+                delete[] sign;
+
+                break;
+
+            case ACCEPT:
+                nonce = message.getNonce();
+                sign = message.getSignature();
+                len = 25+to_string(type).length()+to_string(*nonce).length()+message.getAdversary_1().length()+message.getAdversary_2().length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcpy( (char*)value , "y=\"");
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , "\"&a=\"");
+                strcat( (char*)value , message.getAdversary_1().c_str() );
+                strcat( (char*)value , "\"&b=\"");
+                strcat( (char*)value , message.getAdversary_2().c_str() );
+                strcat( (char*)value , "\"&n=\"");
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                strcat( (char*)value , "\"&s=\"");
+                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
+                strcat( (char*)value , "\"");
+                delete[] sign;
+
+                break;
+
+            case REJECT:
+                nonce = message.getNonce();
+                sign = message.getSignature();
+                len = 25+to_string(type).length()+to_string(*nonce).length()+message.getAdversary_1().length()+message.getAdversary_2().length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcpy( (char*)value , "y=\"");
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , "\"&a=\"");
+                strcat( (char*)value , message.getAdversary_1().c_str() );
+                strcat( (char*)value , "\"&b=\"");
+                strcat( (char*)value , message.getAdversary_2().c_str() );
+                strcat( (char*)value , "\"&n=\"");
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                strcat( (char*)value , "\"&s=\"");
+                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
+                strcat( (char*)value , "\"");
+                delete[] sign;
+
+                break;
+
+            case WITHDRAW_REQ:
+                nonce = message.getNonce();
+                sign = message.getSignature();
+                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcpy( (char*)value , "y=\"");
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , "\"&u=\"");
+                strcat( (char*)value , message.getUsername().c_str() );
+                strcat( (char*)value , "\"&n=\"");
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                strcat( (char*)value , "\"&s=\"");
+                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
+                strcat( (char*)value , "\"");
+                delete[] sign;
+
+                break;
+
+            case WITHDRAW_OK:
+                nonce = message.getNonce();
+                sign = (unsigned char*)message.getSignature();
+                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcpy( (char*)value , "y=\"");
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , "\"&n=\"");
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                strcat( (char*)value , "\"&s=\"");
+                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
+                strcat( (char*)value , "\"");
+                delete[] sign;
+
+                break;
+
+            case LOGOUT_REQ:
+                nonce = message.getNonce();
+                sign = message.getSignature();
+                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcpy( (char*)value , "y=\"");
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , "\"&n=\"");
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                strcat( (char*)value , "\"&s=\"");
+                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
+                strcat( (char*)value , "\"");
+                delete[] sign;
+
+                break;
+
+            case LOGOUT_OK:
+                nonce = message.getNonce();
+                sign = message.getSignature();
+                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcpy( (char*)value , "y=\"");
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , "\"&n=\"");
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                strcat( (char*)value , "\"&s=\"");
+                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
+                strcat( (char*)value , "\"");
+                delete[] sign;
+
+                break;
+
+            case GAME_PARAM:
+                nonce = message.getNonce();
+                sign = message.getSignature();
+                len = 25+to_string(type).length()+to_string(*nonce).length()+message.getPubKeyLength()+message.getNetInformationsLength()+message.getSignatureLen();
+                value = new unsigned char[len];
+                key = message.getPubKey();
+                net = message.getNetInformations();
+                strcpy( (char*)value , "y=\"");
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , "\"&k=\"");
+                strncat( (char*)value , (const char*)key , message.getPubKeyLength());
+                strcat( (char*)value , "\"&i=\"");
+                strncat( (char*)value , (const char*)net, message.getNetInformationsLength());
+                strcat( (char*)value , "\"&n=\"");
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                strcat( (char*)value , "\"&s=\"");
+                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
+                strcat( (char*)value , "\"");
+                delete[] sign;
+
+                delete[] key;
+                delete[] net;
+                break;
+
+            case MOVE:
+                nonce = message.getCurrent_Token();
+                sign = message.getSignature();
+                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen();
+                key = message.getChosenColumn();
+                value = new unsigned char[len];
+                strcpy( (char*)value , "y=\"");
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , "\"&t=\"");
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                strcat( (char*)value , "\"&v=\"");
+                strncat( (char*)value , (const char*)key, message.getChosenColumnLength());
+                strcat( (char*)value , "\"&s=\"");
+                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
+                strcat( (char*)value , "\"");
+                delete[] sign;
+
+                delete[] key;
+                break;
+
+            case CHAT:
+                nonce = message.getCurrent_Token();
+                sign = message.getSignature();
+                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getMessageLength()+message.getSignatureLen();
+                value = new unsigned char[len];
+                key = message.getMessage();
+                strcpy( (char*)value , "y=\"");
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , "\"&t=\"");
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                strcat( (char*)value , "\"&h=\"");
+                strncat( (char*)value , (const char*)key, message.getMessageLength());
+                strcat( (char*)value , "\"&s=\"");
+                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
+                strcat( (char*)value , "\"");
+                delete[] sign;
+
+                delete[] key;
+                break;
+
+            case ACK:
+                nonce = message.getCurrent_Token();
+                sign = message.getSignature();
+                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcpy( (char*)value , "y=\"");
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , "\"&t=\"");
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                strcat( (char*)value , "\"&s=\"");
+                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
+                strcat( (char*)value , "\"");
+                delete[] sign;
+
+                break;
+
+            case DISCONNECT:
+                nonce = message.getNonce();
+                sign = message.getSignature();
+                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcpy( (char*)value , "y=\"");
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , "\"&n=\"");
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                strcat( (char*)value , "\"&s=\"");
+                strncat( (char*)value , (const char*)sign, message.getSignatureLen());
+                strcat( (char*)value , "\"");
+                delete[] sign;
+
+                break;
+
+            default:
+                return nullptr;
+        }
+        delete nonce;
+
+        return new NetMessage(value,len);
+
     }
 
     //  Translate a NetMessage into a Message, if it find an incorrect syntax, it stop the analysis giving a class
@@ -392,7 +1671,6 @@ namespace utility{
         do{
             pos = computeNextField( message , pos , msg );
         }while( pos != -1 );
-
         return msg;
 
     }
@@ -400,34 +1678,39 @@ namespace utility{
     //  extract a field of the NetMessage starting from the given position. It will return the new position for the next field
     //  or -1 if it found an incorrect syntax
     int Converter::computeNextField( NetMessage msg , int position, Message* newMessage ){
-        vverbose<<"--> [Converter][decodeMessage] Compute field, position: "<<position<<'\n';
+
+        vverbose<<"--> [Converter][computeNextField] Compute field, position: "<<position<<'\n';
         unsigned char* text = msg.getMessage();
         char field;
         bool found = false;
         int lowPos,highPos = -1;
         unsigned char* value;
 
-        if( position >= msg.length() -2)
+        if( position >= msg.length() -3)
             return -1;
-        if( text[position+1] == '=' && text[position+2] == '"')
-            field = text[position];
-        else
-            return -1;
-        vverbose<<"-->[Converter][decodeMessage] Extracted fieldName: "<<field<<'\n';
-        position = position+3;
-        lowPos = position;
-        while( position < (msg.length()) ){
-            if( position == msg.length()-1)
-                if( text[position] == '"'){
-                    highPos = position - 1;
-                    position = position + 2;
-                    found = true;
-                    break;
-                }else
-                    break;
 
-            if( text[position] == '"' && text[position+1] == '&') {
-                highPos = position - 1;
+        if( text[position+1] == '=' && text[position+2] == '"') {
+            field = text[position];
+            vverbose<<"--> [Converter][computeNextField] Field founded: "<<field<<" Position: "<<position<<'\n';
+        }else
+            return -1;
+
+        vverbose<<"-->[Converter][computeNextField] Extracted fieldName: "<<field<<'\n';
+        position += 3;
+        lowPos = position;
+        while( position < msg.length() ){
+
+            if( text[position] == '"' && position >= msg.length()-3 ){
+                vverbose<<"--> [Converter][computeNextField] Field founded, Position: "<<position<<'\n';
+                highPos = position-1;
+                position = position + 2;
+                found = true;
+                break;
+            }
+
+            if( position<msg.length()-2 && text[position] == '"' && text[position+1] == '&'){
+                vverbose<<"--> [Converter][computeNextField] Field founded, Position: "<<position<<'\n';
+                highPos = position-1;
                 position = position + 2;
                 found = true;
                 break;
@@ -435,24 +1718,34 @@ namespace utility{
 
             position++;
         }
+
         int pos = 0;
 
         if( found ) {
-            value = new unsigned char[highPos - lowPos];
+            if( highPos - lowPos == 0 ) {
+                value = new unsigned char[2];
+                value[0] = '\0';
+                value[1] = '\0';
+            }else {
+                value = new unsigned char[highPos - lowPos + 2];
+                for (int a = 0; a < highPos - lowPos + 1; a++)
+                    value[a] = '\0';
+            }
             for (int a = lowPos; a <= highPos; a++) {
                 value[pos] = text[a];
                 pos++;
             }
-            vverbose<<"--> [Converter][decodeMessage] Field value extracted, value: "<<value<<'\n';
-            setField(field, value, newMessage);
+            vverbose<<"--> [Converter][computeNextField] Field value extracted, value: "<<value<<'\n';
+            setField(field, value, highPos-lowPos+1, newMessage);
+            delete[] value;
             return position;
         }
-        verbose<<"--> [Converter][decodeMessage] Syntax Error, unable to extract the field"<<'\n';
+        verbose<<"--> [Converter][computeNextField] Syntax Error, unable to extract the field"<<'\n';
         return -1;
     }
 
     //  set a field of a Message class using the encoded information extracted from the NetMessage
-    bool Converter::setField( char fieldName , unsigned char* fieldValue , Message* msg ){
+    bool Converter::setField( char fieldName , unsigned char* fieldValue , int len , Message* msg ){
         vverbose<<"--> [Converter][setField] Setting the message variable"<<'\n';
         int c;
         switch(fieldName) {
@@ -466,15 +1759,15 @@ namespace utility{
                 break;
             case 'c':
                 vverbose<<"--> [Converter][setField] Identified variable: Server_Certificate"<<'\n';
-                msg->setServer_Certificate(string(reinterpret_cast<char*>(fieldValue)));
+                msg->setServer_Certificate(fieldValue, len );
                 break;
             case 'd':
                 vverbose<<"--> [Converter][setField] Identified variable: Diffie-Hellman parameter"<<'\n';
-                msg->set_DH_key(string(reinterpret_cast<char*>(fieldValue)));
+                msg->set_DH_key(fieldValue,len);
                 break;
             case 'i':
                 vverbose<<"--> [Converter][setField] Identified variable: NetInformations"<<'\n';
-                msg->setNetInformations(string(reinterpret_cast<char*>(fieldValue)));
+                msg->setNetInformations(fieldValue, len);
                 break;
             case 'l':
                 vverbose<<"--> [Converter][setField] Identified variable: UserList"<<'\n';
@@ -482,7 +1775,7 @@ namespace utility{
                 break;
             case 'k':
                 vverbose<<"--> [Converter][setField] Identified variable: Public Key"<<'\n';
-                msg->setPubKey(string(reinterpret_cast<char*>(fieldValue)));
+                msg->setPubKey(fieldValue,len);
                 break;
             case 'n':
                 vverbose<<"--> [Converter][setField] Identified variable: Nonce"<<'\n';
@@ -494,7 +1787,7 @@ namespace utility{
                 break;
             case 's':
                 vverbose<<"--> [Converter][setField] Identified variable: Signature"<<'\n';
-                msg->setSignature(string(reinterpret_cast<char*>(fieldValue)));
+                msg->setSignature(fieldValue,len);
                 break;
             case 't':
                 vverbose<<"--> [Converter][setField] Identified variable: CurrentToken"<<'\n';
@@ -502,7 +1795,7 @@ namespace utility{
                 break;
             case 'v':
                 vverbose<<"--> [Converter][setField] Identified variable: ChosenColumn"<<'\n';
-                msg->setChosenColumn(stoi(string(reinterpret_cast<char*>(fieldValue))));
+                msg->setChosenColumn(fieldValue,len);
                 break;
             case 'u':
                 vverbose<<"--> [Converter][setField] Identified variable: Username"<<'\n';
@@ -510,7 +1803,7 @@ namespace utility{
                 break;
             case 'h':
                 vverbose<<"--> [Converter][setField] Identified variable: Message"<<'\n';
-                msg->setMessage(string(reinterpret_cast<char*>(fieldValue)));
+                msg->setMessage(fieldValue,len);
                 break;
             case 'y':
                 vverbose<<"--> [Converter][setField] Identified variable: MessageType"<<'\n';
@@ -526,18 +1819,19 @@ namespace utility{
     }
 
     //  verify the presence of the &" sequence into a given field
-    bool Converter::checkField( unsigned const char* field , int len){
+    bool Converter::checkField( const unsigned char* field , int len){
         vverbose<<"--> [Converter][checkField] Verification of Message consistence"<<'\n';
         bool warn = false;
 
         for( int a= 0; a<len;a++){
-            if( field[a] == '&')
-                if( warn ) {
-                    verbose<<"--> [Converter][checkField] Error, sequence \"& founded into the field"<<'\n';
+            if( field[a] == '&') {
+                if (warn) {
+                    verbose << "--> [Converter][checkField] Error, sequence \"& founded into the field" << '\n';
                     return true;
-                }else {
+                } else {
                     continue;
                 }
+            }
             if( field[a] == '"' )
                 warn = true;
             else
@@ -549,7 +1843,7 @@ namespace utility{
 
     bool Converter::test(){
         Message* m = new Message();
-        m->setSignature( "signature" );
+        m->setSignature( (unsigned char*)"signature" ,10 );
         Message* m2 = new Message();
         NetMessage* encoded;
 
@@ -557,13 +1851,13 @@ namespace utility{
         m->setAdversary_1( "adv_1" );
         m->setAdversary_2( "adv_2" );
         m->setNonce( 13 );
-        m->setServer_Certificate( "certificate" );
-        m->setPubKey( "pub_key" );
-        m->setNetInformations( "127.0.0.1" );
+        m->setServer_Certificate( (unsigned char*)"certificate" ,11);
+        m->setPubKey( (unsigned char*)"pub_key" ,7 );
+        m->setNetInformations( (unsigned char*)"127.0.0.1", 9 );
         m->setCurrent_Token( 13 );
-        m->setChosenColumn( 13 );
-        m->setMessage( ",message" );
-        m->set_DH_key( "dh_key" );
+        m->setChosenColumn( (unsigned char*)"column",6 );
+        m->setMessage( (unsigned char*)"message" ,7);
+        m->set_DH_key( (unsigned char*)"dh_key",6 );
         m->setUserList( "user_list" );
         m->setRankList( "rank_list" );
 
@@ -571,38 +1865,106 @@ namespace utility{
         m2->setAdversary_1( "adv_1\"&" );
         m2->setAdversary_2( "ad\"&v_2" );
         m2->setNonce( 13 );
-        m2->setServer_Certificate( "certificat\"&e" );
-        m2->setPubKey( "pu\"&b_key" );
-        m2->setNetInformations( "127\"&.0.0.1" );
+        m2->setServer_Certificate( (unsigned char*)"certificat\"&e" ,14);
+        m2->setPubKey( (unsigned char*)"pu\"&b_key" ,10);
+        m2->setNetInformations( (unsigned char*)"127\"&.0.0.1" ,12 );
         m2->setCurrent_Token( 13 );
-        m2->setChosenColumn( 13 );
-        m2->setMessage( "mes\"&sage" );
-        m2->set_DH_key( "\"&dh_key" );
+        m2->setChosenColumn( (unsigned char*)"column\"&",8 );
+        m2->setMessage( (unsigned char*)"mes\"&sage" ,9);
+        m2->set_DH_key( (unsigned char*)"\"&dh_key",9 );
         m2->setUserList( "user_list\"&" );
         m2->setRankList( "rank_\"&list" );
+        verbose<<"-------------------0--------------------"<<'\n';
 
-        if( Converter::encodeMessage(CERTIFICATE_REQ,*m)== nullptr) return false;
-        if( Converter::encodeMessage(CERTIFICATE,*m)== nullptr) return false;
-        if( Converter::encodeMessage(LOGIN_REQ,*m)== nullptr) return false;
-        if( Converter::encodeMessage(LOGIN_OK,*m)== nullptr) return false;
-        if( Converter::encodeMessage(LOGIN_FAIL,*m)== nullptr) return false;
-        if( Converter::encodeMessage(KEY_EXCHANGE,*m)== nullptr) return false;
-        if( Converter::encodeMessage(USER_LIST_REQ,*m)== nullptr) return false;
-        if( Converter::encodeMessage(USER_LIST,*m)== nullptr) return false;
-        if( Converter::encodeMessage(RANK_LIST_REQ,*m)== nullptr) return false;
-        if( Converter::encodeMessage(RANK_LIST,*m)== nullptr) return false;
-        if( Converter::encodeMessage(MATCH,*m)== nullptr) return false;
-        if( Converter::encodeMessage(ACCEPT,*m)== nullptr) return false;
-        if( Converter::encodeMessage(REJECT,*m)== nullptr) return false;
-        if( Converter::encodeMessage(WITHDRAW_REQ,*m)== nullptr) return false;
-        if( Converter::encodeMessage(WITHDRAW_OK,*m)== nullptr) return false;
-        if( Converter::encodeMessage(LOGOUT_REQ,*m)== nullptr) return false;
-        if( Converter::encodeMessage(LOGOUT_OK,*m)== nullptr) return false;
-        if( Converter::encodeMessage(GAME_PARAM,*m)== nullptr) return false;
-        if( Converter::encodeMessage(MOVE,*m)== nullptr) return false;
-        if( Converter::encodeMessage(ACK,*m)== nullptr) return false;
-        if( Converter::encodeMessage(CHAT,*m)== nullptr) return false;
-        if( Converter::encodeMessage(DISCONNECT,*m)== nullptr) return false;
+        encoded = Converter::encodeMessage(CERTIFICATE_REQ,*m);
+        if( encoded == nullptr) return false;
+        delete encoded;
+
+        encoded = Converter::encodeMessage(CERTIFICATE,*m);
+        if( encoded == nullptr) return false;
+        delete encoded;
+
+        encoded = Converter::encodeMessage(LOGIN_REQ,*m);
+        if( encoded == nullptr) return false;
+        delete encoded;
+
+        encoded = Converter::encodeMessage(LOGIN_OK,*m);
+        if( encoded == nullptr) return false;
+        delete encoded;
+
+        encoded = Converter::encodeMessage(LOGIN_FAIL,*m);
+        if( encoded == nullptr) return false;
+        delete encoded;
+
+        encoded = Converter::encodeMessage(KEY_EXCHANGE,*m);
+        if( encoded == nullptr) return false;
+        delete encoded;
+
+        encoded = Converter::encodeMessage(USER_LIST_REQ,*m);
+        if( encoded == nullptr) return false;
+        delete encoded;
+
+        encoded = Converter::encodeMessage(USER_LIST,*m);
+        if( encoded == nullptr) return false;
+        delete encoded;
+
+        encoded = Converter::encodeMessage(RANK_LIST_REQ,*m);
+        if( encoded == nullptr) return false;
+        delete encoded;
+
+        encoded = Converter::encodeMessage(RANK_LIST,*m);
+        if( encoded == nullptr) return false;
+        delete encoded;
+
+        encoded = Converter::encodeMessage(MATCH,*m);
+        if( encoded == nullptr) return false;
+        delete encoded;
+
+        encoded = Converter::encodeMessage(ACCEPT,*m);
+        if( encoded == nullptr) return false;
+        delete encoded;
+
+        encoded = Converter::encodeMessage(REJECT,*m);
+        if( encoded == nullptr) return false;
+        delete encoded;
+
+        encoded = Converter::encodeMessage(WITHDRAW_REQ,*m);
+        if( encoded == nullptr) return false;
+        delete encoded;
+
+        encoded = Converter::encodeMessage(WITHDRAW_OK, *m);
+        if( encoded == nullptr) return false;
+        delete encoded;
+
+        encoded = Converter::encodeMessage(LOGOUT_REQ,*m);
+        if( encoded == nullptr) return false;
+        delete encoded;
+
+        encoded = Converter::encodeMessage(LOGOUT_OK,*m);
+        if( encoded == nullptr) return false;
+        delete encoded;
+
+        encoded = Converter::encodeMessage(GAME_PARAM,*m);
+        if( encoded == nullptr) return false;
+        delete encoded;
+
+        encoded = Converter::encodeMessage(MOVE,*m);
+        if( encoded == nullptr) return false;
+        delete encoded;
+
+        encoded = Converter::encodeMessage(CHAT,*m);
+        if( encoded == nullptr) return false;
+        delete encoded;
+
+        encoded = Converter::encodeMessage(ACK,*m);
+        if( encoded == nullptr) return false;
+        delete encoded;
+
+        encoded = Converter::encodeMessage(DISCONNECT,*m);
+        if( encoded == nullptr) return false;
+        delete encoded;
+
+        verbose<<"-----------------1---------------"<<'\n';
 
         if( Converter::encodeMessage(CERTIFICATE,*m2)!= nullptr) return false;
         if( Converter::encodeMessage(LOGIN_REQ,*m2)!= nullptr) return false;
@@ -616,186 +1978,593 @@ namespace utility{
         if( Converter::encodeMessage(CHAT,*m2)!= nullptr) return false;
         delete m2;
 
+        verbose<<"------------------2--------------"<<'\n';
+
         encoded = Converter::encodeMessage(CERTIFICATE_REQ,*m);
-        verbose<<encoded->getMessage()<<'\n';
+        if( encoded == nullptr ){
+            verbose<<"Error during encoding of CERTIFICATE_REQ"<<'\n';
+            return false;
+        }
+
         m2 = Converter::decodeMessage(*encoded);
-        if( m2->getMessageType() != CERTIFICATE_REQ || m2->getNonce() == nullptr )  return false;
+        if( m2->getMessageType() != CERTIFICATE_REQ || m2->getNonce() == nullptr ){
+            verbose<<"Error during test of CERTIFICATE_REQ"<<'\n';
+            return false;
+        }
+
         delete m2;
         delete encoded;
         verbose<<"CERTIFICATE_REQ"<<'\n';
 
         encoded = Converter::encodeMessage(CERTIFICATE,*m);
+        if( encoded == nullptr ){
+            vverbose<<"Error during encoding of CERTIFICATE"<<'\n';
+            return false;
+        }
         verbose<<encoded->getMessage()<<'\n';
+        verbose<<encoded->length()<<'\n';
         m2 = Converter::decodeMessage(*encoded);
-        if( m2->getMessageType() != CERTIFICATE || m2->getNonce() == nullptr || m2->getServer_Certificate().empty() || m2->getSignature().empty())  return false;
+        if( m2->getMessageType() != CERTIFICATE || m2->getNonce() == nullptr || m2->getServerCertificate() == nullptr || m2->getSignature() == nullptr ){
+            vverbose<<"Error during test of CERTIFICATE"<<'\n';
+            return false;
+        }
         delete m2;
         delete encoded;
         verbose<<"CERTIFICATE"<<'\n';
 
         encoded = Converter::encodeMessage(LOGIN_REQ,*m);
+        if( encoded == nullptr ){
+            vverbose<<"Error during encoding of LOGIN_REQ"<<'\n';
+            return false;
+        }
         verbose<<encoded->getMessage()<<'\n';
         m2 = Converter::decodeMessage(*encoded);
-        if( m2->getMessageType() != LOGIN_REQ || m2->getNonce() == nullptr || m2->getUsername().empty() || m2->getSignature().empty())  return false;
+        if( m2->getMessageType() != LOGIN_REQ || m2->getNonce() == nullptr || m2->getUsername().empty() || m2->getSignature() == nullptr ){
+            vverbose<<"Error during test of LOGIN_REQ"<<'\n';
+            return false;
+        }
         delete m2;
         delete encoded;
         verbose<<"LOGIN_REQ"<<'\n';
 
         encoded = Converter::encodeMessage(LOGIN_OK,*m);
+        if( encoded == nullptr ){
+            vverbose<<"Error during encoding of LOGIN_OK"<<'\n';
+            return false;
+        }
         verbose<<encoded->getMessage()<<'\n';
         m2 = Converter::decodeMessage(*encoded);
-        if( m2->getMessageType() != LOGIN_OK || m2->getNonce() == nullptr || m2->getSignature().empty())  return false;
+        if( m2->getMessageType() != LOGIN_OK || m2->getNonce() == nullptr || m2->getSignature() == nullptr ){
+            vverbose<<"Error during test of LOGIN_OK"<<'\n';
+            return false;
+        }
         delete m2;
         delete encoded;
-        verbose<<"LOGIN_OK"<<'\n';
 
+        verbose<<"LOGIN_OK"<<'\n';
         encoded = Converter::encodeMessage(LOGIN_FAIL,*m);
+        if( encoded == nullptr ){
+            vverbose<<"Error during encoding of LOGIN_FAIL"<<'\n';
+            return false;
+        }
         verbose<<encoded->getMessage()<<'\n';
         m2 = Converter::decodeMessage(*encoded);
-        if( m2->getMessageType() != LOGIN_FAIL || m2->getNonce() == nullptr || m2->getSignature().empty())  return false;
+        if( m2->getMessageType() != LOGIN_FAIL || m2->getNonce() == nullptr || m2->getSignature() == nullptr ){
+            vverbose<<"Error during test of LOGIN_FAIL"<<'\n';
+            return false;
+        }
         delete m2;
         delete encoded;
         verbose<<"LOGIN_FAIL"<<'\n';
 
         encoded = Converter::encodeMessage(KEY_EXCHANGE,*m);
+        if( encoded == nullptr ){
+            vverbose<<"Error during encoding of KEY_EXCHANGE"<<'\n';
+            return false;
+        }
         verbose<<encoded->getMessage()<<'\n';
         m2 = Converter::decodeMessage(*encoded);
-        if( m2->getMessageType() != KEY_EXCHANGE || m2->getNonce() == nullptr || m2->get_DH_key().empty()  || m2->getSignature().empty())  return false;
+        if( m2->getMessageType() != KEY_EXCHANGE || m2->getNonce() == nullptr || m2->getDHkey() == nullptr   || m2->getSignature() == nullptr ){
+            vverbose<<"Error during test of KEY_EXCHANGE"<<'\n';
+            return false;
+        }
         delete m2;
         delete encoded;
         verbose<<"KEY_EXCHANGE"<<'\n';
 
         encoded = Converter::encodeMessage(USER_LIST_REQ,*m);
+        if( encoded == nullptr ){
+            vverbose<<"Error during encoding of USER_LIST_REQ"<<'\n';
+            return false;
+        }
         verbose<<encoded->getMessage()<<'\n';
         m2 = Converter::decodeMessage(*encoded);
-        if( m2->getMessageType() != USER_LIST_REQ || m2->getNonce() == nullptr )  return false;
+        if( m2->getMessageType() != USER_LIST_REQ || m2->getNonce() == nullptr ){
+            vverbose<<"Error during test of USER_LIST_REQ"<<'\n';
+            return false;
+        }
         delete m2;
         delete encoded;
         verbose<<"USER_LIST_REQ"<<'\n';
 
         encoded = Converter::encodeMessage(USER_LIST,*m);
+        if( encoded == nullptr ){
+            vverbose<<"Error during encoding of USER_LIST"<<'\n';
+            return false;
+        }
         verbose<<encoded->getMessage()<<'\n';
         m2 = Converter::decodeMessage(*encoded);
-        if( m2->getMessageType() != USER_LIST || m2->getNonce() == nullptr || m2->getUserList().empty() )  return false;
+        if( m2->getMessageType() != USER_LIST || m2->getNonce() == nullptr || m2->getUserList().empty() ){
+            vverbose<<"Error during test of USER_LIST"<<'\n';
+            return false;
+        }
         delete m2;
         delete encoded;
         verbose<<"USER_LIST"<<'\n';
 
         encoded = Converter::encodeMessage(RANK_LIST_REQ,*m);
+        if( encoded == nullptr ){
+            vverbose<<"Error during encoding of RANK_LIST_REQ"<<'\n';
+            return false;
+        }
         verbose<<encoded->getMessage()<<'\n';
         m2 = Converter::decodeMessage(*encoded);
-        if( m2->getMessageType() != RANK_LIST_REQ || m2->getNonce() == nullptr  )  return false;
+        if( m2->getMessageType() != RANK_LIST_REQ || m2->getNonce() == nullptr  ){
+            vverbose<<"Error during test of RANK_LIST_REQ"<<'\n';
+            return false;
+        }
         delete m2;
         delete encoded;
         verbose<<"RANK_LIST_REQ"<<'\n';
 
         encoded = Converter::encodeMessage(RANK_LIST,*m);
+        if( encoded == nullptr ){
+            vverbose<<"Error during encoding of RANK_LIST"<<'\n';
+            return false;
+        }
         verbose<<encoded->getMessage()<<'\n';
         m2 = Converter::decodeMessage(*encoded);
-        if( m2->getMessageType() != RANK_LIST || m2->getNonce() == nullptr || m2->getRankList().empty() )  return false;
+        if( m2->getMessageType() != RANK_LIST || m2->getNonce() == nullptr || m2->getRankList().empty() ){
+            vverbose<<"Error during test of RANK_LIST"<<'\n';
+            return false;
+        }
         delete m2;
         delete encoded;
         verbose<<"RANK_LIST"<<'\n';
 
         encoded = Converter::encodeMessage(MATCH,*m);
+        if( encoded == nullptr ){
+            vverbose<<"Error during encoding of MATCH"<<'\n';
+            return false;
+        }
         verbose<<encoded->getMessage()<<'\n';
         m2 = Converter::decodeMessage(*encoded);
-        if( m2->getMessageType() != MATCH || m2->getNonce() == nullptr || m2->getUsername().empty() )  return false;
+        if( m2->getMessageType() != MATCH || m2->getNonce() == nullptr || m2->getUsername().empty() ){
+            vverbose<<"Error during test of MATCH"<<'\n';
+            return false;
+        }
         delete m2;
         delete encoded;
         verbose<<"MATCH"<<'\n';
 
         encoded = Converter::encodeMessage(ACCEPT,*m);
+        if( encoded == nullptr ){
+            vverbose<<"Error during encoding of ACCEPT"<<'\n';
+            return false;
+        }
         verbose<<encoded->getMessage()<<'\n';
         m2 = Converter::decodeMessage(*encoded);
-        if( m2->getMessageType() != ACCEPT || m2->getNonce() == nullptr || m2->getAdversary_1().empty() || m2->getAdversary_2().empty())  return false;
+        if( m2->getMessageType() != ACCEPT || m2->getNonce() == nullptr || m2->getAdversary_1().empty() || m2->getAdversary_2().empty()){
+            vverbose<<"Error during test of ACCEPT"<<'\n';
+            return false;
+        }
         delete m2;
         delete encoded;
         verbose<<"ACCEPT"<<'\n';
 
         encoded = Converter::encodeMessage(REJECT,*m);
+        if( encoded == nullptr ){
+            vverbose<<"Error during encoding of REJECT"<<'\n';
+            return false;
+        }
         verbose<<encoded->getMessage()<<'\n';
         m2 = Converter::decodeMessage(*encoded);
-        if( m2->getMessageType() != REJECT || m2->getNonce() == nullptr || m2->getAdversary_1().empty() || m2->getAdversary_2().empty() )  return false;
+        if( m2->getMessageType() != REJECT || m2->getNonce() == nullptr || m2->getAdversary_1().empty() || m2->getAdversary_2().empty() ){
+            vverbose<<"Error during test of REJECT"<<'\n';
+            return false;
+        }
         delete m2;
         delete encoded;
         verbose<<"REJECT"<<'\n';
 
         encoded = Converter::encodeMessage(WITHDRAW_REQ,*m);
+        if( encoded == nullptr ){
+            vverbose<<"Error during encoding of WITHDRAW_REQ"<<'\n';
+            return false;
+        }
         verbose<<encoded->getMessage()<<'\n';
         m2 = Converter::decodeMessage(*encoded);
-        if( m2->getMessageType() != WITHDRAW_REQ || m2->getNonce() == nullptr || m2->getUsername().empty() )  return false;
+        if( m2->getMessageType() != WITHDRAW_REQ || m2->getNonce() == nullptr || m2->getUsername().empty() ){
+            vverbose<<"Error during test of WITHDRAW_REQ"<<'\n';
+            return false;
+        }
         delete m2;
         delete encoded;
         verbose<<"WITHDRAW_REQ"<<'\n';
 
         encoded = Converter::encodeMessage(WITHDRAW_OK,*m);
+        if( encoded == nullptr ){
+            vverbose<<"Error during encoding of WITHDRAW_OK"<<'\n';
+            return false;
+        }
         verbose<<encoded->getMessage()<<'\n';
         m2 = Converter::decodeMessage(*encoded);
-        if( m2->getMessageType() != WITHDRAW_OK || m2->getNonce() == nullptr )  return false;
+        if( m2->getMessageType() != WITHDRAW_OK || m2->getNonce() == nullptr ){
+            vverbose<<"Error during test of WITHDRAW_OK"<<'\n';
+            return false;
+        }
         delete m2;
         delete encoded;
         verbose<<"WITHDRAW_OK"<<'\n';
 
         encoded = Converter::encodeMessage(LOGOUT_REQ,*m);
+        if( encoded == nullptr ){
+            vverbose<<"Error during encoding of LOGOUT_REQ"<<'\n';
+            return false;
+        }
         verbose<<encoded->getMessage()<<'\n';
         m2 = Converter::decodeMessage(*encoded);
-        if( m2->getMessageType() != LOGOUT_REQ || m2->getNonce() == nullptr )  return false;
+        if( m2->getMessageType() != LOGOUT_REQ || m2->getNonce() == nullptr ){
+            vverbose<<"Error during test of LOGOUT_REQ"<<'\n';
+            return false;
+        }
         delete m2;
         delete encoded;
         verbose<<"LOGOUT_REQ"<<'\n';
 
         encoded = Converter::encodeMessage(LOGOUT_OK,*m);
+        if( encoded == nullptr ){
+            vverbose<<"Error during encoding of LOGOUT_OK"<<'\n';
+            return false;
+        }
         verbose<<encoded->getMessage()<<'\n';
         m2 = Converter::decodeMessage(*encoded);
-        if( m2->getMessageType() != LOGOUT_OK || m2->getNonce() == nullptr )  return false;
+        if( m2->getMessageType() != LOGOUT_OK || m2->getNonce() == nullptr ){
+            vverbose<<"Error during test of LOGOUT_OK"<<'\n';
+            return false;
+        }
         delete m2;
         delete encoded;
         verbose<<"LOGOUT_OK"<<'\n';
 
         encoded = Converter::encodeMessage(GAME_PARAM,*m);
+        if( encoded == nullptr ){
+            vverbose<<"Error during encoding of GAME_PARAM"<<'\n';
+            return false;
+        }
         verbose<<encoded->getMessage()<<'\n';
         m2 = Converter::decodeMessage(*encoded);
-        if( m2->getMessageType() != GAME_PARAM || m2->getNonce() == nullptr || m2->getPubKey().empty() || m2->getNetInformations().empty())  return false;
+        if( m2->getMessageType() != GAME_PARAM || m2->getNonce() == nullptr || m2->getPubKey() == nullptr || m2->getNetInformations() == nullptr ){
+            vverbose<<"Error during test of GAME_PARAM"<<'\n';
+            return false;
+        }
         delete m2;
         delete encoded;
         verbose<<"GAME_PARAM"<<'\n';
 
         encoded = Converter::encodeMessage(MOVE,*m);
+        if( encoded == nullptr ){
+            vverbose<<"Error during encoding of MOVE"<<'\n';
+            return false;
+        }
         verbose<<encoded->getMessage()<<'\n';
         m2 = Converter::decodeMessage(*encoded);
-        if( m2->getMessageType() != MOVE || m2->getCurrent_Token() == nullptr || m2->getChosenColumn() == nullptr )  return false;
+        if( m2->getMessageType() != MOVE || m2->getCurrent_Token() == nullptr || m2->getChosenColumn() == nullptr ){
+            vverbose<<"Error during test of MOVE"<<'\n';
+            return false;
+        }
         delete m2;
         delete encoded;
         verbose<<"MOVE"<<'\n';
 
         encoded = Converter::encodeMessage(CHAT,*m);
+        if( encoded == nullptr ){
+            vverbose<<"Error during encoding of CHAT"<<'\n';
+            return false;
+        }
         verbose<<encoded->getMessage()<<'\n';
         m2 = Converter::decodeMessage(*encoded);
-        if( m2->getMessageType() != CHAT || m2->getCurrent_Token() == nullptr || m2->getMessage().empty() )  return false;
+        if( m2->getMessageType() != CHAT || m2->getCurrent_Token() == nullptr || m2->getMessage() == nullptr ){
+            vverbose<<"Error during test of CHAT"<<'\n';
+            return false;
+        }
         delete m2;
         delete encoded;
         verbose<<"CHAT"<<'\n';
 
         encoded = Converter::encodeMessage(ACK,*m);
+        if( encoded == nullptr ){
+            vverbose<<"Error during encoding of ACK"<<'\n';
+            return false;
+        }
         verbose<<encoded->getMessage()<<'\n';
         m2 = Converter::decodeMessage(*encoded);
-        if( m2->getMessageType() != ACK  || m2->getCurrent_Token() == nullptr )  return false;
+        if( m2->getMessageType() != ACK  || m2->getCurrent_Token() == nullptr ){
+            vverbose<<"Error during test of ACK"<<'\n';
+            return false;
+        }
         delete m2;
         delete encoded;
         verbose<<"ACK"<<'\n';
 
         encoded = Converter::encodeMessage(DISCONNECT,*m);
+        if( encoded == nullptr ){
+            vverbose<<"Error during encoding of DISCONNECT"<<'\n';
+            return false;
+        }
         verbose<<encoded->getMessage()<<'\n';
         m2 = Converter::decodeMessage(*encoded);
-        if( m2->getMessageType() != DISCONNECT || m2->getNonce() == nullptr )  return false;
+        if( m2->getMessageType() != DISCONNECT || m2->getNonce() == nullptr ){
+            vverbose<<"Error during test of DISCONNECT"<<'\n';
+            return false;
+        }
         delete m2;
         delete encoded;
         verbose<<"DISCONNECT"<<'\n';
 
         delete m;
-
         return true;
 
+    }
+
+    //  function to easily convert the message in a form that can easily be used to hash messages and create signatures.
+    NetMessage* Converter::compactForm(MessageType type, Message message ) {
+
+        int len;
+        unsigned char* value;
+
+        vverbose<<"--> [Converter][encodeMessage] Starting encoding of Message"<<'\n';
+
+        if(!verifyCompact( type, message )){
+
+            verbose<<"--> [Converter][encodeMessage] Error during the verification of the message"<<'\n';
+            return nullptr;
+
+        }
+
+        unsigned char* certificate,*key,*net;
+        int* nonce;
+        switch( type ){
+
+            case CERTIFICATE_REQ:
+                nonce = message.getNonce();
+                len = 1+to_string(type).length()+to_string(*nonce).length();
+                value = new unsigned char[len];
+                strcat((char*)value, to_string(type).c_str() );
+                strcat( (char*)value , to_string(*(nonce)).c_str());
+                break;
+
+            case CERTIFICATE:
+                nonce = message.getNonce();
+                len = 1+to_string(type).length()+to_string(*nonce).length() + message.getServerCertificateLength()+message.getSignatureLen();
+                value = new unsigned char[len];
+                certificate  = message.getServerCertificate();
+                strcat((char*)value, to_string(type).c_str() );
+                strncat( (char*)value , (const char*)certificate , message.getServerCertificateLength());
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                delete[] certificate;
+                break;
+
+            case LOGIN_REQ:
+                nonce = message.getNonce();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcat((char*)value, to_string(type).c_str() );
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+
+                break;
+
+            case LOGIN_OK:
+                nonce = message.getNonce();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+
+                break;
+
+            case LOGIN_FAIL:
+                nonce = message.getNonce();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+
+                break;
+
+            case KEY_EXCHANGE:
+                nonce = message.getNonce();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getDHkeyLength()+message.getSignatureLen();
+                value = new unsigned char[len];
+                key = message.getDHkey();
+                strcat((char*)value, to_string(type).c_str());
+                strncat( (char*)value , (const char*)key, message.getDHkeyLength());
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+
+                delete[] key;
+                break;
+
+            case USER_LIST_REQ:
+                nonce = message.getNonce();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value ,to_string(*(nonce)).c_str() );
+                strcat( (char*)value , "\"&s=\"");
+
+                break;
+
+            case USER_LIST:
+                nonce = message.getNonce();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getUserList().length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , message.getUserList().c_str());
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+
+                break;
+
+            case RANK_LIST_REQ:
+                nonce = message.getNonce();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+
+                break;
+
+            case RANK_LIST:
+                nonce = message.getNonce();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getRankList().length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , message.getRankList().c_str() );
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+
+                break;
+
+            case MATCH:
+                nonce = message.getNonce();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , message.getUsername().c_str());
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+
+                break;
+
+            case ACCEPT:
+                nonce = message.getNonce();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getAdversary_1().length()+message.getAdversary_2().length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , message.getAdversary_1().c_str() );
+                strcat( (char*)value , message.getAdversary_2().c_str() );
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+
+                break;
+
+            case REJECT:
+                nonce = message.getNonce();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getAdversary_1().length()+message.getAdversary_2().length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , message.getAdversary_1().c_str() );
+                strcat( (char*)value , message.getAdversary_2().c_str() );
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+
+                break;
+
+            case WITHDRAW_REQ:
+                nonce = message.getNonce();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , message.getUsername().c_str() );
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+
+                break;
+
+            case WITHDRAW_OK:
+                nonce = message.getNonce();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+
+                break;
+
+            case LOGOUT_REQ:
+                nonce = message.getNonce();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+
+                break;
+
+            case LOGOUT_OK:
+                nonce = message.getNonce();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+
+                break;
+
+            case GAME_PARAM:
+                nonce = message.getNonce();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getPubKeyLength()+message.getNetInformationsLength()+message.getSignatureLen();
+                value = new unsigned char[len];
+                key = message.getPubKey();
+                net = message.getNetInformations();
+                strcat((char*)value, to_string(type).c_str());
+                strncat( (char*)value , (const char*)key , message.getPubKeyLength());
+                strncat( (char*)value , (const char*)net, message.getNetInformationsLength());
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+
+                delete[] key;
+                delete[] net;
+                break;
+
+            case MOVE:
+                nonce = message.getCurrent_Token();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen();
+                key = message.getChosenColumn();
+                value = new unsigned char[len];
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                strncat( (char*)value , (const char*)key, message.getChosenColumnLength());
+
+                delete[] key;
+                break;
+
+            case CHAT:
+                nonce = message.getCurrent_Token();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getMessageLength()+message.getSignatureLen();
+                value = new unsigned char[len];
+                key = message.getMessage();
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+                strncat( (char*)value , (const char*)key, message.getMessageLength());
+
+                delete[] key;
+                break;
+
+            case ACK:
+                nonce = message.getCurrent_Token();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+
+                break;
+
+            case DISCONNECT:
+                nonce = message.getNonce();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                value = new unsigned char[len];
+                strcat((char*)value, to_string(type).c_str());
+                strcat( (char*)value , to_string(*(nonce)).c_str() );
+
+                break;
+
+            default:
+                return nullptr;
+        }
+        delete nonce;
+
+        return new NetMessage(value,len);
     }
 
 }

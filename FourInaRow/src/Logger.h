@@ -4,6 +4,7 @@
 #define FOURINAROW_LOGGER_H
 
 #include <iostream>
+#include "utility/Message.h"
 using namespace std;
 
 enum Verbose{
@@ -27,6 +28,7 @@ class Logger{
     public:
         Logger( Verbose level );
         Logger operator<<(int value);
+        Logger operator<<(unsigned int value);
         Logger operator<<(double value);
         Logger operator<<(bool value);
         Logger operator<<(char* value);

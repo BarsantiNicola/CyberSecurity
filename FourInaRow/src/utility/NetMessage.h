@@ -5,6 +5,7 @@
 #include <ostream>
 #include <cstring>
 #include "../Logger.h"
+
 namespace utility{
 
     /////////////////////////////////////////////////////////////////////////////////////
@@ -18,15 +19,19 @@ namespace utility{
     /////////////////////////////////////////////////////////////////////////////////////
 
     class NetMessage {
+
         private:
             unsigned char* message;
-            int len;
+            unsigned int len;
+
         public:
-            NetMessage(unsigned char* message , int length );
+            NetMessage(unsigned char* message , unsigned int length );  //  COSTRUCTOR FOR CONNECTION_MANAGER
+            NetMessage(NetMessage& value);
             ~NetMessage();
-            unsigned char* getMessage();
-            int length();
-            static void test();                                 //  test function
+
+            unsigned char* getMessage();                        //  GIVES THE CONTENT OF THE CLASS
+            unsigned int length();                              //  GIVES THE LENGTH OF CONTENT
+            static void test();                                 //  TEST FUNCTION
     };
 
 }

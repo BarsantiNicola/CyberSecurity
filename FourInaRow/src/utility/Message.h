@@ -5,7 +5,9 @@
 
 #include <string>
 #include <openssl/evp.h>
-
+#include <cstring>
+#include <iostream>
+#include "../Logger.h"
 using namespace std;
 
 namespace utility {
@@ -49,54 +51,96 @@ namespace utility {
     class Message {
         private:
             MessageType messageType;
+
             string username = "";
             string adv_username_1 = "";
             string adv_username_2 = "";
-            int* nonce = NULL;
-            string server_certificate = "";
-            string signature = "";
-            string pub_Key = "";
-            string net_informations = "";
-            int* current_token = NULL;
-            int* chosen_column = NULL;
-            string message = "";
-            string DH_key = "";
             string user_list = "";
             string rank_list = "";
 
+            int* nonce = nullptr;
+            int* current_token = nullptr;
+
+            unsigned char* server_certificate = nullptr;
+            unsigned int certificate_len = 0;
+
+            unsigned char* signature = nullptr;
+            unsigned int signature_len = 0;
+
+            unsigned char* pub_Key = nullptr;
+            unsigned int pub_key_len = 0;
+
+            unsigned char* net_informations = nullptr;
+            unsigned int net_informations_len = 0;
+
+            unsigned char* chosen_column = nullptr;
+            unsigned int chosen_column_size = 0;
+
+            unsigned char* message = nullptr;
+            unsigned int message_size = 0;
+
+            unsigned char* DH_key = nullptr;
+            unsigned int dh_key_len = 0;
+
         public:
+
+            //  COSTRUCTORS AND DESTRUCTORS
+            Message();
+            Message(Message&);
+            ~Message();
+
+            //  SETTERS
             void setMessageType( MessageType type );
+
             void setUsername( string username );
             void setAdversary_1( string username );
             void setAdversary_2( string username );
-            void setNonce( int nonce );
-            void setServer_Certificate( string certificate );
-            void setPubKey( string key );
-            void setNetInformations( string IP );
-            void setCurrent_Token( int current_token );
-            void setChosenColumn( int chosen_column );
-            void setMessage( string message );
-            void set_DH_key( string key );
             void setUserList( string user_list );
             void setRankList( string rank_list );
-            void setSignature( string signature );
 
-            ~Message();
+            bool setNonce( int nonce );
+            bool setCurrent_Token( int current_token );
+
+            bool setServer_Certificate( unsigned char* certificate , unsigned int len );
+            bool setPubKey( unsigned char* key , unsigned int len );
+            bool setNetInformations( unsigned char* IP , unsigned int len );
+            bool setChosenColumn( unsigned char* chosen_column, unsigned int len );
+            bool setMessage( unsigned char* message, unsigned int len );
+            bool setSignature( unsigned char* signature , unsigned int len );
+            bool set_DH_key( unsigned char* key , unsigned int len );
+
+            //  GETTERS
+
             MessageType getMessageType();
             string getUsername();
             string getAdversary_1();
             string getAdversary_2();
-            int* getNonce();
-            string  getServer_Certificate();
-            string getPubKey();
-            string getNetInformations();
-            int* getCurrent_Token();
-            int* getChosenColumn();
-            string getMessage();
-            string get_DH_key();
             string getUserList();
             string getRankList();
-            string getSignature();
+
+            int* getNonce();
+            int* getCurrent_Token();
+
+            unsigned char* getServerCertificate();
+            unsigned int getServerCertificateLength();
+
+            unsigned char* getPubKey();
+            unsigned int getPubKeyLength();
+
+            unsigned char* getNetInformations();
+            unsigned int getNetInformationsLength();
+
+            unsigned char* getChosenColumn();
+            unsigned int getChosenColumnLength();
+
+            unsigned char* getMessage();
+            unsigned int getMessageLength();
+
+            unsigned char* getDHkey();
+            unsigned int getDHkeyLength();
+
+            unsigned char* getSignature();
+            unsigned int getSignatureLen();
 
     };
 
