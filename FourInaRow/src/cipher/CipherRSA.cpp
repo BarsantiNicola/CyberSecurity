@@ -128,7 +128,79 @@ namespace cipher{
         if( pubServerKey )
             EVP_PKEY_free( this->pubServerKey );
 
+        if( !keyArchive.empty() ){
+            for (auto const& element : keyArchive)
+                EVP_PKEY_free(element.second);
+            keyArchive.clear();
 
+        }
+
+    }
+
+    bool CipherRSA::loadUserKey( string username ) {
+
+        if( keyArchive.find( username ) != keyArchive.end()){
+            verbose<<"--> [CipherRSA][loadUserKey] Key already loaded. Abort"<<'\n';
+            return true;
+        }
+
+        string pubKey = "data/server_data/";
+        pubKey.append(username).append( "PubRSA.pem" );
+
+        FILE* publicKey = fopen( pubKey.c_str() ,"r");
+
+        if( !publicKey  ) {
+
+            verbose << "--> [CipherRSA][loadUserKey] Error, key not found" << '\n';
+            return false;
+
+        }else{
+
+            vverbose<<"--> [CipherRSA][loadUserKey] server'keys found"<<'\n';
+
+            EVP_PKEY* key = PEM_read_PUBKEY( publicKey, nullptr, nullptr , nullptr);
+            if( ! key  ) {
+                verbose << "--> [CipherRSA][loadUserKey] Unable to extract " << username << "'public key" << '\n';
+                EVP_PKEY_free(key);
+                fclose(publicKey);
+                return false;
+            }else
+                vverbose<<"--> [CipherRSA][loadUserKey] " << username<<"'public key correctly loaded"<<'\n';
+
+            fclose(publicKey);
+            this->keyArchive[username] = key;
+            return true;
+
+        }
+
+    }
+
+    bool CipherRSA::removeUserKey( string username ){
+
+        if( keyArchive.find( username ) == keyArchive.end()){
+            verbose<<"--> [CipherRSA][removeUserKey] Key not present. Abort"<<'\n';
+            return true;
+        }
+
+        if( keyArchive.erase( username )) {
+            verbose<<"--> [CipherRSA][removeUserKey] "<<username<<"'key correctly removed"<<'\n';
+            return true;
+        }else{
+            verbose<<"--> [CipherRSA][removeUserKey] Error during the removal of the "<<username<<"'key"<<'\n';
+            return false;
+        }
+
+    }
+
+    EVP_PKEY* CipherRSA::getUserKey( string username ){
+
+        if( keyArchive.find(username) == keyArchive.end() ){
+            verbose<<"--> [CipherRSA][removeUserKey] Error, "<<username<<"'key not present"<<'\n';
+            return nullptr;
+        }
+
+        auto it = keyArchive.find(username);
+        return it->second;
 
     }
 
@@ -179,9 +251,32 @@ namespace cipher{
 
     }
 
-    bool CipherRSA::serverVerifySignature( Message message, int socket ){
+    bool CipherRSA::serverVerifySignature( Message message, string username ){
 
-        return false;
+        EVP_PKEY* key = getUserKey(username);
+        if( !key ){
+            verbose<<"-->[CipherRSA][serverVerifySignature] Error, "<<username<<"'key not found"<<'\n';
+            return false;
+        }
+        unsigned char* signature = message.getSignature();
+        bool ret;
+        if( !signature ){
+            verbose<<"-->[CipherRSA][serverVerifySignature] Error, message hasn't a signature"<<'\n';
+            return false;
+        }
+
+        NetMessage* compactMessage = Converter::compactForm(message.getMessageType() , message );
+        if( compactMessage == nullptr || compactMessage->length() == 0 ){
+            verbose<<"-->[CipherRSA][serverVerifySignature] Error during the generation of the compact message"<<'\n';
+            delete[] signature;
+            return false;
+        }
+
+        ret = verifySignature( compactMessage->getMessage() , signature , compactMessage->length() , message.getSignatureLen(), key );
+
+        delete[] signature;
+        delete compactMessage;
+        return ret;
 
     }
 
@@ -280,7 +375,11 @@ namespace cipher{
         rsa_1->clientVerifySignature(*message2,false);
         delete net;
 
-
+        verbose<<"-------------------------------------------"<<'\n';
+        rsa_1->loadUserKey("bob");
+        rsa_1->loadUserKey("alice");
+        rsa_1->serverVerifySignature(*message, "bob");
+        rsa_1->serverVerifySignature(*message2, "alice");
         delete message;
         delete message2;
         delete rsa_1;

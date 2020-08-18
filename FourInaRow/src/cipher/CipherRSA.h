@@ -14,10 +14,9 @@ using namespace utility;
 
 namespace cipher {
 
-    struct KeyStruct{
+    struct keyStruct{
         string username;
-        EVP_PKEY* pKey;
-        KeyStruct* next;
+        EVP_PKEY* pubKey;
     };
 
     class CipherRSA {
@@ -27,7 +26,7 @@ namespace cipher {
             EVP_PKEY* advPubKey = nullptr;
             EVP_PKEY* caKey = nullptr;
             EVP_PKEY* pubServerKey = nullptr;
-            std::unordered_map<int,EVP_PKEY*> keyArchive;
+            std::unordered_map<string,EVP_PKEY*> keyArchive;
 
             unsigned char* makeSignature( unsigned char* fields, unsigned int& len, EVP_PKEY* privKey  );
             bool verifySignature( unsigned char* msg, unsigned char* signature , int msgLen, int len, EVP_PKEY* pubKey );
@@ -39,11 +38,13 @@ namespace cipher {
             ~CipherRSA();
             bool sign( Message *message );
             bool clientVerifySignature( Message message , bool server );
-            bool serverVerifySignature( Message message, int socket );
+            bool serverVerifySignature( Message message, string username );
             bool verifyCertificate();
             bool setAdversaryKey( EVP_PKEY* signature );
             void unsetAdversaryKey();
-            bool loadUserKey( int socket , int username );
+            bool loadUserKey( string username );
+            bool removeUserKey( string username );
+            EVP_PKEY* getUserKey( string username );
             static bool test();
 
 
