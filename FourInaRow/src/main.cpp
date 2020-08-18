@@ -10,10 +10,10 @@ using namespace utility;
 
     int main() {
 
-        Logger::setThreshold( VERY_VERBOSE );
+        Logger::setThreshold( VERBOSE );
         base<<"------------------------------------------------------------"<<"\n\n";
-        //cipher::CipherRSA::test();
-        Converter::test();
+        cipher::CipherRSA::test();
+        //Converter::test();
         return 0;
     }
 

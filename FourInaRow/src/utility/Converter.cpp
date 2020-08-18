@@ -439,7 +439,14 @@ namespace utility{
                     return false;
                 }
 
-                if( checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length())) {
+                if( message.getUsername().empty()){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Adversary1"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                app = message.getUsername().c_str();
+
+                if( checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length()) ||  checkField((unsigned char*)app,message.getUsername().length()) ) {
                     verbose<<"--> [Converter][verifyMessage] Verification failure: Presence of <\"&>"<<'\n';
                     delete nonce;
                     delete[] signature;
@@ -1040,7 +1047,14 @@ namespace utility{
                 }
                 nonceString = (unsigned char*)to_string(*nonce).c_str();
 
-                if( checkField(nonceString,to_string(*nonce).length())) {
+                if( message.getUsername().empty()){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Adversary1"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+                app = message.getUsername().c_str();
+
+                if( checkField(nonceString,to_string(*nonce).length()) ||  checkField((unsigned char*)app,message.getUsername().length()) ) {
                     verbose<<"--> [Converter][verifyCompact] Verification failure: Presence of <\"&>"<<'\n';
                     delete nonce;
                     return false;
@@ -1463,13 +1477,16 @@ namespace utility{
                 nonce = message.getNonce();
                 sign = message.getSignature();
                 len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
+
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
+
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
                 pos = writeField(value , 'u', (unsigned char*)message.getUsername().c_str(), message.getUsername().length(), pos,false  );
                 pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(), pos,false  );
                 pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
+
                 delete[] sign;
 
                 break;
@@ -1672,7 +1689,7 @@ namespace utility{
                 value[1] = '\0';
             }else {
                 value = new unsigned char[highPos - lowPos + 2];
-                for (int a = 0; a < highPos - lowPos + 1; a++)
+                for (int a = 0; a < highPos - lowPos+2; a++)
                     value[a] = '\0';
             }
             for (int a = lowPos; a <= highPos; a++) {
@@ -2277,7 +2294,6 @@ namespace utility{
 
         }
 
-
         unsigned char* certificate,*key,*net;
         int* nonce;
         int pos;
@@ -2285,7 +2301,7 @@ namespace utility{
 
             case CERTIFICATE_REQ:
                 nonce = message.getNonce();
-                len = 10+to_string(type).length()+to_string(*nonce).length();
+                len = 1+to_string(type).length()+to_string(*nonce).length();
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
@@ -2295,7 +2311,7 @@ namespace utility{
 
             case CERTIFICATE:
                 nonce = message.getNonce();
-                len = 20+to_string(type).length()+to_string(*nonce).length() + message.getServerCertificateLength()+message.getSignatureLen();
+                len = 1+to_string(type).length()+to_string(*nonce).length() + message.getServerCertificateLength();
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
@@ -2309,7 +2325,7 @@ namespace utility{
 
             case LOGIN_REQ:
                 nonce = message.getNonce();
-                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length();
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
@@ -2321,7 +2337,7 @@ namespace utility{
 
             case LOGIN_OK:
                 nonce = message.getNonce();
-                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                len = 1+to_string(type).length()+to_string(*nonce).length();
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
@@ -2332,7 +2348,7 @@ namespace utility{
 
             case LOGIN_FAIL:
                 nonce = message.getNonce();
-                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                len = 1+to_string(type).length()+to_string(*nonce).length();
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
@@ -2344,7 +2360,7 @@ namespace utility{
             case KEY_EXCHANGE:
                 nonce = message.getNonce();
                 key = message.getDHkey();
-                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getDHkeyLength()+message.getSignatureLen();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getDHkeyLength();
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
@@ -2357,7 +2373,7 @@ namespace utility{
 
             case USER_LIST_REQ:
                 nonce = message.getNonce();
-                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                len = 1+to_string(type).length()+to_string(*nonce).length();
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
@@ -2368,7 +2384,7 @@ namespace utility{
 
             case USER_LIST:
                 nonce = message.getNonce();
-                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUserList().length()+message.getSignatureLen();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getUserList().length();
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
@@ -2380,7 +2396,7 @@ namespace utility{
 
             case RANK_LIST_REQ:
                 nonce = message.getNonce();
-                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                len = 1+to_string(type).length()+to_string(*nonce).length();
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
@@ -2391,7 +2407,7 @@ namespace utility{
 
             case RANK_LIST:
                 nonce = message.getNonce();
-                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getRankList().length()+message.getSignatureLen();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getRankList().length();
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
@@ -2403,7 +2419,7 @@ namespace utility{
 
             case MATCH:
                 nonce = message.getNonce();
-                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length();
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
@@ -2415,7 +2431,7 @@ namespace utility{
 
             case ACCEPT:
                 nonce = message.getNonce();
-                len = 25+to_string(type).length()+to_string(*nonce).length()+message.getAdversary_1().length()+message.getAdversary_2().length()+message.getSignatureLen();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getAdversary_1().length()+message.getAdversary_2().length();
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
@@ -2428,7 +2444,7 @@ namespace utility{
 
             case REJECT:
                 nonce = message.getNonce();
-                len = 25+to_string(type).length()+to_string(*nonce).length()+message.getAdversary_1().length()+message.getAdversary_2().length()+message.getSignatureLen();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getAdversary_1().length()+message.getAdversary_2().length();
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
@@ -2441,7 +2457,7 @@ namespace utility{
 
             case WITHDRAW_REQ:
                 nonce = message.getNonce();
-                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length();
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
@@ -2453,7 +2469,7 @@ namespace utility{
 
             case WITHDRAW_OK:
                 nonce = message.getNonce();
-                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                len = 1+to_string(type).length()+to_string(*nonce).length();
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
@@ -2464,7 +2480,7 @@ namespace utility{
 
             case LOGOUT_REQ:
                 nonce = message.getNonce();
-                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                len = 1+to_string(type).length()+to_string(*nonce).length();
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
@@ -2475,7 +2491,7 @@ namespace utility{
 
             case LOGOUT_OK:
                 nonce = message.getNonce();
-                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                len = 1+to_string(type).length()+to_string(*nonce).length();
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
@@ -2486,7 +2502,7 @@ namespace utility{
 
             case GAME_PARAM:
                 nonce = message.getNonce();
-                len = 25+to_string(type).length()+to_string(*nonce).length()+message.getPubKeyLength()+message.getNetInformationsLength()+message.getSignatureLen();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getPubKeyLength()+message.getNetInformationsLength();
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
@@ -2502,7 +2518,7 @@ namespace utility{
 
             case MOVE:
                 nonce = message.getCurrent_Token();
-                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength();
                 key = message.getChosenColumn();
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
@@ -2516,7 +2532,7 @@ namespace utility{
 
             case CHAT:
                 nonce = message.getCurrent_Token();
-                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getMessageLength()+message.getSignatureLen();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getMessageLength();
                 value = new unsigned char[len];
                 key = message.getMessage();
                 for( int a = 0; a<len;a++)
@@ -2530,7 +2546,7 @@ namespace utility{
 
             case ACK:
                 nonce = message.getCurrent_Token();
-                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                len = 1+to_string(type).length()+to_string(*nonce).length();
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
@@ -2541,7 +2557,7 @@ namespace utility{
 
             case DISCONNECT:
                 nonce = message.getNonce();
-                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                len = 1+to_string(type).length()+to_string(*nonce).length();
                 value = new unsigned char[len];
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
@@ -2565,20 +2581,22 @@ namespace utility{
         value[pos++] = '=';
         value[pos++] = '"';
 
-        for (int a = 0; a < len; a++)
-            value[pos + a] = field[a];
+        for( int a = 0; a<len;a++)
+            value[pos+a] = field[a];
+
         pos += len;
         value[pos++] = '"';
+
         if (finish)
             value[pos++] = '\0';
         else
             value[pos++] = '&';
+
         return pos;
     }
 
     int Converter::writeCompactField( unsigned char* value, unsigned char* field , int len , int pos , bool finish ) {
-
-
+        
         for (int a = 0; a < len; a++)
             value[pos + a] = field[a];
         pos += len;

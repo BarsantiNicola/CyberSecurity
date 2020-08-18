@@ -142,14 +142,9 @@ namespace cipher{
 
         unsigned int len = compactForm->length();
         unsigned char *signature = makeSignature( compactForm->getMessage() , len, this->myPrivKey );
-        for( int a = 0; a<len;a++)
-            cout<<(int)signature[a]<< ' ';
-        cout<<endl;
+
         message->setSignature( signature, len );
-        unsigned char *signature2 = message->getSignature();
-        for( int a = 0; a<message->getSignatureLen();a++)
-            cout<<(int)signature2[a]<< ' ';
-        cout<<endl;
+
         delete compactForm;
         delete[] signature;
         return true;
@@ -173,12 +168,8 @@ namespace cipher{
             return false;
         }
 
-        verbose<<"SIGNATURE:"<<'\n';
-        for(int a = 0; a<message.getSignatureLen(); a++ )
-            cout<<(int)signature[a]<< ' ';
-        cout<<endl;
         if( server )
-            ret = verifySignature( compactMessage->getMessage() , signature , compactMessage->length() , message.getSignatureLen(), this->myPubKey );
+            ret = verifySignature( compactMessage->getMessage() , signature , compactMessage->length() , message.getSignatureLen(), this->pubServerKey );
         else
             ret = verifySignature( compactMessage->getMessage() , signature , compactMessage->length() , message.getSignatureLen(), this->advPubKey );
 
@@ -226,10 +217,6 @@ namespace cipher{
             return nullptr;
         }
 
-        verbose<<"COmpact Message"<<'\n';
-        for( int a = 0; a<len; a++ )
-            cout<<compactMessage[a];
-        cout<<endl;
         unsigned int l = len;
         unsigned char* signature;
         signature = (unsigned char*)malloc( EVP_PKEY_size(key));
@@ -239,21 +226,12 @@ namespace cipher{
         EVP_SignFinal(ctx,signature,(unsigned int*)&l,key);
         EVP_MD_CTX_free(ctx);
         len = l;
-        verbose<<"signature created LEN: "<<len<<'\n';
-        for( int a = 0; a<len;a++)
-            cout<<(int)signature[a]<< ' ';
-        cout<<endl;
         return signature;
 
     }
 
     bool CipherRSA::verifySignature( unsigned char* compactMessage , unsigned char* signature , int compactLen, int signatureLen, EVP_PKEY* key ){
 
-        verbose<<"COmpact Message"<<'\n';
-        for( int a = 0; a<compactLen; a++ )
-            cout<<compactMessage[a];
-        cout<<endl;
-        verbose<<"signature verification LEN: "<<signatureLen<<'\n';
         EVP_MD_CTX* ctx = EVP_MD_CTX_new();
         EVP_VerifyInit(ctx,EVP_sha256());
         EVP_VerifyUpdate(ctx,compactMessage, compactLen );
@@ -275,33 +253,36 @@ namespace cipher{
 
         Message* message = new Message();
         message->setNonce(14);
+        message->setUsername("pippo");
         message->setMessageType( WITHDRAW_REQ );
         Message* message2 = new Message();
         message2->setNonce(9123124);
         message2->setMessageType( WITHDRAW_REQ );
-        verbose<<"----------------------------------------------------"<<'\n';
+        message2->setUsername("pluto");
         rsa_2->sign(message2);
         rsa_1->sign(message);
 
-        verbose<<"----------------------------------------------------"<<'\n';
 
         rsa_1->setAdversaryKey(rsa_2->myPubKey);
         rsa_2->setAdversaryKey(rsa_1->myPubKey);
         rsa_1->clientVerifySignature(*message2, false );    //  USE THE ADVERSARY PUB KEY*/
-        rsa_2->clientVerifySignature(*message,false );
-        verbose<<"----------------------------------------------------"<<'\n';
-     /*   NetMessage* net = Converter::encodeMessage(WITHDRAW_REQ, *message );
-        unsigned char* signature= net->getMessage();
-        for(int a = 0; a<net->length(); a++)
-            cout << (int) signature[a] <<' ';
-        cout<<endl;
+        rsa_2->clientVerifySignature(*message, false );
+
+        NetMessage* net = Converter::encodeMessage(WITHDRAW_REQ, *message );
         delete message;
         message = Converter::decodeMessage(*net);
-        delete net;*/
+        delete net;
+        net = Converter::encodeMessage(WITHDRAW_REQ, *message2 );
+        delete message2;
+        message2 = Converter::decodeMessage(*net);
+
+        rsa_2->clientVerifySignature(*message,false );
+        rsa_1->clientVerifySignature(*message2,false);
+        delete net;
 
 
         delete message;
-        //delete message2;
+        delete message2;
         delete rsa_1;
       //  delete rsa_2;
         return true;

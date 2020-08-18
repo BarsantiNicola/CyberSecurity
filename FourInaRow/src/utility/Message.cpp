@@ -262,9 +262,7 @@ namespace utility {
             return false;
 
         }
-        for( int a = 0; a<len;a++)
-            cout<<(int)signature[a]<< ' ';
-        cout<<endl;
+
         if( this->signature )
             delete[] this->signature;
 
