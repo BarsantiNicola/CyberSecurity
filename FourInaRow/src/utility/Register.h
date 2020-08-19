@@ -13,10 +13,12 @@ namespace utility{
   public:
    Register();
    bool removeData(T);
-   ~Register();
-  protected:
    bool addData(T);
-   T getData(int);
+   T* getData(unsigned);
+   ~Register();
+  //protected:
+   //bool addData(T);
+   //T getData(int);
  };
 }
 
