@@ -107,6 +107,29 @@ namespace utility {
 
     }
 
+    NetMessage* NetMessage::giveWithLength(){
+
+        unsigned int newLen = this->len+to_string(this->len).length()+1;
+        int numberLen = to_string(this->len).length();
+        unsigned char* newMsg = new unsigned char[this->len+numberLen+1];
+
+        for( int a = 0; a<newLen; a++ )
+            newMsg[a] = '\0';
+
+        myCopy( newMsg , (unsigned char*)to_string(this->len).c_str(), numberLen);
+        newMsg[numberLen++] = '%';
+
+        for( int a = 0; a<this->len; a++ )
+            newMsg[a+numberLen] = this->message[a];
+
+        NetMessage* ret =  new NetMessage( newMsg , newLen );
+        delete[] newMsg;
+
+        return ret;
+
+    }
+
+
     //  function with an example of usage of the class which performs a test for its correctness
     void NetMessage::test(){
 

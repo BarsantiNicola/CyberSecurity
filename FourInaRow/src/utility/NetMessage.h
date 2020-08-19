@@ -32,7 +32,7 @@ namespace utility{
             unsigned char* getMessage();                        //  GIVES THE CONTENT OF THE CLASS
             unsigned int length();                              //  GIVES THE LENGTH OF CONTENT
             static void test();                                 //  TEST FUNCTION
-
+            NetMessage* giveWithLength();                       //  VERSION FOR EASY NET COMMUNICATION
 
     };
 

@@ -341,6 +341,34 @@ namespace cipher{
 
     }
 
+    bool CipherRSA::verifyCertificate(X509* certificate){
+
+        return true;
+
+    }
+
+    EVP_PKEY* extractServerKey( unsigned char* certificate , int len ){
+
+        std::ofstream pemWrite("data/client_data/serverCertificate.pem");
+        X509* cert;
+        for( int a = 0; a<len;a++)
+            pemWrite<<certificate[a];
+        pemWrite.close();
+        FILE* f = fopen("data/client_data/serverCertificate.pem" , "r");
+        cert = PEM_read_X509(f, NULL,NULL,NULL);
+
+        fclose(f);
+        if( !cert ){
+            verbose<<"Error, certificate not loaded"<<'\n';
+        }
+   /*     if( verifyCertificate(cert)){
+            return X509_get_pubkey(cert);
+        }*/
+        return nullptr;
+
+    }
+
+
     bool CipherRSA::test(){
 
         CipherRSA* rsa_1 = new CipherRSA( "bob" , "bobPassword");

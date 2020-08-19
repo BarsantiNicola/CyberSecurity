@@ -4,6 +4,9 @@
 
 #include <openssl/evp.h>
 #include <openssl/pem.h>
+#include <openssl/x509_vfy.h>
+#include <iostream>
+#include <fstream>
 #include <string>
 #include <cstring>
 #include "../utility/Message.h"
@@ -30,21 +33,23 @@ namespace cipher {
 
             unsigned char* makeSignature( unsigned char* fields, unsigned int& len, EVP_PKEY* privKey  );
             bool verifySignature( unsigned char* msg, unsigned char* signature , int msgLen, int len, EVP_PKEY* pubKey );
+            bool verifyCertificate(X509* certificate);
 
         public:
 
             CipherRSA( string username, string password );                            //  costructor for a client
-            CipherRSA( string serverName, string password, string users[], int len );          //  costructor for the server
+            CipherRSA( string serverName, string password, string users[], int len ); //  costructor for the server
             ~CipherRSA();
             bool sign( Message *message );
             bool clientVerifySignature( Message message , bool server );
             bool serverVerifySignature( Message message, string username );
-            bool verifyCertificate();
+
             bool setAdversaryKey( EVP_PKEY* signature );
             void unsetAdversaryKey();
             bool loadUserKey( string username );
             bool removeUserKey( string username );
             EVP_PKEY* getUserKey( string username );
+            EVP_PKEY extractServerKey( unsigned char* certificate , int len );
             static bool test();
 
 
