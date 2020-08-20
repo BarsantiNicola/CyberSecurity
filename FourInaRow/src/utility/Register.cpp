@@ -1,7 +1,6 @@
 #include"Register.h"
 #include<limits.h>
 
-//using namespace std;
 
 namespace utility
 { 
@@ -13,7 +12,14 @@ namespace utility
    //cout<<"vector size: "<<dataList.size()<<endl;
   }
 
+/*
+--------------------function getData(unsigned pos)-------------------------------------
+this function return a data in a position pos if the pos is invalid return NULL
+
+
+*/
   template<typename T>
+
   T* Register<T>::getData(unsigned pos)
   {
     if(pos>= dataList.size()||pos<0)
@@ -23,7 +29,7 @@ namespace utility
       return NULL;
     }
     else
-       verbose<<"-->[Register][getData] The data was returned succesfully at the pos "<<(int)pos<<'\n';
+       vverbose<<"-->[Register][getData] The data was returned succesfully at the position: "<<(int)pos<<'\n';
       try
       {
         return &dataList.at(pos);
@@ -36,23 +42,39 @@ namespace utility
       }
 
   }
+
+/* 
+-----------------------------function removeData(T data)---------------------------
+remove a data from the dataList vector and in case of success return true otherwise the fuctuion return false value
+*/
   template<typename T>
   bool Register<T>::removeData(T data)
   {
-    for(int i=0;i<dataList.size();i++)
+    try
     {
-      if(dataList.at(i)==data)
+      for(int i=0;i<dataList.size();i++)
       {
-         vverbose<<"-->[Register][removeData] the data was removed successfully"<<'\n';
-         dataList.erase(dataList.begin()+(i));
-         return true;
+        if(dataList.at(i)==data)
+        {
+           vverbose<<"-->[Register][removeData] the data was removed successfully"<<'\n';
+           dataList.erase(dataList.begin()+(i));
+           return true;
+        }
       }
-    }
     verbose<<"-->[Register][removeData] data not found"<<'\n';
     return false;
+    }
+    catch(const out_of_range& e)
+    {
+      verbose<<"-->[Register][removeData] error to access on data"<<'\n';
+      return false;
+     }
   }
 
 
+/*---------------------------------------Function addData(T data)---------------------------
+This function return true if the data was added succesfully, false in the unsuccesfully case
+*/
   template<typename T>
   bool Register<T>::addData(T data)
   {
@@ -70,7 +92,9 @@ namespace utility
     //cout<<(int)dataList.size()<<endl;
     return true;
   }
-
+/*
+--------------------------------Function ~Register()---------------------------------------
+*/
   template<typename T>
   Register<T>::~Register()
   {
