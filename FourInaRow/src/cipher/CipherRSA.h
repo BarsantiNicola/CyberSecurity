@@ -13,9 +13,20 @@
 #include "../utility/Converter.h"
 #include <unordered_map>
 
+
 using namespace utility;
 
 namespace cipher {
+
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //                                                                                   //
+    //                                   CIPHER RSA                                      //
+    //    The class is in charge of:                                                     //
+    //       - generate/verify signatures                                                //
+    //       - store needed keys in a transparent way                                    //
+    //       - verify server certificate validity                                        //
+    //                                                                                   //
+    ///////////////////////////////////////////////////////////////////////////////////////
 
     struct keyStruct{
         string username;
@@ -23,35 +34,47 @@ namespace cipher {
     };
 
     class CipherRSA {
+
         private:
+            //  CLIENT VARIABLES
+            EVP_PKEY* advPubKey = nullptr;
+            EVP_PKEY* pubServerKey = nullptr;
+            X509_STORE* store = nullptr;
+
+            //  SERVER VARIABLES
+            std::unordered_map<string,EVP_PKEY*> keyArchive;
+            unsigned char* serverCertificate = nullptr;
+            unsigned int lenServerCertificate;
+
+            //  COMMON VARIABLES
             EVP_PKEY* myPrivKey = nullptr;
             EVP_PKEY* myPubKey = nullptr;
-            EVP_PKEY* advPubKey = nullptr;
-            EVP_PKEY* caKey = nullptr;
-            EVP_PKEY* pubServerKey = nullptr;
-            std::unordered_map<string,EVP_PKEY*> keyArchive;
+            bool server = false;
 
-            unsigned char* makeSignature( unsigned char* fields, unsigned int& len, EVP_PKEY* privKey  );
-            bool verifySignature( unsigned char* msg, unsigned char* signature , int msgLen, int len, EVP_PKEY* pubKey );
-            bool verifyCertificate(X509* certificate);
+            unsigned char* makeSignature( unsigned char* fields, unsigned int& len, EVP_PKEY* privKey  );                 //  GENERATE A SIGNATURE FROM A COMPRESS FORM OF A MESSAGE
+            bool verifySignature( unsigned char* msg, unsigned char* signature , int msgLen, int len, EVP_PKEY* pubKey ); //  VERIFY A SIGNATURE OF A MESSAGE
+            bool verifyCertificate(X509* certificate);                                                                    //  VERIFY THE VALIDITY OF A CERTIFICATE
 
         public:
 
-            CipherRSA( string username, string password );                            //  costructor for a client
-            CipherRSA( string serverName, string password, string users[], int len ); //  costructor for the server
+            CipherRSA( string username, string password , bool server );
             ~CipherRSA();
-            bool sign( Message *message );
-            bool clientVerifySignature( Message message , bool server );
-            bool serverVerifySignature( Message message, string username );
 
-            bool setAdversaryKey( EVP_PKEY* signature );
-            void unsetAdversaryKey();
-            bool loadUserKey( string username );
-            bool removeUserKey( string username );
-            EVP_PKEY* getUserKey( string username );
-            EVP_PKEY extractServerKey( unsigned char* certificate , int len );
+            //  COMMON UTILITIES
+            bool sign( Message *message );                 //  GENERATE AND PUT A SIGNATURE IN A MESSAGE CLASS
             static bool test();
 
+            //  SERVER UTILITIES
+            bool loadUserKey( string username );                               //  LOAD THE KEY OF THE USER INTO THE KEY ARCHIVE
+            bool removeUserKey( string username );                             //  REMOVE THE KEY OF THE USER FROM THE ARCHIVE
+            EVP_PKEY* getUserKey( string username );                           //  TAKE THE KEY OF THE USER FROM THE ARCHIVE
+            bool serverVerifySignature( Message message, string username );    //  VERIFY THE SIGNATURE OF A MESSAGE[SERVER]
+
+            //  CLIENT UTILITIES
+            bool setAdversaryKey( EVP_PKEY* signature );                        //  SET AN ADVERSARY KEY
+            void unsetAdversaryKey();                                           //  REMOVE AN ADVERSARY KEY
+            bool extractServerKey( unsigned char* certificate , int len ); //  EXTRACT A PUBLIC KEY FROM A CERTIFICATE[CERTIFICATE MESSAGE]
+            bool clientVerifySignature( Message message , bool server );        //  VERIFY THE SIGNATURE OF A MESSAGE[CLIENT]
 
     };
 }

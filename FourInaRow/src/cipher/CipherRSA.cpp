@@ -4,46 +4,122 @@
 
 namespace cipher{
 
-    CipherRSA::CipherRSA( string username, string password ) {
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    //                                                                                           //
+    //                                   COSTRUCTORS/DESTRUCTORS                                 //
+    //                                                                                           //
+    ///////////////////////////////////////////////////////////////////////////////////////////////
 
-        vverbose<<"--> [CipherRSA][Costructor] Searching CA key"<<'\n';
+    //  costructor used for both the client and the server. To adapt it's functioning use the bool server argument
+    CipherRSA::CipherRSA( string username, string password, bool server ) {
 
-        FILE* caPublicKey = fopen( "data/client_data/caPubRSA.pem" , "r" );
-
+        this->server = server;
         this->advPubKey = nullptr;
         this->pubServerKey = nullptr;
-        this->caKey = nullptr;
 
-        if( !caPublicKey ){
-            base<<"--> [CipherRSA][Costructor] Fatal Error, unable to locate caPubRSA.pem file"<<'\n';
-            exit(1);
+        if( server ){
+
+            vverbose<<"--> [CipherRSA][Costructor] Searching server certificate.."<<'\n';
+            std::ifstream certRead;
+            certRead.open("data/server_data/serverCertificate.pem");
+            if( !certRead ){
+                verbose<<"--> [CipherRSA][Costructor] Fatal Error. Unable to find: data/server_data/serverCertificate.pem"<<'\n';
+                return;
+            }
+
+            vverbose<<"--> [CipherRSA][Costructor] Certificate found, starting loading"<<'\n';
+            certRead.seekg( 0, std::ios::end );
+            this->lenServerCertificate = certRead.tellg();
+            certRead.seekg( 0, std::ios::beg );
+            this->serverCertificate = new unsigned char[this->lenServerCertificate];
+            if( !this->serverCertificate ){
+                verbose<<"--> [CipherRSA][Costruction] Fatal error. Unable to allocate memory"<<'\n';
+                certRead.close();
+                return;
+            }
+            certRead.read( (char*)this->serverCertificate, this->lenServerCertificate );
+            certRead.close();
+            vverbose<<"--> [CipherRSA][Costructor] Certificate correctly loaded."<<'\n';
+
+        }else{
+
+            vverbose<<"--> [CipherRSA][Costructor] Searching CA certificate and CRL.."<<'\n';
+            X509* certificate;
+            X509_CRL* crl;
+            FILE* certFile = fopen( "data/client_data/caCertificate.pem", "r" );
+
+            if( !certFile ){
+                verbose<<"--> [CipherRSA][Costructor] Fatal Error. Unable to find: data/client_data/caCertificate.pem"<<'\n';
+                return;
+            }
+
+            certificate = PEM_read_X509( certFile, nullptr, nullptr, nullptr );
+            if( !certificate ){
+                verbose<<"--> [CipherRSA][Costruction] Fatal error. Unable to load the ca certificate"<<'\n';
+                fclose( certFile );
+                return;
+            }
+            fclose( certFile );
+            vverbose<<"--> [CipherRSA][Costructor] Certificate found"<<'\n';
+
+            certFile = fopen( "data/client_data/caCrl.pem", "r" );
+            if( !certFile ){
+                verbose<<"--> [CipherRSA][Costructor] Fatal Error. Unable to find the file data/client_data/caCrl.pem"<<'\n';
+                return;
+            }
+
+            crl = PEM_read_X509_CRL( certFile, nullptr, nullptr, nullptr );
+            if( !crl ){
+                verbose<<"--> [CipherRSA][Costruction] Fatal error. Unable to load the ca CRL"<<'\n';
+                fclose( certFile );
+                return;
+            }
+            fclose( certFile );
+            vverbose<<"--> [CipherRSA][Costructor] CRL found"<<'\n';
+
+            vverbose<<"--> [CipherRSA][Costructor] Starting generation of keyStore"<<'\n';
+            this->store = X509_STORE_new();
+            if( !this->store ){
+                verbose<<"--> [CipherRSA][Costructor] Fatal Error. Unable to create the keyStore"<<'\n';
+                return;
+            }
+
+            X509_STORE_add_cert(this->store,certificate);
+            X509_STORE_add_crl(this->store,crl);
+            X509_STORE_set_flags( this->store , X509_V_FLAG_CRL_CHECK );
+            vverbose<<"--> [CipherRSA][Costructor] Keystore correctly created"<<'\n';
+
         }
 
-        this->caKey = PEM_read_PUBKEY( caPublicKey, nullptr, nullptr , nullptr);
-        fclose(caPublicKey);
-
-        if( ! this->caKey ) {
-            verbose << "--> [CipherRSA][Costructor] Fatal Error! Unable to extract CA'public key" << '\n';
-            exit(1);
-        }else
-            vverbose<<"--> [CipherRSA][Costructor] CA'public key correctly loaded"<<'\n';
-        vverbose<<"--> [CipherRSA][Costructor] CA key loaded"<<'\n';
+        FILE* publicKey, *privateKey;
         vverbose<<"--> [CipherRSA][Costructor] Searching "<<username<<"'RSA keys"<<'\n';
 
-        string privKey = "data/client_data/";
-        privKey.append(username).append( "PrivRSA.pem" );
+        if( server ) {
 
-        string pubKey = "data/client_data/";
-        pubKey.append(username).append( "PubRSA.pem" );
+            string privKey = "data/server_data/";
+            privKey.append(username).append( "PrivRSA.pem" );
 
-        FILE* publicKey = fopen( pubKey.c_str() ,"r");
-        FILE* privateKey = fopen( privKey.c_str() , "r" );
+            string pubKey = "data/server_data/";
+            pubKey.append(username).append("PubRSA.pem");
+
+            publicKey = fopen( pubKey.c_str() ,"r");
+            privateKey = fopen( privKey.c_str() , "r" );
+
+        }else {
+
+            string privKey = "data/client_data/";
+            privKey.append(username).append("PrivRSA.pem");
+
+            string pubKey = "data/client_data/";
+            pubKey.append(username).append("PubRSA.pem");
+
+            publicKey = fopen(pubKey.c_str(), "r");
+            privateKey = fopen(privKey.c_str(), "r");
+        }
 
         if( !publicKey || !privateKey ){
 
-            verbose<<"--> [CipherRSA][Costructor] Error username undefined, keys not found"<<'\n';
-            this->myPrivKey = nullptr;
-            this->myPubKey= nullptr;
+            verbose<<"--> [CipherRSA][Costructor] Error "<<username<<" undefined, keys not found"<<'\n';
 
         }else{
             vverbose<<"--> [CipherRSA][Costructor] "<<username<<"'keys found"<<'\n';
@@ -66,51 +142,6 @@ namespace cipher{
 
     }
 
-    CipherRSA::CipherRSA( string serverName, string password, string users[] , int len ){
-
-        vverbose<<"--> [CipherRSA][Costructor] Searching server RSA keys"<<'\n';
-
-        string privKey = "data/server_data/";
-        privKey.append(serverName).append( "PrivRSA.pem" );
-
-        string pubKey = "data/server_data/";
-        pubKey.append(serverName).append( "PubRSA.pem" );
-
-        FILE* publicKey = fopen( pubKey.c_str() ,"r");
-        FILE* privateKey = fopen( privKey.c_str() , "r" );
-
-        this->advPubKey = nullptr;
-        this->pubServerKey = nullptr;
-        this->caKey = nullptr;
-
-        if( !publicKey || !privateKey ){
-
-            verbose<<"--> [CipherRSA][Costructor] Error, keys not found"<<'\n';
-            this->myPrivKey = nullptr;
-            this->myPubKey= nullptr;
-
-        }else{
-
-            vverbose<<"--> [CipherRSA][Costructor] server'keys found"<<'\n';
-
-            this->myPubKey = PEM_read_PUBKEY( publicKey, nullptr, nullptr , nullptr);
-            if( ! this->myPubKey )
-                verbose<<"--> [CipherRSA][Costructor] Unable to extract server'public key"<<'\n';
-            else
-                vverbose<<"--> [CipherRSA][Costructor] server'public key correctly loaded"<<'\n';
-            fclose(publicKey);
-
-            this->myPrivKey = PEM_read_PrivateKey( privateKey, nullptr, nullptr , (void*)password.c_str());
-            if( ! this->myPrivKey )
-                verbose<<"--> [CipherRSA][Costructor] Unable to extract server'private key"<<'\n';
-            else
-                vverbose<<"--> [CipherRSA][Costructor] server'private key correctly loaded"<<'\n';
-            fclose(privateKey);
-
-        }
-
-    }
-
     CipherRSA::~CipherRSA(){
 
         if( myPubKey )
@@ -122,22 +153,114 @@ namespace cipher{
         if( advPubKey )
             EVP_PKEY_free( this->advPubKey );
 
-        if( caKey )
-            EVP_PKEY_free( this->caKey );
-
         if( pubServerKey )
             EVP_PKEY_free( this->pubServerKey );
 
-        if( !keyArchive.empty() ){
-            for (auto const& element : keyArchive)
+        if( !keyArchive.empty() ) {
+
+            for (auto const &element : keyArchive)
                 EVP_PKEY_free(element.second);
             keyArchive.clear();
 
         }
 
+        if( !server )
+            X509_STORE_free(this->store);
+
+        vverbose<<"--> [CipherRSA][Destructor] Object destroyed"<<'\n';
+
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    //                                                                                           //
+    //                                     PRIVATE FUNCTIONS                                     //
+    //                                                                                           //
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    //  Function of utility to the generation of a message signature. It takes a compact form of the Message class and
+    //  using an RSA private key gives in return a signature. It will return NULL if fail
+    unsigned char* CipherRSA::makeSignature( unsigned char* compactMessage, unsigned int& len, EVP_PKEY* key  ){
+
+        if( !compactMessage || !key || !len ){
+            verbose<<"-->[CipherRSA][makeSignature] Error, invalid arguments"<<'\n';
+            return nullptr;
+        }
+
+        unsigned int l = len;
+        unsigned char* signature;
+        signature = (unsigned char*)malloc( EVP_PKEY_size(key));
+        if( !signature ){
+            verbose<<"-->[CipherRSA][makeSignature] Error during the allocation of the memory"<<'\n';
+        }
+        EVP_MD_CTX* ctx = EVP_MD_CTX_new();
+        EVP_SignInit(ctx,EVP_sha256());
+        EVP_SignUpdate( ctx, compactMessage, l);
+        EVP_SignFinal(ctx,signature,(unsigned int*)&l,key);
+        EVP_MD_CTX_free(ctx);
+        len = l;
+        vverbose<<"-->[CipherRSA][makeSignature] Signature generated"<<'\n';
+
+        return signature;
+
+    }
+
+    //  Function of utility to verify a signature. It takes a compact form of the Message class, the given signature and a public key.
+    bool CipherRSA::verifySignature( unsigned char* compactMessage , unsigned char* signature , int compactLen, int signatureLen, EVP_PKEY* key ){
+
+        if( !compactMessage || !signature || !compactLen || !signatureLen || !key ){
+            verbose<<"--> [CipherRSA][verifySignature] Error, invalid arguments"<<'\n';
+            return false;
+        }
+        EVP_MD_CTX* ctx = EVP_MD_CTX_new();
+        EVP_VerifyInit(ctx,EVP_sha256());
+        EVP_VerifyUpdate(ctx,compactMessage, compactLen );
+        if( EVP_VerifyFinal(ctx,signature,signatureLen,key) != 1 ){
+            verbose<<"-->[CipherRSA][verifySignature] Authentication Error!"<<'\n';
+            EVP_MD_CTX_free(ctx);
+            return false;
+        }
+
+        verbose<<"-->[CipherRSA][verifySignature] Authentication Success!"<<'\n';
+        EVP_MD_CTX_free(ctx);
+        return true;
+
+    }
+
+    //  Function of utility to verify a certificate. It can be used only in a CipherRSA made with the server=false in the costructor.
+    bool CipherRSA::verifyCertificate(X509* certificate){
+
+        if( server ){
+            verbose<<"--> [CipherRSA][verifyCertificate] Error, the class should be inizialized as a client"<<'\n';
+            return false;
+        }
+
+        if( !certificate ){
+            verbose<<"--> [CipherRSA][verifyCertificate] Error, null-pointer passed as argument"<<'\n';
+            return false;
+        }
+        X509_STORE_CTX* ctx = X509_STORE_CTX_new();
+        X509_STORE_CTX_init(ctx,store,certificate,NULL);
+        int ret = X509_verify_cert(ctx);
+        if( ret!= 1 ){
+            verbose<<"--> [CipherRSA][verifyCertificate] Fatal error, certificate unknown"<<'\n';
+            return false;
+        }
+        vverbose<<"--> [CipherRSA][verifyCertificate] Certificate verified"<<'\n';
+        return true;
+
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    //                                                                                           //
+    //                                     PUBLIC FUNCTIONS                                      //
+    //                                                                                           //
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    //  SERVER
+    //  Function used by the server to insert a user key into its archive. It needs to be called on login of a user
     bool CipherRSA::loadUserKey( string username ) {
+
+        vverbose <<"--> [CipherRSA][loadUserKey] Loading of " <<username<<"' public key"<<'\n';
 
         if( keyArchive.find( username ) != keyArchive.end()){
             verbose<<"--> [CipherRSA][loadUserKey] Key already loaded. Abort"<<'\n';
@@ -156,7 +279,7 @@ namespace cipher{
 
         }else{
 
-            vverbose<<"--> [CipherRSA][loadUserKey] server'keys found"<<'\n';
+            vverbose<<"--> [CipherRSA][loadUserKey] "<<username<<"'keys found"<<'\n';
 
             EVP_PKEY* key = PEM_read_PUBKEY( publicKey, nullptr, nullptr , nullptr);
             if( ! key  ) {
@@ -175,6 +298,8 @@ namespace cipher{
 
     }
 
+    // SERVER
+    //  Function used by the server to remove a user key from its archive. It will be used on the logout of a user
     bool CipherRSA::removeUserKey( string username ){
 
         if( keyArchive.find( username ) == keyArchive.end()){
@@ -183,7 +308,7 @@ namespace cipher{
         }
 
         if( keyArchive.erase( username )) {
-            verbose<<"--> [CipherRSA][removeUserKey] "<<username<<"'key correctly removed"<<'\n';
+            vverbose<<"--> [CipherRSA][removeUserKey] "<<username<<"'key correctly removed"<<'\n';
             return true;
         }else{
             verbose<<"--> [CipherRSA][removeUserKey] Error during the removal of the "<<username<<"'key"<<'\n';
@@ -192,66 +317,26 @@ namespace cipher{
 
     }
 
+    //  SERVER
+    //  Gives the key of a logged user by searching into its archive
     EVP_PKEY* CipherRSA::getUserKey( string username ){
 
         if( keyArchive.find(username) == keyArchive.end() ){
-            verbose<<"--> [CipherRSA][removeUserKey] Error, "<<username<<"'key not present"<<'\n';
+            verbose<<"--> [CipherRSA][getUserKey] Error, "<<username<<"'key not present"<<'\n';
             return nullptr;
         }
 
         auto it = keyArchive.find(username);
+
+        vverbose <<"--> [CipherRSA][getUserKey] Key of " <<username<<" found"<<'\n';
         return it->second;
 
     }
 
-    bool CipherRSA::sign( Message* message ){
-
-        NetMessage* compactForm = Converter::compactForm( message->getMessageType() , *message );
-        if( !compactForm ) {
-            verbose << "-->[CipherRSA][sign] Error during the generation of the compact Form of the message" << '\n';
-            return false;
-        }
-
-        unsigned int len = compactForm->length();
-        unsigned char *signature = makeSignature( compactForm->getMessage() , len, this->myPrivKey );
-
-        message->setSignature( signature, len );
-
-        delete compactForm;
-        delete[] signature;
-        return true;
-
-    }
-
-
-    bool CipherRSA::clientVerifySignature( Message message , bool server ){
-
-        unsigned char* signature = message.getSignature();
-        bool ret;
-        if( !signature ){
-            verbose<<"-->[CipherRSA][clientVerifySignature] Error, message hasn't a signature"<<'\n';
-            return false;
-        }
-
-        NetMessage* compactMessage = Converter::compactForm(message.getMessageType() , message );
-        if( compactMessage == nullptr || compactMessage->length() == 0 ){
-            verbose<<"-->[CipherRSA][clientVerifySignature] Error during the generation of the compact message"<<'\n';
-            delete[] signature;
-            return false;
-        }
-
-        if( server )
-            ret = verifySignature( compactMessage->getMessage() , signature , compactMessage->length() , message.getSignatureLen(), this->pubServerKey );
-        else
-            ret = verifySignature( compactMessage->getMessage() , signature , compactMessage->length() , message.getSignatureLen(), this->advPubKey );
-
-        delete[] signature;
-        delete compactMessage;
-        return ret;
-
-    }
-
+    // SERVER
+    //  Verify the signature of a message received by the server
     bool CipherRSA::serverVerifySignature( Message message, string username ){
+
 
         EVP_PKEY* key = getUserKey(username);
         if( !key ){
@@ -280,6 +365,37 @@ namespace cipher{
 
     }
 
+    // CLIENT
+    //  Verify the signature of a message received by a client
+    bool CipherRSA::clientVerifySignature( Message message , bool server ){
+
+        unsigned char* signature = message.getSignature();
+        bool ret;
+        if( !signature ){
+            verbose<<"-->[CipherRSA][clientVerifySignature] Error, message hasn't a signature"<<'\n';
+            return false;
+        }
+
+        NetMessage* compactMessage = Converter::compactForm(message.getMessageType() , message );
+        if( compactMessage == nullptr || compactMessage->length() == 0 ){
+            verbose<<"-->[CipherRSA][clientVerifySignature] Error during the generation of the compact message"<<'\n';
+            delete[] signature;
+            return false;
+        }
+
+        if( server )
+            ret = verifySignature( compactMessage->getMessage() , signature , compactMessage->length() , message.getSignatureLen(), this->pubServerKey );
+        else
+            ret = verifySignature( compactMessage->getMessage() , signature , compactMessage->length() , message.getSignatureLen(), this->advPubKey );
+
+        delete[] signature;
+        delete compactMessage;
+        return ret;
+
+    }
+
+    //  CLIENT
+    //  Set an adversary key if another is already being used.
     bool CipherRSA::setAdversaryKey( EVP_PKEY* Key ){
 
         if( this->advPubKey ){
@@ -297,123 +413,104 @@ namespace cipher{
 
     }
 
+    // CLIENT
+    // Unset the adversary key of the user if is has one.
     void CipherRSA::unsetAdversaryKey(){
 
-        if( this->advPubKey != nullptr )
-            EVP_PKEY_free( this->advPubKey );
+        if( this->advPubKey != nullptr ) {
+            verbose<<"-->[CipherRSA][unsetAdversaryKey] Error, adversary key not setted[USE setAdversaryKey before]"<<'\n';
+            EVP_PKEY_free(this->advPubKey);
+        }
         this->advPubKey = nullptr;
 
     }
 
-    unsigned char* CipherRSA::makeSignature( unsigned char* compactMessage, unsigned int& len, EVP_PKEY* key  ){
+    //  CLIENT
+    //  Validate a certificate(taken from Message.certificate field) and if it is the server extract the public key
+    bool CipherRSA::extractServerKey( unsigned char* certificate , int len ){
 
-        if( !compactMessage || !key || !len ){
-            verbose<<"-->[CipherRSA][makeSignature] Error, invalid arguments"<<'\n';
-            return nullptr;
-        }
+        if( !certificate || !len ){
 
-        unsigned int l = len;
-        unsigned char* signature;
-        signature = (unsigned char*)malloc( EVP_PKEY_size(key));
-        EVP_MD_CTX* ctx = EVP_MD_CTX_new();
-        EVP_SignInit(ctx,EVP_sha256());
-        EVP_SignUpdate( ctx, compactMessage, l);
-        EVP_SignFinal(ctx,signature,(unsigned int*)&l,key);
-        EVP_MD_CTX_free(ctx);
-        len = l;
-        return signature;
-
-    }
-
-    bool CipherRSA::verifySignature( unsigned char* compactMessage , unsigned char* signature , int compactLen, int signatureLen, EVP_PKEY* key ){
-
-        EVP_MD_CTX* ctx = EVP_MD_CTX_new();
-        EVP_VerifyInit(ctx,EVP_sha256());
-        EVP_VerifyUpdate(ctx,compactMessage, compactLen );
-        if( EVP_VerifyFinal(ctx,signature,signatureLen,key) != 1 ){
-            verbose<<"-->[CipherRSA][verifySignature] Authentication Error!"<<'\n';
-            EVP_MD_CTX_free(ctx);
+            verbose<<"-->[CipherRSA][extractServerKey] Error, invalid arguments"<<'\n';
             return false;
+
         }
-        verbose<<"-->[CipherRSA][verifySignature] Authentication Success!"<<'\n';
-        EVP_MD_CTX_free(ctx);
-        return true;
-
-    }
-
-    bool CipherRSA::verifyCertificate(X509* certificate){
-
-        return true;
-
-    }
-
-    EVP_PKEY* extractServerKey( unsigned char* certificate , int len ){
+        vverbose<<"-->[CipherRSA][extractServerKey] Starting verification of certificate"<<'\n';
 
         std::ofstream pemWrite("data/client_data/serverCertificate.pem");
         X509* cert;
-        for( int a = 0; a<len;a++)
-            pemWrite<<certificate[a];
+
+        pemWrite.write((char*)certificate,len);
         pemWrite.close();
         FILE* f = fopen("data/client_data/serverCertificate.pem" , "r");
         cert = PEM_read_X509(f, NULL,NULL,NULL);
-
         fclose(f);
+
         if( !cert ){
-            verbose<<"Error, certificate not loaded"<<'\n';
+            verbose<<"-->[CipherRSA][extractServerKey] Error, unable to perform certificate analysis"<<'\n';
+            return false;
         }
-   /*     if( verifyCertificate(cert)){
-            return X509_get_pubkey(cert);
-        }*/
-        return nullptr;
+
+        if( this->verifyCertificate(cert)) {
+            vverbose<<"-->[CipherRSA][extractServerKey] Extraction of the public key"<<'\n';
+            this->pubServerKey = X509_get_pubkey(cert);
+            return true;
+        }
+
+        return false;
 
     }
 
+    //  COMMON
+    //  Generate a compact form of the message to generate a signature of validity. Then it insert it into the given message
+    bool CipherRSA::sign( Message* message ){
+
+        NetMessage* compactForm = Converter::compactForm( message->getMessageType() , *message );
+        if( !compactForm ) {
+            verbose << "-->[CipherRSA][sign] Error during the generation of the compact Form of the message" << '\n';
+            return false;
+        }
+
+        unsigned int len = compactForm->length();
+        unsigned char *signature = makeSignature( compactForm->getMessage() , len, this->myPrivKey );
+
+        message->setSignature( signature, len );
+
+        delete compactForm;
+        delete[] signature;
+        return true;
+
+    }
 
     bool CipherRSA::test(){
 
-        CipherRSA* rsa_1 = new CipherRSA( "bob" , "bobPassword");
-        CipherRSA* rsa_2 = new CipherRSA( "alice" , "alicePassword");
+        CipherRSA* client = new CipherRSA( "bob" , "bobPassword", false);
+        CipherRSA* server = new CipherRSA( "server" , "serverPassword" , true );
+
+        base<<"----------------SERVER KEY EXCHANGE--------------------"<<'\n';
 
         Message* message = new Message();
         message->setNonce(14);
-        message->setUsername("pippo");
-        message->setMessageType( WITHDRAW_REQ );
-        Message* message2 = new Message();
-        message2->setNonce(9123124);
-        message2->setMessageType( WITHDRAW_REQ );
-        message2->setUsername("pluto");
-        rsa_2->sign(message2);
-        rsa_1->sign(message);
+        message->setServer_Certificate( server->serverCertificate, server->lenServerCertificate );
+        message->setMessageType( CERTIFICATE );
+        server->sign(message);
 
-
-        rsa_1->setAdversaryKey(rsa_2->myPubKey);
-        rsa_2->setAdversaryKey(rsa_1->myPubKey);
-        rsa_1->clientVerifySignature(*message2, false );    //  USE THE ADVERSARY PUB KEY*/
-        rsa_2->clientVerifySignature(*message, false );
-
-        NetMessage* net = Converter::encodeMessage(WITHDRAW_REQ, *message );
+        NetMessage* net = Converter::encodeMessage(CERTIFICATE, *message );
         delete message;
+
+        //  SENDING ON THE NETWORK
+
         message = Converter::decodeMessage(*net);
         delete net;
-        net = Converter::encodeMessage(WITHDRAW_REQ, *message2 );
-        delete message2;
-        message2 = Converter::decodeMessage(*net);
 
-        rsa_2->clientVerifySignature(*message,false );
-        rsa_1->clientVerifySignature(*message2,false);
-        delete net;
+        if( ! client->extractServerKey( message->getServerCertificate() , message->getServerCertificateLength())){
+            verbose<<"-->[CipherRSA][test] Error, unable to extract server key"<<'\n';
+            return false;
+        }
+        if( !client->clientVerifySignature(*message,true))
+            return false;
 
-        verbose<<"-------------------------------------------"<<'\n';
-        rsa_1->loadUserKey("bob");
-        rsa_1->loadUserKey("alice");
-        rsa_1->serverVerifySignature(*message, "bob");
-        rsa_1->serverVerifySignature(*message2, "alice");
-        delete message;
-        delete message2;
-        delete rsa_1;
-      //  delete rsa_2;
         return true;
-
     }
 
 }
