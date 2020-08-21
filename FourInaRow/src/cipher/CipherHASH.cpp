@@ -1,6 +1,7 @@
 #include"CipherHASH"
 namespace cipher
 {
+  //this function create an HASH of an message without a key 
   unsigned char* CipherHASH::hashFunction(unsigned char* message,int message_length)
   {
     if(message_length<=0)
@@ -26,6 +27,7 @@ namespace cipher
     EVP_MD_CTX_free(mdctx);
     return hash_buf;
   }
+  //this function create an HASH of an message with a key
   unsigned char* CipherHASH::hashFunction(unsigned char* message,int message_length,unsigned char* key_hmac,int key_length)
   {
     if(key_length<=0 ||message_length<=0)
@@ -52,6 +54,7 @@ namespace cipher
     HMAC_CTX_free(mdctx);
     return hash_buf;
   }
+  //return the length of an hashLength
   int CipherHASH::hashLength()
   {
     return EVP_MD_size(EVP_sha256());

@@ -14,7 +14,7 @@ namespace utility{
    Register();
    bool removeData(T);
    bool addData(T);
-   T* getData(unsigned);
+   T* getData(unsigned int);
    ~Register();
   //protected:
    //bool addData(T);

@@ -20,9 +20,9 @@ this function return a data in a position pos if the pos is invalid return NULL
 */
   template<typename T>
 
-  T* Register<T>::getData(unsigned pos)
+  T* Register<T>::getData(unsigned int pos)
   {
-    if(pos>= dataList.size()||pos<0)
+    if(pos>= dataList.size()||pos<0||pos>SIZE_MAX/sizeof(int))
     {
       verbose<<"-->[Register][getData] Position: "<<(int)pos <<" not valid"<<'\n';
       
