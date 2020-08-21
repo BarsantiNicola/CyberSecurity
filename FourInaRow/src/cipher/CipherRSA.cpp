@@ -437,15 +437,15 @@ namespace cipher{
         }
         vverbose<<"-->[CipherRSA][extractServerKey] Starting verification of certificate"<<'\n';
 
-        std::ofstream pemWrite("data/client_data/serverCertificate.pem");
+        std::ofstream pemWrite("data/temp/serverCertificate.pem");
         X509* cert;
 
         pemWrite.write((char*)certificate,len);
         pemWrite.close();
-        FILE* f = fopen("data/client_data/serverCertificate.pem" , "r");
-        cert = PEM_read_X509(f, NULL,NULL,NULL);
+        FILE* f = fopen("data/temp/serverCertificate.pem" , "r");
+        cert = PEM_read_X509(f, nullptr, nullptr, nullptr);
         fclose(f);
-
+        remove("data/temp/serverCertificate.pem");
         if( !cert ){
             verbose<<"-->[CipherRSA][extractServerKey] Error, unable to perform certificate analysis"<<'\n';
             return false;

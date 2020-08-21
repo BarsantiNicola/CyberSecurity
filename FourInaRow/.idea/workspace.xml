@@ -29,10 +29,10 @@
   <component name="ChangeListManager">
     <list default="true" id="4cbb8ddf-e807-44fa-ae33-bda27674b47b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/server_data/serverPrivKey.pem" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/server_data/serverPubKey.pem" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/launch.sh" beforeDir="false" afterPath="$PROJECT_DIR$/launch.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/cipher/CipherDH.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/cipher/CipherDH.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/cipher/CipherDH.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/cipher/CipherDH.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/cipher/CipherRSA.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/cipher/CipherRSA.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/cipher/CipherRSA.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/cipher/CipherRSA.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -66,9 +66,9 @@
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
   </component>
   <component name="RunManager">
-    <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
   </component>
@@ -101,6 +101,7 @@
       <workItem from="1597866879450" duration="4969000" />
       <workItem from="1597920313628" duration="3683000" />
       <workItem from="1597938214334" duration="4022000" />
+      <workItem from="1597999708192" duration="22954000" />
     </task>
     <servers />
   </component>
