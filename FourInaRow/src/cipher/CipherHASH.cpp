@@ -1,4 +1,4 @@
-#include"CipherHASH"
+#include"CipherHASH.h"
 namespace cipher
 {
   //this function create an HASH of an message without a key 
