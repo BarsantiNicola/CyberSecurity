@@ -6,6 +6,7 @@
 #include <openssl/pem.h>
 #include "../Logger.h"
 #include "../utility/NetMessage.h"
+#include "CipherHASH.h"
 #include <fstream>
 using namespace utility;
 
@@ -20,15 +21,15 @@ namespace cipher {
 
     class CipherDH {
         private:
-            EVP_PKEY* key = nullptr;
-            EVP_PKEY* sessionKey = nullptr;
+            EVP_PKEY* ephemeralKey = nullptr;
+            DH* get_dh2048_auto();
 
         public:
-            CipherDH(string username, bool server);
+            CipherDH();
             ~CipherDH();
 
-            NetMessage* generatePartialKey( const char* i);
-            SessionKey* generateSessionKey( unsigned char *partialKey, int len, const char* i);
+            NetMessage* generatePartialKey();
+            SessionKey* generateSessionKey( unsigned char *partialKey, int len );
             static void test();
 
     };
