@@ -1,6 +1,8 @@
 #include<openssl/evp.h>
 #include<openssl/conf.h>
 #include<openssl/hmac.h>
+#include<openssl/engine.h>
+//#include "../Logger.h"
 using namespace std;
 namespace cipher
 {
@@ -8,9 +10,9 @@ namespace cipher
   { 
       
     public:
-      unsigned char* hashFunction(unsigned char*,int);
-      unsigned char* hashFunction(unsigned char*,int,unsigned char*,int);
-      int hashLength();
+      static unsigned char* hashFunction(unsigned char*,int);
+      static unsigned char* hashFunction(unsigned char*,int,unsigned char*,int);
+      static int hashLength();
 
   };
 
