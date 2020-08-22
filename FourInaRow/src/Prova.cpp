@@ -16,7 +16,7 @@ int main()
   r.addData(p1);
   r.addData(p2);
    
-  int* p3=r.getData(0);
+  int* p3=r.getData(1);
   
   
   std::cout<<flush;
@@ -35,7 +35,7 @@ int main()
     std::cout<<"cancellazione elemeto non riuscita"<<endl;
   }
 
-  p3=r.getData(0);
+  p3=r.getData(2);
   
   
   std::cout<<flush;

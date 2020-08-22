@@ -20,7 +20,7 @@ this function return a data in a position pos if the pos is invalid return NULL
 */
   template<typename T>
 
-  T* Register<T>::getData(unsigned int pos)
+  T* Register<T>::getDatafromIndex(unsigned int pos)
   {
     if(pos>= dataList.size()||pos<0||pos>SIZE_MAX/sizeof(int))
     {
@@ -42,7 +42,29 @@ this function return a data in a position pos if the pos is invalid return NULL
       }
 
   }
-
+ template<typename T>
+  T* Register<T>::getData(T data)
+  {
+    try
+    {
+      for(int i=0;i<dataList.size();i++)
+      {
+        if(dataList.at(i)==data)
+        {
+           vverbose<<"-->[Register][getData] the data was returned successfully"<<'\n';
+           
+           return &dataList.at(i);
+        }
+      }
+    verbose<<"-->[Register][getData] data not found"<<'\n';
+    return NULL;
+    }
+    catch(const out_of_range& e)
+    {
+      verbose<<"-->[Register][getData] error to access on data"<<'\n';
+      return NULL;
+     }
+  }
 /* 
 -----------------------------function removeData(T data)---------------------------
 remove a data from the dataList vector and in case of success return true otherwise the fuctuion return false value

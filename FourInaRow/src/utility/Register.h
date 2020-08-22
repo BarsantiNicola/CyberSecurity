@@ -12,9 +12,10 @@ namespace utility{
    vector<T> dataList;
   public:
    Register();
+   T* getData(T data);
    bool removeData(T);
    bool addData(T);
-   T* getData(unsigned int);
+   T* getDatafromIndex(unsigned int);
    ~Register();
   //protected:
    //bool addData(T);
