@@ -7,6 +7,8 @@
 #include "../Logger.h"
 #include "../utility/NetMessage.h"
 #include <fstream>
+#include "CipherHASH.h"
+
 using namespace utility;
 
 namespace cipher {

@@ -224,11 +224,31 @@ namespace cipher{
     //  the function apply an hash on the given string and generate a set of parameters for AES encryption
     SessionKey* CipherDH::generateKeys(unsigned char *value, int len) {
         vverbose<<"--> [CipherDH][generateKeys] Generation of session parameters"<<'\n';
+        unsigned char* hashed;
+        unsigned char* sessionKey = new unsigned char[256];
+        unsigned char* iv = new unsigned char[16];
+        unsigned char* splittedValue = new unsigned char[28];
 
-        
+        for( int a = 0; a<9; a++ ){
+            for( int b = 0; b<28; b++ )
+                splittedValue[b] = value[ a*28+b];
+            hashed = CipherHASH::hashFunction( splittedValue, 28 );
+            if( a == 8 ) {
+                for( int b = 0; b<16;b++)
+                    iv[b] = hashed[b];
+            }else{
+                for (int b = 0; b < 32; b++)
+                    sessionKey[a * 32 + b] = hashed[b];
+            }
+            delete[] hashed;
+        }
+        delete[] splittedValue;
+
         SessionKey* ret = new SessionKey;
-        ret->sessionKey = value;
-        ret->sessionKeyLen = len;
+        ret->sessionKey = sessionKey;
+        ret->sessionKeyLen = 256;
+        ret->iv = iv;
+        ret->ivLen = 16;
         vverbose<<"--> [CipherDH][generateKeys] Session parameters correctly created"<<'\n';
         return ret;
     }
