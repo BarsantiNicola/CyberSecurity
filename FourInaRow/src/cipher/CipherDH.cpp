@@ -17,7 +17,7 @@ namespace cipher{
 
     }
 
-    //  the class using Diffie-Hellman parameters generate a token to share with a peer to generate a shared session key.
+    //  the class use Diffie-Hellman parameters to generate a token to share with a peer to generate a shared session key.
     //  It don't allow to be used if another keys generation is performing, you need to end the previous key generation
     //  or in case of abort to use the stash() function the reset the class
     NetMessage* CipherDH::generatePartialKey(){
@@ -253,45 +253,6 @@ namespace cipher{
         return ret;
     }
 
-    void CipherDH::test(){
-        CipherDH* dh = new CipherDH();
-        CipherDH* dh2 = new CipherDH();
-
-        NetMessage* net = dh->generatePartialKey();
-        NetMessage* net2 = dh2->generatePartialKey();
-
-        SessionKey* x = dh->generateSessionKey( net2->getMessage(), net2->length());
-        SessionKey* x2 = dh2->generateSessionKey(net->getMessage(), net->length());
-
-        if(!x || !x2){
-            verbose<<"Error, during the generation of key"<<'\n';
-            return;
-        }
-
-        if( !x->sessionKeyLen || ! x2->sessionKeyLen ){
-            verbose<<"Error, message not created"<<'\n';
-            return;
-        }
-        if( x->sessionKeyLen != x2->sessionKeyLen ) {
-            verbose << "Error, lengths don't match" << '\n';
-            return;
-        }
-
-        for( int a= 0; a<x->sessionKeyLen;a++)
-            if( x->sessionKey[a] != x2->sessionKey[a] ) {
-                cout << "Error, key not matching in position: " << a << endl;
-                return;
-            }
-        verbose<<"Success"<<'\n';
-
-        delete[] x->sessionKey;
-        delete[] x2->sessionKey;
-        delete net;
-        delete x;
-        delete dh;
-
-    }
-
     DH* CipherDH::get_dh2048_auto()
     {
         static unsigned char dhp_2048[] = {
@@ -340,6 +301,79 @@ namespace cipher{
             return NULL;
         }
         return dh;
+    }
+
+    void CipherDH::test(){
+        CipherDH* dh = new CipherDH();
+        CipherDH* dh2 = new CipherDH();
+        CipherRSA* rsa = new CipherRSA( "bob" , "bobPassword" , false );
+        CipherRSA* rsa2 = new CipherRSA( "alice", "alicePassword" , false );
+
+        //  FUNCTIONS FOR TESTING PURPOSE THE USERS HAVE EXCHANGED THEIR PUBLIC KEYS
+        rsa->setAdversaryKey(rsa2->getPubKey());
+        rsa2->setAdversaryKey(rsa->getPubKey());
+
+        NetMessage* net = dh->generatePartialKey();
+        NetMessage* net2 = dh2->generatePartialKey();
+
+        //  bob generate his message and sign it
+        Message* msg = new Message();
+        msg->set_DH_key( net->getMessage() , net->length());
+        msg->setNonce( 5 );
+        msg->setMessageType(KEY_EXCHANGE);
+        rsa->sign( msg );
+
+        //  alice generate his message and sign it
+        Message* msg2 = new Message();
+        msg2->set_DH_key( net2->getMessage() , net2->length());
+        msg2->setNonce( 5 );
+        msg2->setMessageType(KEY_EXCHANGE);
+        rsa2->sign( msg2 );
+
+        delete net;
+        delete net2;
+
+        net = Converter::encodeMessage( KEY_EXCHANGE , *msg );   // BOB
+        net2 = Converter::encodeMessage( KEY_EXCHANGE , *msg2 );  // ALICE
+
+        delete msg;
+        delete msg2;
+
+        //  MESSAGE ARE SENT THROUGHT THE NETWORK
+
+        msg = Converter::decodeMessage(*net);    // BOB
+        msg2 = Converter::decodeMessage(*net2);  // ALICE
+
+        //  verification of signatures
+        rsa->clientVerifySignature( *msg2 , false );   // BOB VERIFY ALICE MESSAGE
+        rsa2->clientVerifySignature( *msg , false );  // ALICE VERIFY BOB MESSAGE
+
+        SessionKey* bob = dh->generateSessionKey( msg2->getDHkey(), msg2->getDHkeyLength());
+        SessionKey* alice = dh2->generateSessionKey( msg->getDHkey(), msg->getDHkeyLength());
+
+        if(!bob || !alice){
+            verbose<<"Error, during the generation of key"<<'\n';
+            return;
+        }
+
+        if( !bob->sessionKeyLen || ! alice->sessionKeyLen ){
+            verbose<<"Error, message not created"<<'\n';
+            return;
+        }
+        if( bob->sessionKeyLen != alice->sessionKeyLen ) {
+            verbose << "Error, lengths don't match" << '\n';
+            return;
+        }
+
+        for( int a= 0; a<bob->sessionKeyLen;a++)
+            if( bob->sessionKey[a] != alice->sessionKey[a] ) {
+                verbose<< "Error, key not matching in position: " << a << '\n';
+                return;
+            }
+        verbose<<"Success"<<'\n';
+
+
+
     }
 
 }

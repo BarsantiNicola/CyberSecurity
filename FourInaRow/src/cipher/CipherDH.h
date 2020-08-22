@@ -8,6 +8,7 @@
 #include "../utility/NetMessage.h"
 #include <fstream>
 #include "CipherHASH.h"
+#include "CipherRSA.h"
 
 using namespace utility;
 

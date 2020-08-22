@@ -513,4 +513,8 @@ namespace cipher{
         return true;
     }
 
+    EVP_PKEY* CipherRSA::getPubKey() {
+        return this->myPubKey;
+    }
+
 }

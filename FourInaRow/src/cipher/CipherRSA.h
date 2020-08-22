@@ -76,6 +76,8 @@ namespace cipher {
             bool extractServerKey( unsigned char* certificate , int len ); //  EXTRACT A PUBLIC KEY FROM A CERTIFICATE[CERTIFICATE MESSAGE]
             bool clientVerifySignature( Message message , bool server );        //  VERIFY THE SIGNATURE OF A MESSAGE[CLIENT]
 
+            EVP_PKEY* getPubKey();                                              //  UTILITY FOR TESTING [TO BE REMOVED]
+
     };
 }
 
