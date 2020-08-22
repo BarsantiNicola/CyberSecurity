@@ -35,7 +35,8 @@ namespace utility {
         MOVE,
         CHAT,
         ACK,
-        DISCONNECT
+        DISCONNECT,
+        ERROR
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////

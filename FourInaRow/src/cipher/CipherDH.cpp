@@ -372,8 +372,6 @@ namespace cipher{
             }
         verbose<<"Success"<<'\n';
 
-
-
     }
 
 }

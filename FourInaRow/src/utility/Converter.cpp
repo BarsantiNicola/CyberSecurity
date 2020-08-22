@@ -241,6 +241,7 @@ namespace utility{
                     return false;
                 }
                 app = message.getUserList().c_str();
+
                 if( checkField((const unsigned char*)app,message.getUserList().length()) || checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length())) {
                     verbose<<"--> [Converter][verifyMessage] Verification failure: Presence of <\"&>"<<'\n';
                     delete nonce;
@@ -588,7 +589,7 @@ namespace utility{
 
                 nonce = message.getCurrent_Token();
                 if( !nonce ){
-                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Current Token\""<<'\n';
                     return false;
                 }
                 nonceString = (unsigned char*)to_string(*nonce).c_str();
@@ -626,7 +627,7 @@ namespace utility{
 
                 nonce = message.getCurrent_Token();
                 if( !nonce ){
-                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Current Token\""<<'\n';
                     return false;
                 }
                 nonceString = (unsigned char*)to_string(*nonce).c_str();
@@ -664,7 +665,7 @@ namespace utility{
 
                 nonce = message.getCurrent_Token();
                 if( !nonce ){
-                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Current Token"<<'\n';
                     return false;
                 }
                 nonceString = (unsigned char*)to_string(*nonce).c_str();
@@ -715,6 +716,43 @@ namespace utility{
                 vverbose<<"--> [Converter][verifyMessage] Verification DISCONNECT success"<<'\n';
                 break;
 
+            case ERROR:
+                vverbose<<"--> [Converter][verifyMessage] Check ERROR"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce\""<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                signature = message.getSignature();
+                if( !signature ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Signature"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                chat = message.getMessage();
+                if( !chat ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Message"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    return false;
+                }
+
+                if( checkField( signature, message.getSignatureLen())  || checkField(chat,message.getMessageLength()) || checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyMessage] Verification failure"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    delete[] chat;
+                    return false;
+                }
+                vverbose<<"--> [Converter][verifyMessage] Verification ERROR success"<<'\n';
+                delete nonce;
+                delete[] signature;
+                delete[] chat;
+                break;
             default:
                 verbose<<"--> [Converter][verifyMessage] Error message type undefined: " <<type <<'\n';
                 return false;
@@ -1164,7 +1202,7 @@ namespace utility{
 
                 nonce = message.getCurrent_Token();
                 if( !nonce ){
-                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Nonce"<<'\n';
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Current Token"<<'\n';
                     return false;
                 }
                 nonceString = (unsigned char*)to_string(*nonce).c_str();
@@ -1192,7 +1230,7 @@ namespace utility{
 
                 nonce = message.getCurrent_Token();
                 if( !nonce ){
-                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Nonce"<<'\n';
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Current Token"<<'\n';
                     return false;
                 }
                 nonceString = (unsigned char*)to_string(*nonce).c_str();
@@ -1220,7 +1258,7 @@ namespace utility{
 
                 nonce = message.getCurrent_Token();
                 if( !nonce ){
-                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Nonce"<<'\n';
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Current Token"<<'\n';
                     return false;
                 }
                 nonceString = (unsigned char*)to_string(*nonce).c_str();
@@ -1253,6 +1291,33 @@ namespace utility{
                 vverbose<<"--> [Converter][verifyCompact] Verification DISCONNECT success"<<'\n';
                 break;
 
+            case ERROR:
+                vverbose<<"--> [Converter][verifyCompact] Check ERROR"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Nonce"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                chat = message.getMessage();
+                if( !chat ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Message"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                if( checkField(chat,message.getMessageLength()) || checkField(nonceString,to_string(*nonce).length())) {
+                    verbose<<"--> [Converter][verifyCompact] Verification failure"<<'\n';
+                    delete nonce;
+                    delete[] chat;
+                    return false;
+                }
+                vverbose<<"--> [Converter][verifyCompact] Verification ERROR success"<<'\n';
+                delete nonce;
+                delete[] chat;
+                break;
             default:
                 verbose<<"--> [Converter][verifyCompact] Error message type undefined: " <<type <<'\n';
                 return false;
@@ -1285,6 +1350,10 @@ namespace utility{
                 nonce = message.getNonce();
                 len = 10+to_string(type).length()+to_string(*nonce).length();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0,false  );
@@ -1296,6 +1365,10 @@ namespace utility{
                 sign = message.getSignature();
                 len = 20+to_string(type).length()+to_string(*nonce).length() + message.getServerCertificateLength()+message.getSignatureLen();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 certificate  = message.getServerCertificate();
@@ -1313,6 +1386,10 @@ namespace utility{
                 sign = message.getSignature();
                 len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -1328,6 +1405,10 @@ namespace utility{
                 sign = message.getSignature();
                 len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -1342,6 +1423,10 @@ namespace utility{
                 sign = message.getSignature();
                 len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -1357,6 +1442,10 @@ namespace utility{
                 key = message.getDHkey();
                 len = 20+to_string(type).length()+to_string(*nonce).length()+message.getDHkeyLength()+message.getSignatureLen();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -1373,6 +1462,10 @@ namespace utility{
                 sign = message.getSignature();
                 len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -1387,6 +1480,10 @@ namespace utility{
                 sign = message.getSignature();
                 len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUserList().length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -1402,6 +1499,10 @@ namespace utility{
                 sign = message.getSignature();
                 len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -1416,6 +1517,10 @@ namespace utility{
                 sign = message.getSignature();
                 len = 20+to_string(type).length()+to_string(*nonce).length()+message.getRankList().length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -1431,6 +1536,10 @@ namespace utility{
                 sign = message.getSignature();
                 len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -1446,6 +1555,10 @@ namespace utility{
                 sign = message.getSignature();
                 len = 25+to_string(type).length()+to_string(*nonce).length()+message.getAdversary_1().length()+message.getAdversary_2().length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -1462,6 +1575,10 @@ namespace utility{
                 sign = message.getSignature();
                 len = 25+to_string(type).length()+to_string(*nonce).length()+message.getAdversary_1().length()+message.getAdversary_2().length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -1477,11 +1594,13 @@ namespace utility{
                 nonce = message.getNonce();
                 sign = message.getSignature();
                 len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
-
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
-
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
                 pos = writeField(value , 'u', (unsigned char*)message.getUsername().c_str(), message.getUsername().length(), pos,false  );
                 pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(), pos,false  );
@@ -1496,6 +1615,10 @@ namespace utility{
                 sign = (unsigned char*)message.getSignature();
                 len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -1510,6 +1633,10 @@ namespace utility{
                 sign = message.getSignature();
                 len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -1524,6 +1651,10 @@ namespace utility{
                 sign = message.getSignature();
                 len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -1538,6 +1669,10 @@ namespace utility{
                 sign = message.getSignature();
                 len = 25+to_string(type).length()+to_string(*nonce).length()+message.getPubKeyLength()+message.getNetInformationsLength()+message.getSignatureLen();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 key = message.getPubKey();
@@ -1558,6 +1693,10 @@ namespace utility{
                 len = 20+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen();
                 key = message.getChosenColumn();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -1574,6 +1713,10 @@ namespace utility{
                 sign = message.getSignature();
                 len = 20+to_string(type).length()+to_string(*nonce).length()+message.getMessageLength()+message.getSignatureLen();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 key = message.getMessage();
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
@@ -1591,6 +1734,10 @@ namespace utility{
                 sign = message.getSignature();
                 len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -1605,6 +1752,10 @@ namespace utility{
                 sign = message.getSignature();
                 len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -1613,7 +1764,26 @@ namespace utility{
                 delete[] sign;
 
                 break;
+            case ERROR:
+                nonce = message.getNonce();
+                sign = message.getSignature();
+                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getMessageLength()+message.getSignatureLen();
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                key = message.getMessage();
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeField(value , 'h', key, message.getMessageLength(), pos,false  );
+                pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
+                delete[] sign;
 
+                delete[] key;
+                break;
             default:
                 return nullptr;
         }
@@ -1926,6 +2096,10 @@ namespace utility{
         if( encoded == nullptr) return false;
         delete encoded;
 
+        encoded = Converter::encodeMessage(ERROR,*m);
+        if( encoded == nullptr) return false;
+        delete encoded;
+
         verbose<<"-----------------1---------------"<<'\n';
 
         if( Converter::encodeMessage(CERTIFICATE,*m2)!= nullptr) return false;
@@ -1938,6 +2112,7 @@ namespace utility{
         if( Converter::encodeMessage(MATCH,*m2)!= nullptr) return false;
         if( Converter::encodeMessage(GAME_PARAM,*m2)!= nullptr) return false;
         if( Converter::encodeMessage(CHAT,*m2)!= nullptr) return false;
+        if( Converter::encodeMessage(ERROR,*m2)!= nullptr) return false;
         delete m2;
 
         verbose<<"------------------2--------------"<<'\n';
@@ -2274,6 +2449,22 @@ namespace utility{
         delete encoded;
         verbose<<"DISCONNECT"<<'\n';
 
+        encoded = Converter::encodeMessage(ERROR,*m);
+        if( encoded == nullptr ){
+            verbose<<"Error during encoding of ERROR"<<'\n';
+            return false;
+        }
+
+        m2 = Converter::decodeMessage(*encoded);
+        if( m2->getMessageType() != ERROR || m2->getNonce() == nullptr ){
+            verbose<<"Error during test of ERROR"<<'\n';
+            return false;
+        }
+
+        delete m2;
+        delete encoded;
+        verbose<<"ERROR"<<'\n';
+
         delete m;
         return true;
 
@@ -2303,6 +2494,10 @@ namespace utility{
                 nonce = message.getNonce();
                 len = 1+to_string(type).length()+to_string(*nonce).length();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeCompactField(value ,  (unsigned char*)to_string(type).c_str(),to_string(type).length(),0,false  );
@@ -2313,6 +2508,10 @@ namespace utility{
                 nonce = message.getNonce();
                 len = 1+to_string(type).length()+to_string(*nonce).length() + message.getServerCertificateLength();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 certificate  = message.getServerCertificate();
@@ -2327,6 +2526,10 @@ namespace utility{
                 nonce = message.getNonce();
                 len = 1+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -2339,6 +2542,10 @@ namespace utility{
                 nonce = message.getNonce();
                 len = 1+to_string(type).length()+to_string(*nonce).length();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -2350,6 +2557,10 @@ namespace utility{
                 nonce = message.getNonce();
                 len = 1+to_string(type).length()+to_string(*nonce).length();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -2362,6 +2573,10 @@ namespace utility{
                 key = message.getDHkey();
                 len = 1+to_string(type).length()+to_string(*nonce).length()+message.getDHkeyLength();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -2375,6 +2590,10 @@ namespace utility{
                 nonce = message.getNonce();
                 len = 1+to_string(type).length()+to_string(*nonce).length();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -2386,6 +2605,10 @@ namespace utility{
                 nonce = message.getNonce();
                 len = 1+to_string(type).length()+to_string(*nonce).length()+message.getUserList().length();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -2398,6 +2621,10 @@ namespace utility{
                 nonce = message.getNonce();
                 len = 1+to_string(type).length()+to_string(*nonce).length();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -2409,6 +2636,10 @@ namespace utility{
                 nonce = message.getNonce();
                 len = 1+to_string(type).length()+to_string(*nonce).length()+message.getRankList().length();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -2421,6 +2652,10 @@ namespace utility{
                 nonce = message.getNonce();
                 len = 1+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -2433,6 +2668,10 @@ namespace utility{
                 nonce = message.getNonce();
                 len = 1+to_string(type).length()+to_string(*nonce).length()+message.getAdversary_1().length()+message.getAdversary_2().length();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -2446,6 +2685,10 @@ namespace utility{
                 nonce = message.getNonce();
                 len = 1+to_string(type).length()+to_string(*nonce).length()+message.getAdversary_1().length()+message.getAdversary_2().length();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -2459,6 +2702,10 @@ namespace utility{
                 nonce = message.getNonce();
                 len = 1+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -2471,6 +2718,10 @@ namespace utility{
                 nonce = message.getNonce();
                 len = 1+to_string(type).length()+to_string(*nonce).length();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -2482,6 +2733,10 @@ namespace utility{
                 nonce = message.getNonce();
                 len = 1+to_string(type).length()+to_string(*nonce).length();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -2493,6 +2748,10 @@ namespace utility{
                 nonce = message.getNonce();
                 len = 1+to_string(type).length()+to_string(*nonce).length();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -2504,6 +2763,10 @@ namespace utility{
                 nonce = message.getNonce();
                 len = 1+to_string(type).length()+to_string(*nonce).length()+message.getPubKeyLength()+message.getNetInformationsLength();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 key = message.getPubKey();
@@ -2521,6 +2784,10 @@ namespace utility{
                 len = 1+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength();
                 key = message.getChosenColumn();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -2534,6 +2801,10 @@ namespace utility{
                 nonce = message.getCurrent_Token();
                 len = 1+to_string(type).length()+to_string(*nonce).length()+message.getMessageLength();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 key = message.getMessage();
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
@@ -2548,6 +2819,10 @@ namespace utility{
                 nonce = message.getCurrent_Token();
                 len = 1+to_string(type).length()+to_string(*nonce).length();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
@@ -2559,13 +2834,33 @@ namespace utility{
                 nonce = message.getNonce();
                 len = 1+to_string(type).length()+to_string(*nonce).length();
                 value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
                 pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,true  );
 
                 break;
+            case ERROR:
+                nonce = message.getNonce();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getMessageLength();
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                key = message.getMessage();
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeCompactField(value , key, message.getMessageLength(), pos,true  );
 
+                delete[] key;
+                break;
             default:
                 return nullptr;
         }
