@@ -45,8 +45,10 @@ namespace server {
                 ret.append( to_string(res->getInt("totalMatch") ));
                 ret.append( "\t\twonMatch: ");
                 ret.append( to_string( res->getInt("wonMatch") ));
-                ret.append( "\t\tloseMatch: ");
+                ret.append( "\t\tlooseMatch: ");
                 ret.append( to_string( res->getInt("loseMatch")));
+                ret.append( "\t\ttieMatch: ");
+                ret.append( to_string( res->getInt("tieMatch")));
 
             }
 
@@ -66,7 +68,7 @@ namespace server {
     }
 
     //  the function increment a user game statistic by increment the total game count and basing on the won value the wonMatch or loseMatch
-    bool SQLConnector::incrementUserGame( string username, bool won ) {
+    bool SQLConnector::incrementUserGame( string username, GameResult result ) {
 
         vverbose<<"--> [SQLConnector][incrementUserGame] Starting to update "<< username<<" statistic"<<'\n';
 
@@ -99,10 +101,20 @@ namespace server {
             stmt = con->createStatement();
             string query = "UPDATE `Rank` SET totalMatch =totalMatch+1,";
 
-            if( won )
-                query.append( " wonMatch = wonMatch+1 WHERE username ='");
-            else
-                query.append( " loseMatch=loseMatch+1 WHERE username ='");
+            switch( result ){
+                case WIN:
+                    query.append( " wonMatch = wonMatch+1 WHERE username ='");
+                    break;
+                case LOOSE:
+                    query.append( " loseMatch=loseMatch+1 WHERE username ='");
+                    break;
+                case TIE:
+                    query.append( " tieMatch=tieMatch+1 WHERE username ='");
+                    break;
+                default:
+                    return false;
+
+            }
 
             query.append( username );
             query.append( "';" );

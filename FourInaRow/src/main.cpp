@@ -14,9 +14,9 @@ using namespace utility;
 
         Logger::setThreshold( VERY_VERBOSE );
         base<<"------------------------------------------------------------"<<"\n\n";
-        server::SQLConnector::incrementUserGame("ale",true);
-        server::SQLConnector::incrementUserGame("ale",false);
-        server::SQLConnector::incrementUserGame("ale",false);
+        server::SQLConnector::incrementUserGame("ale",server::WIN);
+        server::SQLConnector::incrementUserGame("ale",server::LOOSE);
+        server::SQLConnector::incrementUserGame("ale",server::TIE);
 
         cout<<server::SQLConnector::getRankList()<<endl;
      //   Converter::test();
