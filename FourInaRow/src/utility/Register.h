@@ -5,7 +5,9 @@
 #include "../Logger.h"
 using namespace std;
 namespace utility{
-
+ class UserInformation;
+ class MatchInformation;
+ class ClientInformation;
  template<typename T>
  class Register{
   protected:

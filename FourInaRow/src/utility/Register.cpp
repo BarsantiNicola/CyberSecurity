@@ -123,5 +123,9 @@ This function return true if the data was added succesfully, false in the unsucc
     vector<T>().swap(dataList);
   }
   template class Register<int>; 
-
+  /*
+  template class Register<UserInformation>;
+  template class Register<MatchInformation>;
+  template class Register<ClientInformation>;
+  */
 }
