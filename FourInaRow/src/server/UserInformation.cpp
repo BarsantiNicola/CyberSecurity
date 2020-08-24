@@ -12,6 +12,24 @@ namespace server{
 
     }
 
+    UserInformation::UserInformation( string username, UserStatus status , utility::NetMessage* key ){
+
+        this->username = username;
+        this->status = status;
+        this->sessionKey = nullptr;
+        this->len = 0;
+
+        if( key->length() != 0 ){
+            unsigned char* app = key->getMessage();
+            this->sessionKey = new unsigned char[key->length()];
+            this->len = key->length();
+            for( int a = 0; a<this->len; a++ )
+                this->sessionKey[a] = app[a];
+            delete[] app;
+        }
+
+    }
+
     UserInformation::~UserInformation(){
 
         if( this->sessionKey ){
@@ -43,6 +61,9 @@ namespace server{
 
     UserStatus UserInformation::getStatus(){
         return this->status;
+    }
+    string UserInformation::getUsername(){
+        return this->username;
     }
 
 }

@@ -6,12 +6,11 @@
 #include "utility/Converter.h"
 #include "cipher/CipherDH.h"
 #include "server/SQLConnector.h"
-#include "utility/Register.h"
 #include "server/ClientInformation.h"
+#include "server/ClientRegister.h"
+#include "server/MatchRegister.h"
 
 using namespace utility;
-
-
 
     int main() {
 
@@ -22,8 +21,7 @@ using namespace utility;
      //   server::SQLConnector::incrementUserGame("ale",server::TIE);
 
      //   cout<<server::SQLConnector::getRankList()<<endl;
-       Register<server::ClientInformation> *prova = new Register<server::ClientInformation>();
-       delete prova;
+
      //   Converter::test();
       //  cipher::CipherRSA::test();
       //cipher::CipherDH::test();

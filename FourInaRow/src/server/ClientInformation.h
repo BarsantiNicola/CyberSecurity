@@ -3,12 +3,12 @@
 #define FOURINAROW_CLIENTINFORMATION_H
 
 #include <iostream>
-#include "../utility/Information.h"
+
 using namespace std;
 
 namespace server {
 
-class ClientInformation: public utility::Information{
+class ClientInformation{
 
         private:
             int clientID;
