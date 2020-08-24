@@ -7,7 +7,7 @@ namespace cipher
     this->iv=session_key->iv;
     this->ivLength=session_key->ivLen;
     this->key=session_key->sessionKey;
-    this->key=session_key->sessionKeyLength;
+    this->keyLen=session_key->sessionKeyLen;
   }
 
   bool CipherAES::modifyParam(SessionKey* session_key)
@@ -19,7 +19,7 @@ namespace cipher
     this->iv=session_key->iv;
     this->ivLength=session_key->ivLen;
     this->key=session_key->sessionKey;
-    this->key=session_key->sessionKeyLength;
+    this->keyLen=session_key->sessionKeyLen;
     return true;
   }
 /*
@@ -29,7 +29,7 @@ error return -1 value
 */
   int CipherAES::gcmEncrypt(unsigned char*plaintext,int plaintextLen,unsigned char*aad,int aadLen,unsigned char*ciphertext,unsigned char*tag)
   {
-    EVP_CIPHER_CTX ctx*;
+    EVP_CIPHER_CTX *ctx;
     int len;
     int ciphertextLen;
     if(!(ctx=EVP_CIPHER_CTX_new()))
@@ -59,9 +59,9 @@ error return -1 value
       return -1;
     }
     ciphertextLen+=len;
-    if(1!=EVP_CIPHER_CTX_ctrl(ctx,EVP_CTRL_AED_GET_TAG,16,tag))
+    if(1!=EVP_CIPHER_CTX_ctrl(ctx,EVP_CTRL_AEAD_GET_TAG,16,tag))
     {
-      verbose<<"-->[CipherAES][gcmEncrypt] error to get the tag"<'\n';
+      verbose<<"-->[CipherAES][gcmEncrypt] error to get the tag"<<'\n';
       return -1;
     }
     EVP_CIPHER_CTX_free(ctx);
@@ -100,9 +100,9 @@ verify the tag if there is an error return -1 value and -2 if the verify fails
       return -1;
     }
     plaintextLen=len;
-    if(!EVP_CIPHER_CTX_ctrl(ctx,EVP_CTRL_AED_SET_TAG,16,tag))
+    if(!EVP_CIPHER_CTX_ctrl(ctx,EVP_CTRL_AEAD_SET_TAG,16,tag))
     {
-      verbose<<"-->[CipherAES][gcmEncrypt] error to get the tag"<'\n';
+      verbose<<"-->[CipherAES][gcmEncrypt] error to get the tag"<<'\n';
       return -1;
     }
     ret= EVP_DecryptFinal(ctx,plaintext + len, &len);
@@ -115,14 +115,193 @@ verify the tag if there is an error return -1 value and -2 if the verify fails
     }
     else
     {
-      verbose<<"-->[CipherAES][gcmEncrypt] error Verify failed"<'\n';
+      verbose<<"-->[CipherAES][gcmEncrypt] error Verify failed"<<'\n';
       return -2;
     }
   }
-  Message* CipherAES::encryptMessage(Message* message)
+/*
+--------------------------------function encriptMessage()----------------------------
+This function encryptMessage with AES_256 gcm
+*/
+  Message* CipherAES::encryptMessage(Message message)
   {
-    NetMessa
+    int lengthPlaintext=0;
+    int lengthToCipher=0;
+    int ciphertextLength;
+    unsigned char* ciphertext;
+    unsigned char* tag;
+    Converter converter;
+    NetMessage* netMessage=converter.compactForm( message.getMessageType(),message,&lengthPlaintext );
+    
+    if(netMessage==nullptr)
+    {
+       verbose<<"-->[CipherAES][encryptMessage] errorTo create a message compact"<<'\n';
+       return NULL;
+    }
+    lengthToCipher=netMessage->length()-lengthPlaintext;
+    if(lengthToCipher==0)
+    {
+      unsigned char app[]="";
+      int ret=gcmEncrypt(app,0,netMessage->getMessage(),lengthPlaintext,ciphertext,tag);
+      if(ret==-1)
+      {
+        return NULL;
+      }
+      Message *newMessage=new Message(message );
+      newMessage->setSignature( tag , 16 );
+      return newMessage;
+    }
+    else
+    {
+      unsigned char* textToCipher=new unsigned char[lengthToCipher];
+      unsigned char* textInPlain=new unsigned char[lengthPlaintext];
+      bool res= copyToFrom(0,lengthPlaintext,netMessage->getMessage(),textInPlain);
+      if (res==false)
+      {
+       verbose<<"-->[CipherAES][encryptMessage] errorTo copy a message"<<'\n';
+       return NULL;
+      }
+      res=copyToFrom(lengthPlaintext,netMessage->length(),netMessage->getMessage(),textToCipher);
+      if (res==false)
+      {
+       verbose<<"-->[CipherAES][encryptMessage] errorTo copy a message"<<'\n';
+       return NULL;
+      }
+      int lengthcipher=gcmEncrypt(textToCipher,lengthToCipher,textInPlain,lengthPlaintext,ciphertext,tag);
+      if(lengthcipher==-1)
+        return NULL;
+      Message *newMessage=new Message(message );
+      newMessage->setSignature( tag , 16 );
+
+      bool result=insertField(newMessage->getMessageType(),newMessage,ciphertext,lengthcipher);
+      if(result==false)
+        return NULL;
+
+      return newMessage;
+    }
   }
+/*--------------------Function decryptMessage--------------------------------------*/
+  Message* CipherAES::decryptMessage(Message message)
+ {
+    int lengthCleareText=0;
+    int lengthToDecrypt=0;
+    int ciphertextLength;
+    unsigned char* plaintext;
+    unsigned char* tag;
+    Converter converter;
+    
+    NetMessage* netMessage=converter.compactForm( message.getMessageType(),message,&lengthCleareText );
+    
+    if(netMessage==nullptr)
+    {
+       verbose<<"-->[CipherAES][dencryptMessage] errorTo create a message compact"<<'\n';
+       return NULL;
+    }
+    lengthToDecrypt=netMessage->length()-lengthCleareText;
+    if(lengthToDecrypt==0)
+    {
+      Message *newMessage=new Message(message );
+      tag=newMessage->getSignature();
+      unsigned char app[]="";
+      int res=gcmDecrypt(app,0,netMessage->getMessage(),lengthCleareText,tag,plaintext);
+      if(res==-2)
+      {
+        verbose<<"-->[CipherAES][dencryptMessage] error message not valid"<<'\n';
+        return NULL;
+      }
+      if(res==-1)
+      {
+        verbose<<"-->[CipherAES][dencryptMessage] error to decrypt the message"<<'\n';
+        return NULL;
+      }
+      
+      
+      return newMessage;
+    }
+    else
+    {
+      unsigned char* textToDecrypt=new unsigned char[lengthToDecrypt];
+      unsigned char* textInPlain=new unsigned char[lengthCleareText];
+      bool res= copyToFrom(0,lengthCleareText,netMessage->getMessage(),textInPlain);
+      if (res==false)
+      {
+       verbose<<"-->[CipherAES][dencryptMessage] errorTo copy a message"<<'\n';
+       return NULL;
+      }
+      res=copyToFrom(lengthCleareText,netMessage->length(),netMessage->getMessage(),textToDecrypt);
+      if (res==false)
+      {
+       verbose<<"-->[CipherAES][dencryptMessage] errorTo copy a message"<<'\n';
+       return NULL;
+      }      
+      Message *newMessage=new Message(message );
+      tag=newMessage->getSignature();
+      int lengthplain=gcmDecrypt(textToDecrypt,lengthToDecrypt,textInPlain,lengthCleareText,plaintext,tag);
+      if(res==-2)
+      {
+        verbose<<"-->[CipherAES][dencryptMessage] error message not valid"<<'\n';
+        return NULL;
+      }
+      if(res==-1)
+      {
+        verbose<<"-->[CipherAES][dencryptMessage] error to decrypt the message"<<'\n';
+        return NULL;
+      }
+            bool result=insertField(newMessage->getMessageType(),newMessage,plaintext,lengthplain);
+      if(result==false)
+        return NULL;
 
+      return newMessage;
+    }
+ }
+/*
+---------------------------------function CipherAES()-------------------------------
+*/
+  bool CipherAES::copyToFrom(int start,int end,unsigned char* originalArray,unsigned char* copyArray)
+  {
+    if(start>end||start<0||end<0)
+      return false;
+    for(int i=start;i<end;i++)
+    {
+      copyArray[i]=originalArray[i];
+    } 
+    return true;
+  } 
+ 
+
+ bool CipherAES::insertField(MessageType type,Message* message,unsigned char* valueField,int valueFieldLength)
+ {
+   bool result=false;
+   switch(type)
+   {
+    case USER_LIST:
+      message->setUserList(valueField,valueFieldLength);
+      result=true;
+      break;
+    
+    case RANK_LIST:
+      message->setRankList(valueField,valueFieldLength);
+      result=true;
+      break;
+   
+    case GAME_PARAM:
+      message->setNetInformations( valueField , valueFieldLength );
+      result=true;
+      break;
+
+    case MOVE:
+      message->setChosenColumn(valueField,valueFieldLength);
+      break;
+
+    case CHAT:
+      message->setMessage(valueField,valueFieldLength);
+      result=true;
+      break;
+
+    default:
+      result=false;
+      break;
+   }
+   return result;
+ }
 }
-

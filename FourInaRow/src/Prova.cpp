@@ -1,22 +1,23 @@
 #include<iostream>
 #include"utility/Register.h"
 #include "Logger.h"
+#include "server/ClientInformation.h"
+#include "utility/Information.h"
 using namespace utility;
-struct prova
-{
-  int index;
- 
-};
+
 int main()
 {
+  
+  
   Logger::setThreshold( VERY_VERBOSE );
-  int p1=1;
-  int p2=2;
-  Register<int>r;
+  server::ClientInformation c1 (1, "64654664",5);
+  Information p1=c1;
+  Information p2=c1;
+  Register<Information>r;
   r.addData(p1);
   r.addData(p2);
    
-  int* p3=r.getData(1);
+  Information* p3=r.getData(p1);
   
   
   std::cout<<flush;
@@ -24,8 +25,8 @@ int main()
   if(p3==NULL)
    std::cout<<"il risultato è un puntatore a NULL"<<endl;
   else
-   std::cout<<*p3<<endl;
-  bool var=r.removeData(1);
+   std::cout<<"ok"<<endl;
+  bool var=r.removeData(p1);
   if(var==true)
   {
     std::cout<<"elemento cancellato in modo corretto"<<endl;
@@ -35,7 +36,7 @@ int main()
     std::cout<<"cancellazione elemeto non riuscita"<<endl;
   }
 
-  p3=r.getData(2);
+  p3=r.getData(p2);
   
   
   std::cout<<flush;
@@ -43,7 +44,7 @@ int main()
   if(p3==NULL)
    std::cout<<"il risultato è un puntatore a NULL"<<endl;
   else
-   std::cout<<*p3<<endl;
+   std::cout<<"ok"<<endl;
   return 0;
 }
 

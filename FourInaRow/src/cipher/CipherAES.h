@@ -8,7 +8,8 @@
 #include<openssl/rand.h>
 #include<stdlib.h>
 #include<time.h>
-#include"../Logger"
+#include"../Logger.h"
+#include"CipherDH.h"
 #include "../utility/NetMessage.h"
 #include "../utility/Message.h"
 using namespace std;
@@ -24,13 +25,15 @@ namespace cipher
     CipherAES();
     CipherAES(SessionKey*);
     bool modifyParam(SessionKey*);
-    Message* encryptMessage(Message*);
-    Message* decryptMessage(Message*);
+    Message* encryptMessage(Message);
+    Message* decryptMessage(Message);
   private:
     unsigned char* fromIntToUnsignedChar(int,int*);
-    int gcmEncrypt(unsigned char*,int,unsigned char*,unsigned char*,unsigned char*);
+    int gcmEncrypt(unsigned char*,int,unsigned char*,int,unsigned char*,unsigned char*);
     int gcmDecrypt(unsigned char*,int,unsigned char*,int,unsigned char*,unsigned char*);
+    bool copyToFrom(int,int,unsigned char*,unsigned char*);
+    bool insertField(MessageType,Message*,unsigned char*,int);
   };
 
-
+}
 
