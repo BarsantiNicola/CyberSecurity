@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include "../utility/NetMessage.h"
+#include "../utility/Information.h"
 
 using namespace std;
 
@@ -18,7 +19,7 @@ namespace server {
 
     };
 
-    class UserInformation {
+    class UserInformation : public utility::Information{
         private:
             string username;
             unsigned char* sessionKey;

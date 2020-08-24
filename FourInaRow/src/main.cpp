@@ -6,6 +6,9 @@
 #include "utility/Converter.h"
 #include "cipher/CipherDH.h"
 #include "server/SQLConnector.h"
+#include "utility/Register.h"
+#include "server/ClientInformation.h"
+
 using namespace utility;
 
 
@@ -14,11 +17,13 @@ using namespace utility;
 
         Logger::setThreshold( VERY_VERBOSE );
         base<<"------------------------------------------------------------"<<"\n\n";
-        server::SQLConnector::incrementUserGame("ale",server::WIN);
-        server::SQLConnector::incrementUserGame("ale",server::LOOSE);
-        server::SQLConnector::incrementUserGame("ale",server::TIE);
+     //   server::SQLConnector::incrementUserGame("ale",server::WIN);
+     //   server::SQLConnector::incrementUserGame("ale",server::LOOSE);
+     //   server::SQLConnector::incrementUserGame("ale",server::TIE);
 
-        cout<<server::SQLConnector::getRankList()<<endl;
+     //   cout<<server::SQLConnector::getRankList()<<endl;
+       Register<server::ClientInformation> *prova = new Register<server::ClientInformation>();
+       delete prova;
      //   Converter::test();
       //  cipher::CipherRSA::test();
       //cipher::CipherDH::test();

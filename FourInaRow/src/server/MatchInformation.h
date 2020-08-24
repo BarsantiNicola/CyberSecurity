@@ -3,6 +3,7 @@
 #define FOURINAROW_MATCHINFORMATION_H
 
 #include <iostream>
+#include "../utility/Information.h"
 using namespace std;
 
 namespace server {
@@ -17,7 +18,7 @@ namespace server {
 
     };
 
-    class MatchInformation {
+    class MatchInformation : public utility::Information {
 
         private:
             string challenger;

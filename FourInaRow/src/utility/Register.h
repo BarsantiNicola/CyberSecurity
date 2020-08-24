@@ -3,6 +3,8 @@
 #include <ostream>
 #include <cstring>
 #include "../Logger.h"
+#include "Information.h"
+
 using namespace std;
 namespace utility{
  class UserInformation;
@@ -13,12 +15,12 @@ namespace utility{
   protected:
    vector<T> dataList;
   public:
-   Register();
+   Register<T>();
    T* getData(T data);
    bool removeData(T);
    bool addData(T);
    T* getDatafromIndex(unsigned int);
-   ~Register();
+   ~Register<T>();
   //protected:
    //bool addData(T);
    //T getData(int);
