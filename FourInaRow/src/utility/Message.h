@@ -56,11 +56,15 @@ namespace utility {
             string username = "";
             string adv_username_1 = "";
             string adv_username_2 = "";
-            string user_list = "";
-            string rank_list = "";
 
             int* nonce = nullptr;
             int* current_token = nullptr;
+
+            unsigned char* user_list = nullptr;
+            unsigned int user_list_len=0;
+
+            unsigned char* rank_list = nullptr;
+            unsigned int rank_list_len = 0;
 
             unsigned char* server_certificate = nullptr;
             unsigned int certificate_len = 0;
@@ -96,12 +100,12 @@ namespace utility {
             void setUsername( string username );
             void setAdversary_1( string username );
             void setAdversary_2( string username );
-            void setUserList( string user_list );
-            void setRankList( string rank_list );
 
             bool setNonce( int nonce );
             bool setCurrent_Token( int current_token );
 
+            bool setUserList( unsigned char* user_list, unsigned int len );
+            bool setRankList( unsigned char* rank_list, unsigned int len );
             bool setServer_Certificate( unsigned char* certificate , unsigned int len );
             bool setPubKey( unsigned char* key , unsigned int len );
             bool setNetInformations( unsigned char* IP , unsigned int len );
@@ -116,11 +120,15 @@ namespace utility {
             string getUsername();
             string getAdversary_1();
             string getAdversary_2();
-            string getUserList();
-            string getRankList();
 
             int* getNonce();
             int* getCurrent_Token();
+
+            unsigned char* getUserList();
+            unsigned int getUserListLen();
+
+            unsigned char* getRankList();
+            unsigned int getRankListLen();
 
             unsigned char* getServerCertificate();
             unsigned int getServerCertificateLength();

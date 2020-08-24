@@ -8,7 +8,7 @@ namespace utility{
 
         vverbose<<"--> [Converter][verifyMessage] Verification of message"<<'\n';
         int* nonce;
-        unsigned char* nonceString, *server_certificate,*signature,*key,*net,*chosen_column,*chat;
+        unsigned char* nonceString, *server_certificate,*signature,*key,*net,*chosen_column,*chat,*list;
         const char* app,*app2;
         switch( type ){
 
@@ -240,9 +240,16 @@ namespace utility{
                     delete nonce;
                     return false;
                 }
-                app = message.getUserList().c_str();
 
-                if( checkField((const unsigned char*)app,message.getUserList().length()) || checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length())) {
+                list = message.getUserList();
+                if( !list ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing User List"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    return false;
+                }
+
+                if( checkField( list,message.getUserListLen()) || checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length())) {
                     verbose<<"--> [Converter][verifyMessage] Verification failure: Presence of <\"&>"<<'\n';
                     delete nonce;
                     delete[] signature;
@@ -298,8 +305,17 @@ namespace utility{
                     delete nonce;
                     return false;
                 }
-                app = message.getRankList().c_str();
-                if( checkField((const unsigned char*)app,message.getRankList().length()) || checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length())) {
+
+                list = message.getRankList();
+                if( !list ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing User List"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    return false;
+                }
+
+                list = message.getRankList();
+                if( checkField( list , message.getRankListLen()) || checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length())) {
                     verbose<<"--> [Converter][verifyMessage] Verification failure: Presence of <\"&>"<<'\n';
                     delete nonce;
                     delete[] signature;
@@ -764,7 +780,7 @@ namespace utility{
     bool Converter::verifyCompact(MessageType type , Message message  ){
         vverbose<<"--> [Converter][verifyMessage] Verification of message"<<'\n';
         int* nonce;
-        unsigned char* nonceString, *server_certificate,*key,*net,*chosen_column,*chat;
+        unsigned char* nonceString, *server_certificate,*key,*net,*chosen_column,*chat,*list;
         const char* app,*app2;
         switch( type ){
 
@@ -938,8 +954,8 @@ namespace utility{
                 }
                 nonceString = (unsigned char*)to_string(*nonce).c_str();
 
-                app = message.getUserList().c_str();
-                if( checkField((const unsigned char*)app,message.getUserList().length()) || checkField(nonceString,to_string(*nonce).length())) {
+                list = message.getUserList();
+                if( checkField( list ,message.getUserListLen()) || checkField(nonceString,to_string(*nonce).length())) {
                     verbose<<"--> [Converter][verifyCompact] Verification failure: Presence of <\"&>"<<'\n';
                     delete nonce;
                     return false;
@@ -978,8 +994,8 @@ namespace utility{
                 }
                 nonceString = (unsigned char*)to_string(*nonce).c_str();
 
-                app = message.getRankList().c_str();
-                if( checkField((const unsigned char*)app,message.getRankList().length()) || checkField(nonceString,to_string(*nonce).length())) {
+                list = message.getRankList();
+                if( checkField( list ,message.getRankListLen()) || checkField(nonceString,to_string(*nonce).length())) {
                     verbose<<"--> [Converter][verifyCompact] Verification failure: Presence of <\"&>"<<'\n';
                     delete nonce;
                     return false;
@@ -1478,7 +1494,7 @@ namespace utility{
             case USER_LIST:
                 nonce = message.getNonce();
                 sign = message.getSignature();
-                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUserList().length()+message.getSignatureLen();
+                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUserListLen()+message.getSignatureLen();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1487,7 +1503,7 @@ namespace utility{
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
-                pos = writeField(value , 'l', (unsigned char*)message.getUserList().c_str(),message.getUserList().length(), pos,false  );
+                pos = writeField(value , 'l', message.getUserList() ,message.getUserListLen(), pos,false  );
                 pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
                 pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
                 delete[] sign;
@@ -1515,7 +1531,7 @@ namespace utility{
             case RANK_LIST:
                 nonce = message.getNonce();
                 sign = message.getSignature();
-                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getRankList().length()+message.getSignatureLen();
+                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getRankListLen()+message.getSignatureLen();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1524,7 +1540,7 @@ namespace utility{
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
-                pos = writeField(value , 'r', (unsigned char*)message.getRankList().c_str(), message.getRankList().length(), pos,false  );
+                pos = writeField(value , 'r', message.getRankList(), message.getRankListLen(), pos,false  );
                 pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(), pos,false  );
                 pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
                 delete[] sign;
@@ -1902,7 +1918,7 @@ namespace utility{
                 break;
             case 'l':
                 vverbose<<"--> [Converter][setField] Identified variable: UserList"<<'\n';
-                msg->setUserList(string(reinterpret_cast<char*>(fieldValue)));
+                msg->setUserList(fieldValue , len );
                 break;
             case 'k':
                 vverbose<<"--> [Converter][setField] Identified variable: Public Key"<<'\n';
@@ -1914,7 +1930,7 @@ namespace utility{
                 break;
             case 'r':
                 vverbose<<"--> [Converter][setField] Identified variable: RankList"<<'\n';
-                msg->setRankList(string(reinterpret_cast<char*>(fieldValue)));
+                msg->setRankList(fieldValue , len);
                 break;
             case 's':
                 vverbose<<"--> [Converter][setField] Identified variable: Signature"<<'\n';
@@ -1990,8 +2006,8 @@ namespace utility{
         m->setChosenColumn( (unsigned char*)"column",6 );
         m->setMessage( (unsigned char*)"message" ,7);
         m->set_DH_key( (unsigned char*)"dh_key",6 );
-        m->setUserList( "user_list" );
-        m->setRankList( "rank_list" );
+        m->setUserList( (unsigned char*)"user_list" , 9 );
+        m->setRankList( (unsigned char*)"rank_list" , 9);
 
         m2->setUsername( "us\"&ername");
         m2->setAdversary_1( "adv_1\"&" );
@@ -2004,8 +2020,8 @@ namespace utility{
         m2->setChosenColumn( (unsigned char*)"column\"&",8 );
         m2->setMessage( (unsigned char*)"mes\"&sage" ,9);
         m2->set_DH_key( (unsigned char*)"\"&dh_key",9 );
-        m2->setUserList( "user_list\"&" );
-        m2->setRankList( "rank_\"&list" );
+        m2->setUserList( (unsigned char*)"user_list\"&" , 11);
+        m2->setRankList( (unsigned char*)"rank_\"&list" , 11);
         verbose<<"-------------------0--------------------"<<'\n';
 
         encoded = Converter::encodeMessage(CERTIFICATE_REQ,*m);
@@ -2231,7 +2247,7 @@ namespace utility{
         }
         verbose<<encoded->getMessage()<<'\n';
         m2 = Converter::decodeMessage(*encoded);
-        if( m2->getMessageType() != USER_LIST || m2->getNonce() == nullptr || m2->getUserList().empty() ){
+        if( m2->getMessageType() != USER_LIST || m2->getNonce() == nullptr || m2->getUserList() == nullptr ){
             vverbose<<"Error during test of USER_LIST"<<'\n';
             return false;
         }
@@ -2261,7 +2277,7 @@ namespace utility{
         }
         verbose<<encoded->getMessage()<<'\n';
         m2 = Converter::decodeMessage(*encoded);
-        if( m2->getMessageType() != RANK_LIST || m2->getNonce() == nullptr || m2->getRankList().empty() ){
+        if( m2->getMessageType() != RANK_LIST || m2->getNonce() == nullptr || m2->getRankList() == nullptr ){
             vverbose<<"Error during test of RANK_LIST"<<'\n';
             return false;
         }
@@ -2603,7 +2619,7 @@ namespace utility{
 
             case USER_LIST:
                 nonce = message.getNonce();
-                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getUserList().length();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getUserListLen();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -2612,7 +2628,7 @@ namespace utility{
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
-                pos = writeCompactField(value , (unsigned char*)message.getUserList().c_str(),message.getUserList().length(), pos,false  );
+                pos = writeCompactField(value , message.getUserList(),message.getUserListLen(), pos,false  );
                 pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,true  );
 
                 break;
@@ -2634,7 +2650,7 @@ namespace utility{
 
             case RANK_LIST:
                 nonce = message.getNonce();
-                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getRankList().length();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getRankListLen();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -2643,7 +2659,7 @@ namespace utility{
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
-                pos = writeCompactField(value , (unsigned char*)message.getRankList().c_str(), message.getRankList().length(), pos,false  );
+                pos = writeCompactField(value , message.getRankList(), message.getRankListLen(), pos,false  );
                 pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(), pos,true  );
 
                 break;

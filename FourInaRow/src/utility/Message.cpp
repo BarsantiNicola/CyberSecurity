@@ -50,11 +50,11 @@ namespace utility {
         if( !msg.adv_username_2.empty() )
             this->setAdversary_2( msg.adv_username_2 );
 
-        if( !msg.user_list.empty() )
-            this->setUserList( msg.user_list );
+        if( msg.user_list )
+            this->setUserList( msg.user_list , msg.user_list_len );
 
-        if( !msg.rank_list.empty() )
-            this->setRankList( msg.rank_list );
+        if( msg.rank_list )
+            this->setRankList( msg.rank_list , msg.rank_list_len );
 
         if( msg.nonce )
             this->setNonce(*( msg.nonce ));
@@ -96,17 +96,17 @@ namespace utility {
         if( ! this->adv_username_2.empty() )
             this->adv_username_2.clear();
 
-        if( ! this->user_list.empty() )
-            this->user_list.clear();
-
-        if( ! this->rank_list.empty() )
-            this->rank_list.clear();
-
         if( this->nonce )
             delete this->nonce;
 
         if( this->current_token )
             delete this->current_token;
+
+        if( this->user_list )
+            delete[] this->user_list;
+
+        if( this->rank_list )
+            delete[] this->rank_list;
 
         if( this->server_certificate )
             delete[] this->server_certificate;
@@ -142,42 +142,28 @@ namespace utility {
     void Message::setMessageType( MessageType t ){
 
         this->messageType = t;
-        vverbose<<"--> [Message][setNonce] Set of MessageType Completed"<<'\n';
+        vverbose<<"--> [Message][setMessageType] Set of MessageType Completed"<<'\n';
 
     }
 
     void Message::setUsername( string username ){
 
         this->username = username;
-        vverbose<<"--> [Message][setNonce] Set of Username Completed"<<'\n';
+        vverbose<<"--> [Message][setUsername] Set of Username Completed"<<'\n';
 
     }
 
     void Message::setAdversary_1(string username ){
 
         this->adv_username_1 = username;
-        vverbose<<"--> [Message][setNonce] Set of Adversary_1 Completed"<<'\n';
+        vverbose<<"--> [Message][setAdversary_1] Set of Adversary_1 Completed"<<'\n';
 
     }
 
     void Message::setAdversary_2(string username ){
 
         this->adv_username_2 = username;
-        vverbose<<"--> [Message][setNonce] Set of Adversary_2 Completed"<<'\n';
-
-    }
-
-    void Message::setUserList(string user_list ){
-
-        this->user_list = user_list;
-        vverbose<<"--> [Message][setNonce] Set of UserList Completed"<<'\n';
-
-    }
-
-    void Message::setRankList(string rank_list ){
-
-        this->rank_list = rank_list;
-        vverbose<<"--> [Message][setNonce] Set of RankList Completed"<<'\n';
+        vverbose<<"--> [Message][setAdversary_2] Set of Adversary_2 Completed"<<'\n';
 
     }
 
@@ -219,6 +205,69 @@ namespace utility {
 
         }
 
+    }
+
+    bool Message::setUserList( unsigned char* user_list , unsigned int len ){
+
+        if( !user_list || len == 0 ){
+
+            verbose<<"--> [Message][setUserList] Error invalid arguments. Operation Aborter"<<'\n';
+            return false;
+
+        }
+
+        if( this->user_list )
+            delete[] this->user_list;
+
+        this->user_list = nullptr;
+        this->user_list_len = len;
+
+        this->user_list = new unsigned char[ user_list_len ];
+        if( this->user_list ) {
+
+            vverbose<<"--> [Message][setUserList] Set of User List Completed"<<'\n';
+            myCopy( this->user_list,  user_list, user_list_len );
+            return true;
+
+        }else{
+
+            verbose << "--> [Message][setUserList] Error during allocation of memory. Operation Aborted" << '\n';
+            this->user_list_len = 0;
+            return false;
+
+        }
+
+    }
+
+    bool Message::setRankList(unsigned char* rank_list, unsigned int len ){
+
+        if( !rank_list || len == 0 ){
+
+            verbose<<"--> [Message][setRankList] Error invalid arguments. Operation Aborter"<<'\n';
+            return false;
+
+        }
+
+        if( this->rank_list )
+            delete[] this->rank_list;
+
+        this->rank_list = nullptr;
+        this->rank_list_len = len;
+
+        this->rank_list = new unsigned char[ rank_list_len ];
+        if( this->rank_list ) {
+
+            vverbose<<"--> [Message][setRankList] Set of Rank List Completed"<<'\n';
+            myCopy( this->rank_list,  rank_list, rank_list_len );
+            return true;
+
+        }else{
+
+            verbose << "--> [Message][setRankList] Error during allocation of memory. Operation Aborted" << '\n';
+            this->rank_list = 0;
+            return false;
+
+        }
     }
 
     bool Message::setServer_Certificate( unsigned char* certificate , unsigned int len ){
@@ -485,18 +534,6 @@ namespace utility {
 
     }
 
-    string Message::getUserList(){
-
-        return this->user_list;
-
-    }
-
-    string Message::getRankList(){
-
-        return this->rank_list;
-
-    }
-
     int* Message::getNonce(){
 
         if( !this->nonce) return nullptr;
@@ -528,6 +565,30 @@ namespace utility {
         *ret = *(this->current_token);
 
         return ret;
+
+    }
+
+    unsigned char* Message::getUserList(){
+
+        return this->user_list;
+
+    }
+
+    unsigned int Message::getUserListLen() {
+
+        return this->user_list_len;
+
+    }
+
+    unsigned char* Message::getRankList(){
+
+        return this->rank_list;
+
+    }
+
+    unsigned int Message::getRankListLen() {
+
+        return this->rank_list_len;
 
     }
 
