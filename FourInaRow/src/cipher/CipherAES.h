@@ -12,7 +12,7 @@
 #include"CipherDH.h"
 #include "../utility/NetMessage.h"
 #include "../utility/Message.h"
-using namespace std;
+using namespace utility;
 namespace cipher
 {
   class CipherAES{
