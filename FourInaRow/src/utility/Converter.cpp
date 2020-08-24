@@ -2886,6 +2886,430 @@ namespace utility{
 
     }
 
+ 
+/*
+compact function for AES
+*/
+NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengthPlaintext) {
+
+        int len;
+        unsigned char *value;
+
+        vverbose << "--> [Converter][compactForm] Starting encoding of Message" << '\n';
+
+        if (!verifyCompact(type, message)){
+
+            verbose<<"--> [Converter][compactForm] Error during the verification of the message"<<'\n';
+            return nullptr;
+
+        }
+
+        unsigned char* certificate,*key,*net;
+        int* nonce;
+        int pos;
+        switch( type ){
+
+            case CERTIFICATE_REQ:
+                nonce = message.getNonce();
+                len = to_string(type).length()+to_string(*nonce).length();
+                *lengthPlaintext=len;
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value ,  (unsigned char*)to_string(type).c_str(),to_string(type).length(),0,false  );
+                pos = writeCompactField(value ,  (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false );
+                break;
+
+            case CERTIFICATE:
+                nonce = message.getNonce();
+                len = to_string(type).length()+to_string(*nonce).length() + message.getServerCertificateLength();
+                *lengthPlaintext=len;
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                certificate  = message.getServerCertificate();
+                pos = writeCompactField(value ,  (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value ,  certificate,message.getServerCertificateLength(),pos, false  );
+                pos = writeCompactField(value ,  (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+
+                delete[] certificate;
+                break;
+
+            case LOGIN_REQ:
+                nonce = message.getNonce();
+                len = to_string(type).length()+to_string(*nonce).length()+message.getUsername().length();
+                *lengthPlaintext=len;
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value ,  (unsigned char*)message.getUsername().c_str(), message.getUsername().length(), pos, false  );
+                pos = writeCompactField(value ,  (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+
+                break;
+
+            case LOGIN_OK:
+                nonce = message.getNonce();
+                len = 1+to_string(type).length()+to_string(*nonce).length();
+                *lengthPlaintext=len;
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+
+                break;
+
+            case LOGIN_FAIL:
+                nonce = message.getNonce();
+                len = 1+to_string(type).length()+to_string(*nonce).length();
+                *lengthPlaintext=len;
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+
+                break;
+
+            case KEY_EXCHANGE:
+                nonce = message.getNonce();
+                key = message.getDHkey();
+                len = to_string(type).length()+to_string(*nonce).length()+message.getDHkeyLength();
+                *lengthPlaintext=len;
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , key, message.getDHkeyLength(), pos, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(), pos,false  );
+
+                delete[] key;
+                break;
+
+            case USER_LIST_REQ:
+                nonce = message.getNonce();
+                len = to_string(type).length()+to_string(*nonce).length();
+                *lengthPlaintext=len;
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+
+                break;
+
+            case USER_LIST:
+                nonce = message.getNonce();
+                len = to_string(type).length()+to_string(*nonce).length()+message.getUserListLen();
+                *lengthPlaintext=len-message.getUserListLen();
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeCompactField(value , (unsigned char*)message.getUserList(),message.getUserListLen(), pos,false  );
+                break;
+
+            case RANK_LIST_REQ:
+                nonce = message.getNonce();
+                len = to_string(type).length()+to_string(*nonce).length();
+                *lengthPlaintext=len;
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+
+                break;
+
+            case RANK_LIST:
+                nonce = message.getNonce();
+                len = to_string(type).length()+to_string(*nonce).length()+message.getRankListLen();
+                *lengthPlaintext=len-message.getRankListLen();
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(), pos,false  );
+                pos = writeCompactField(value , (unsigned char*)message.getRankList(), message.getRankListLen(), pos,false  );
+                break;
+
+            case MATCH:
+                nonce = message.getNonce();
+                len = to_string(type).length()+to_string(*nonce).length()+message.getUsername().length();
+                *lengthPlaintext=len;
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)message.getUsername().c_str(), message.getUsername().length(), pos,false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(), pos,false  );
+
+                break;
+
+            case ACCEPT:
+                nonce = message.getNonce();
+                len = to_string(type).length()+to_string(*nonce).length()+message.getAdversary_1().length()+message.getAdversary_2().length();
+                *lengthPlaintext=len;
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)message.getAdversary_1().c_str(), message.getAdversary_1().length(), pos,false  );
+                pos = writeCompactField(value , (unsigned char*)message.getAdversary_2().c_str(), message.getAdversary_2().length(), pos,false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(), pos,false  );
+
+                break;
+
+            case REJECT:
+                nonce = message.getNonce();
+                len = to_string(type).length()+to_string(*nonce).length()+message.getAdversary_1().length()+message.getAdversary_2().length();
+                *lengthPlaintext=len;
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)message.getAdversary_1().c_str(), message.getAdversary_1().length(), pos,false  );
+                pos = writeCompactField(value , (unsigned char*)message.getAdversary_2().c_str(), message.getAdversary_2().length(), pos,false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(), pos,false  );
+
+                break;
+
+            case WITHDRAW_REQ:
+                nonce = message.getNonce();
+                len = to_string(type).length()+to_string(*nonce).length()+message.getUsername().length();
+                *lengthPlaintext=len;
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)message.getUsername().c_str(), message.getUsername().length(), pos,false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(), pos,false  );
+
+                break;
+
+            case WITHDRAW_OK:
+                nonce = message.getNonce();
+                len = to_string(type).length()+to_string(*nonce).length();
+                *lengthPlaintext=len;
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+
+                break;
+
+            case LOGOUT_REQ:
+                nonce = message.getNonce();
+                len = to_string(type).length()+to_string(*nonce).length();
+                *lengthPlaintext=len;
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+
+                break;
+
+            case LOGOUT_OK:
+                nonce = message.getNonce();
+                len = to_string(type).length()+to_string(*nonce).length();
+                *lengthPlaintext=len;
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+
+                break;
+
+            case GAME_PARAM:
+                nonce = message.getNonce();
+                len = to_string(type).length()+to_string(*nonce).length()+message.getPubKeyLength()+message.getNetInformationsLength();
+                *lengthPlaintext=len-message.getNetInformationsLength();
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                key = message.getPubKey();
+                net = message.getNetInformations();
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , key ,message.getPubKeyLength(),pos,false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeCompactField(value , net ,message.getNetInformationsLength(),pos,false  );
+                delete[] key;
+                delete[] net;
+                break;
+
+            case MOVE:
+                nonce = message.getCurrent_Token();
+                len = to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength();
+                key = message.getChosenColumn();
+                *lengthPlaintext=len-message.getChosenColumnLength();
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeCompactField(value , key,message.getChosenColumnLength(),pos,false  );
+
+                delete[] key;
+                break;
+            case CHAT:
+                nonce = message.getCurrent_Token();
+                len = to_string(type).length()+to_string(*nonce).length()+message.getMessageLength();
+                *lengthPlaintext=len-message.getMessageLength();
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                key = message.getMessage();
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeCompactField(value , key, message.getMessageLength(), pos,false  );
+
+                delete[] key;
+                break;
+
+            case ACK:
+                nonce = message.getCurrent_Token();
+                len = to_string(type).length()+to_string(*nonce).length();
+                *lengthPlaintext=len;
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+
+                break;
+
+            case DISCONNECT:
+                nonce = message.getNonce();
+                len = to_string(type).length()+to_string(*nonce).length();
+                *lengthPlaintext=len;
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+
+                break;
+            case ERROR:
+                nonce = message.getNonce();
+                len = to_string(type).length()+to_string(*nonce).length()+message.getMessageLength();
+                *lengthPlaintext=len;
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                key = message.getMessage();
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeCompactField(value , key, message.getMessageLength(), pos,false  );
+
+                delete[] key;
+                break;
+            default:
+                return nullptr;
+        }
+        delete nonce;
+
+        return new NetMessage(value,len);
+
+    }
+
     int Converter::writeField( unsigned char* value , char fieldTag , unsigned char* field , int len , int pos , bool finish ) {
 
         value[pos++] = fieldTag;

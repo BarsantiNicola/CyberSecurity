@@ -9,6 +9,8 @@
 #include<stdlib.h>
 #include<time.h>
 #include"../Logger"
+#include "../utility/NetMessage.h"
+#include "../utility/Message.h"
 using namespace std;
 namespace cipher
 {
@@ -22,8 +24,8 @@ namespace cipher
     CipherAES();
     CipherAES(SessionKey*);
     bool modifyParam(SessionKey*);
-    Message encryptMessage(Message);
-    Message decryptMessage(Message);
+    Message* encryptMessage(Message*);
+    Message* decryptMessage(Message*);
   private:
     unsigned char* fromIntToUnsignedChar(int,int*);
     int gcmEncrypt(unsigned char*,int,unsigned char*,unsigned char*,unsigned char*);
@@ -31,4 +33,4 @@ namespace cipher
   };
 
 
-}
+

@@ -31,6 +31,7 @@ class Converter {
         static NetMessage* encodeMessage(MessageType type , Message message );   //  translate a Message into a NetMessage basing on the given type, return NULL if it doesn't contain all the correct fields
         static Message* decodeMessage( NetMessage message );                     //  translate a NetMessage into a Message, it could fail if the NetMessage isn't properly formatted returning a NULL pointer
         static NetMessage* compactForm( MessageType type, Message message );     //  translate a Message in a more compact form to perform signatures and hashes, it's contained in a NetMessage just for semplicity to give content and its length
+        static NetMessage* compactForm( MessageType type, Message message,int* lengthPlaintext );
         static bool test();                                                      //  simple example of usage and testing of class functioning
 
 };

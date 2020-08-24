@@ -119,4 +119,10 @@ verify the tag if there is an error return -1 value and -2 if the verify fails
       return -2;
     }
   }
+  Message* CipherAES::encryptMessage(Message* message)
+  {
+    NetMessa
+  }
+
 }
+
