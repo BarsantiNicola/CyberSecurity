@@ -28,4 +28,15 @@ namespace server{
 
     }
 
+    void ClientInformation::setNonce( int nonce ) {
+
+        this->nonce = nonce;
+    }
+
+    int ClientInformation::getNonce() {
+
+        return this->nonce;
+
+    }
+
 }

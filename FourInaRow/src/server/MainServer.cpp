@@ -1,6 +1,7 @@
 
 #include "MainServer.h"
 
+
 namespace server {
 
 
@@ -8,5 +9,7 @@ namespace server {
 
 
 int main() {
-    return 1;
+    ClientRegister::test();
+    UserRegister::test();
+    MatchRegister::test();
 }

@@ -14,12 +14,15 @@ class ClientInformation{
             int clientID;
             string IPaddress;
             int socket;
+            int nonce;
 
         public:
             ClientInformation(int clientID, string IPaddress, int socket);
             int getClientID();
             string getIPaddress();
             int getSocket();
+            void setNonce( int nonce );
+            int getNonce();
 
     };
 

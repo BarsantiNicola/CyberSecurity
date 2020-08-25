@@ -21,9 +21,10 @@ namespace server {
         bool setStarted( int matchID );
         bool setRejected( int matchID );
         bool removeMatch( int matchID );
-        int*  getMatchID( string challenger );
+        int* getMatchID( string challenger );
         bool hasMatchID( int match );
         MatchInformation* getMatch( int matchID );
+        static void test();
 
     };
 

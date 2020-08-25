@@ -16,12 +16,18 @@ namespace server {
 
         public:
             bool addClient( int clientID , string ip , int socket );
+            bool setNonceByID( int clientID , int nonce );
+            bool setNonceBySocket( int socket , int nonce );
+            int* getNonceByID( int clientID );
+            int* getNonceBySocket( int socket );
             bool removeClientBySocket( int socket );
             bool removeClientByID( int clientID );
             bool hasID( int clientID );
             bool hasSocket( int socket );
             ClientInformation* getClientBySocket( int socket );
             ClientInformation* getClientByID( int clientID );
+
+            static void test();
 
     };
 

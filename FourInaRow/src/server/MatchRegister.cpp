@@ -45,66 +45,52 @@ namespace server{
             return false;
 
         }
-        if( match->getStatus() != OPEN ){
+        if( match->getStatus() != LOAD ){
 
             verbose<<"-->[MatchRegister][setAccepted] Error the match'status is invalid to perform ACCEPT: "<<match->getStatus()<<'\n';
             return false;
 
         }
-
-        match->setStatus( ACCEPT );
-        this->removeMatch( matchID );
-        try{
-
-            this->matchRegister.emplace_back(*match);
-
-        }catch(const bad_alloc& e){
-
-            verbose<<"-->[MatchRegister][setAccepted] Error bad allocation"<<'\n';
-            return false;
-
-        }
-
         delete match;
-        return true;
+
+        for( int a = 0; a<this->matchRegister.size(); a++ )
+            if (this->matchRegister.at(a).getMatchID() == matchID) {
+                this->matchRegister[a].setStatus(ACCEPT );
+                return true;
+            }
+        return false;
 
     }
 
     bool MatchRegister::setLoaded( int matchID ){
 
         MatchInformation* match = this->getMatch( matchID );
+
         if( !match ){
 
             verbose<<"-->[MatchRegister][setLoaded] Error bad allocation"<<'\n';
             return false;
 
         }
-        if( match->getStatus() != ACCEPT ){
+        if( match->getStatus() != OPEN ){
 
             verbose<<"-->[MatchRegister][setLoaded] Error the match'status is invalid to perform LOAD: "<<match->getStatus()<<'\n';
             return false;
 
         }
-
-        match->setStatus( LOAD );
-        this->removeMatch( matchID );
-        try{
-
-            this->matchRegister.emplace_back(*match);
-
-        }catch(const bad_alloc& e){
-
-            verbose<<"-->[MatchRegister][setLoaded] Error bad allocation"<<'\n';
-            return false;
-
-        }
-
         delete match;
-        return true;
+
+        for( int a = 0; a<this->matchRegister.size(); a++ )
+            if (this->matchRegister.at(a).getMatchID() == matchID) {
+                this->matchRegister[a].setStatus(LOAD );
+                return true;
+            }
+        return false;
 
     }
 
     bool MatchRegister::setStarted( int matchID ) {
+
 
         MatchInformation *match = this->getMatch(matchID);
         if (!match) {
@@ -113,7 +99,7 @@ namespace server{
             return false;
 
         }
-        if (match->getStatus() != LOAD) {
+        if (match->getStatus() != ACCEPT) {
 
             verbose << "-->[MatchRegister][setStarted] Error the match'status is invalid to perform START: "
                     << match->getStatus() << '\n';
@@ -121,49 +107,26 @@ namespace server{
 
         }
 
-        match->setStatus(START);
-        this->removeMatch(matchID);
-        try {
-
-            this->matchRegister.emplace_back(*match);
-
-        } catch (const bad_alloc &e) {
-
-            verbose << "-->[MatchRegister][setStarted] Error bad allocation" << '\n';
-            return false;
-
-        }
-
         delete match;
-        return true;
+
+        for( int a = 0; a<this->matchRegister.size(); a++ )
+            if (this->matchRegister.at(a).getMatchID() == matchID) {
+                this->matchRegister[a].setStatus(START );
+                return true;
+            }
+        return false;
 
     }
 
     bool MatchRegister::setRejected( int matchID ) {
 
-        MatchInformation *match = this->getMatch(matchID);
-        if (!match) {
+        for( int a = 0; a<this->matchRegister.size(); a++ )
+            if (this->matchRegister.at(a).getMatchID() == matchID) {
+                this->matchRegister[a].setStatus(REJECT);
+                return true;
+            }
+        return false;
 
-            verbose << "-->[MatchRegister][setStarted] Error bad allocation" << '\n';
-            return false;
-
-        }
-
-        match->setStatus(REJECT);
-        this->removeMatch(matchID);
-        try {
-
-            this->matchRegister.emplace_back(*match);
-
-        } catch (const bad_alloc &e) {
-
-            verbose << "-->[MatchRegister][setLoaded] Error bad allocation" << '\n';
-            return false;
-
-        }
-
-        delete match;
-        return true;
     }
 
     bool MatchRegister::removeMatch( int matchID ){
@@ -197,10 +160,125 @@ namespace server{
     MatchInformation* MatchRegister::getMatch( int matchID ){
 
         for( int a = 0; a<this->matchRegister.size(); a++ )
-            if( this->matchRegister.at(a).getMatchID() == matchID )
-                return new MatchInformation( matchID, this->matchRegister.at(a).getChallenger() , this->matchRegister.at(a).getChallenged());
+            if( this->matchRegister.at(a).getMatchID() == matchID ) {
+                MatchInformation *match = new MatchInformation(matchID, this->matchRegister.at(a).getChallenger(),
+                                                               this->matchRegister.at(a).getChallenged());
+                match->setStatus(this->matchRegister.at(a).getStatus());
+                return match;
+            }
         return nullptr;
 
+    }
+
+
+
+    void MatchRegister::test(){
+
+        MatchRegister* reg = new MatchRegister();
+        if( !reg->addMatch("marco" , "luca")) {
+            base << "Error1" << '\n';
+            return;
+        }
+
+        if( reg->addMatch("marco" , "lucia")) {
+            base << "Error2" << '\n';
+            return;
+        }
+
+        if( !reg->addMatch("nicola" , "marco")) {
+            base << "Error3" << '\n';
+            return;
+        }
+        MatchInformation* info;
+        int* match = reg->getMatchID("luca");
+        if( match ){
+            base<<"Error4"<<'\n';
+            return;
+        }
+        match = reg->getMatchID("marco");
+        if( !match ){
+            base<<"Error5"<<'\n';
+            return;
+        }
+        info = reg->getMatch(*match);
+
+        if( info->getChallenged().compare("luca")!= 0 ){
+            base<<"Error6"<<'\n';
+            return;
+        }
+
+        if( !reg->getMatchID("nicola")){
+
+            base<<"Error7"<<'\n';
+            return;
+        }
+
+        int* match2 = reg->getMatchID("nicola");
+
+
+
+        if( !reg->setLoaded(*match)){
+            base<<"Error8"<<'\n';
+            return;
+        }
+        if( reg->setLoaded(5)){
+            base<<"Error9"<<'\n';
+            return;
+        }
+        match = reg->getMatchID("marco");
+        if( !match ){
+            base<<"Error10"<<'\n';
+            return;
+        }
+        if( !reg->setAccepted(*match)){
+            base<<"Error11"<<'\n';
+            return;
+        }
+        if( reg->setAccepted(*match2)){
+            base<<"Error12"<<'\n';
+            return;
+        }
+        match = reg->getMatchID("marco");
+        if( !match ){
+            base<<"Error13"<<'\n';
+            return;
+        }
+        if( !reg->setStarted(*match)){
+            base<<"Error14"<<'\n';
+            return;
+        }
+        if( reg->setStarted(*match2)){
+            base<<"Error15"<<'\n';
+            return;
+        }
+        match = reg->getMatchID("marco");
+        if( !match ){
+            base<<"Error16"<<'\n';
+            return;
+        }
+        if( !reg->setRejected(*match)){
+            base<<"Error17"<<'\n';
+            return;
+        }
+        if( !reg->setRejected(*match2)){
+            base<<"Error18"<<'\n';
+            return;
+        }
+        match = reg->getMatchID("marco");
+        if( !match ){
+            base<<"Error19"<<'\n';
+            return;
+        }
+        if( !reg->removeMatch(*match)){
+            base<<"Error20"<<'\n';
+            return;
+        }
+        if( reg->removeMatch(5)){
+            base<<"Error21"<<'\n';
+            return;
+        }
+
+        verbose<<"Success"<<'\n';
     }
 
 }

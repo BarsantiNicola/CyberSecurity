@@ -114,4 +114,110 @@ namespace server{
         return nullptr;
     }
 
+    void UserRegister::test(){
+
+        UserRegister *reg = new UserRegister();
+        if( !reg->addUser("marco")) {
+            base << "Error1" << '\n';
+            return;
+        }
+        if( !reg->addUser("nicola")) {
+            base << "Error2" << '\n';
+            return;
+        }
+        if( !reg->addUser("alessia")) {
+            base << "Error3" << '\n';
+            return;
+        }
+        if( reg->addUser("marco")){
+            base<<"Error4"<<'\n';
+            return;
+        }
+        if( reg->addUser("nicola")){
+            base<<"Error5"<<'\n';
+            return;
+        }
+        if( !reg->removeUser("nicola")){
+            base<<"Error6"<<'\n';
+            return;
+        }
+        if( reg->removeUser("nicola")){
+            base<<"Error7"<<'\n';
+            return;
+        }
+        if( reg->removeUser("luca")){
+            base<<"Error8"<<'\n';
+            return;
+        }
+        if( !reg->hasUser("marco")){
+            base<<"Error9"<<'\n';
+            return;
+        }
+        if( reg->hasUser("nicola")){
+            base<<"Error10"<<'\n';
+            return;
+        }
+        if( !reg->hasUser("alessia")){
+            base<<"Error11"<<'\n';
+            return;
+        }
+        if( reg->hasUser("luca")){
+            base<<"Error12"<<'\n';
+            return;
+        }
+        if( reg->hasUser("lucia")){
+            base<<"Error13"<<'\n';
+            return;
+        }
+        if( reg->getUserID("marco") == nullptr ){
+            base<<"Error14"<<'\n';
+            return;
+        }
+        if( reg->getUserID("lucia") != nullptr ){
+            base<<"Error15"<<'\n';
+            return;
+        }
+        if( !reg->setLogged("marco",(unsigned char*)"123124",6 )){
+            base<<"Error16"<<'\n';
+            return;
+        }
+        if( reg->setLogged("jonni",(unsigned char*)"123124",6 )){
+            base<<"Error17"<<'\n';
+            return;
+        }
+        if( !reg->setWait("marco")){
+            base<<"Error18"<<'\n';
+            return;
+        }
+        if( !reg->setWait("alessia")){
+            base<<"Error19"<<'\n';
+            return;
+        }
+        if( !reg->setLogged("alessia",(unsigned char*)"123124",6 )){
+            base<<"Error20"<<'\n';
+            return;
+        }
+        if( !reg->setPlay("marco")){
+            base<<"Error21"<<'\n';
+            return;
+        }
+        if( !reg->setPlay("alessia")){
+            base<<"Error22"<<'\n';
+            return;
+        }
+        UserInformation* user = reg->getUser("marco");
+        if( !user || user->getUsername().compare("marco")!=0 || user->getStatus() != PLAY ){
+            base<<"Error23"<<'\n';
+            return;
+        }
+        delete user;
+        if( reg->getUser("luca")) {
+            base << "Error24" << '\n';
+            return;
+        }
+        verbose<<"Success"<<'\n';
+
+
+    }
+
 }

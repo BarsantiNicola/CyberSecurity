@@ -25,6 +25,7 @@ namespace server {
             bool setPlay( string username );
             bool setWait( string username );
             int* getUserID( string username );
+            static void test();
 
     };
 
