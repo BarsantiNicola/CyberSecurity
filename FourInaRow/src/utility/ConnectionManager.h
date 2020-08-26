@@ -11,14 +11,15 @@
 #include<string>
 #include "Converter.h"
 #include "../Logger.h"
-#define BUFFER_LENGTH 150000
+
+#define BUFFER_LENGTH 450000
 using namespace std;
 namespace utility
 {
   class ConnectionManager
   {
     private:
-      int listener;
+      int listener=-2;
       int serverSocket=-2;
       int socketUDP=-2;
       int standardIO;
@@ -38,6 +39,8 @@ namespace utility
       bool closeConnection(int);
       bool sendMessage(Message,int,const char*,int);
       vector<int> waitForMessage();
+      int getsocketUDP();
+      int getserverSocket();
     private:
       void copyBuffer(unsigned char*,unsigned char*,int,int);
       void initArray(unsigned char*,unsigned char,int);

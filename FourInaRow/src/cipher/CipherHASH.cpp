@@ -1,11 +1,11 @@
 #include"CipherHASH.h"
 namespace cipher
 {
-  //this function create and return an HASH of an message without a key return  NULL in case of error
+  //this function create and return an HASH of an message without a key return  nullptr in case of error
   unsigned char* CipherHASH::hashFunction(unsigned char* message,int message_length)
   {
-    if(message_length<=0||message==NULL)
-      return NULL;
+    if(message_length<=0||message==nullptr)
+      return nullptr;
     unsigned char* hash_buf;
     unsigned int hash_size;
     const EVP_MD* md=EVP_sha256();
@@ -14,12 +14,12 @@ namespace cipher
     hash_buf=(unsigned char*)malloc(hash_size);
     if(!hash_buf)
     {
-      return NULL;
+      return nullptr;
     }
     mdctx= EVP_MD_CTX_new();
     if(!mdctx)
     {
-      return NULL;
+      return nullptr;
     }
     EVP_DigestInit(mdctx,md);
     EVP_DigestUpdate(mdctx,(unsigned char*)message,message_length);
@@ -27,11 +27,11 @@ namespace cipher
     EVP_MD_CTX_free(mdctx);
     return hash_buf;
   }
-  //this function create an HASH of an message with a key return NULL in case of failure
+  //this function create an HASH of an message with a key return nullptr in case of failure
   unsigned char* CipherHASH::hashFunction(unsigned char* message,int message_length,unsigned char* key_hmac,int key_length)
   {
-    if(key_length<=0 ||message_length<=0||message==NULL)
-      return NULL;
+    if(key_length<=0 ||message_length<=0||message==nullptr)
+      return nullptr;
     unsigned char* hash_buf;
     ENGINE_load_builtin_engines();
     ENGINE_register_all_complete();
@@ -43,14 +43,14 @@ namespace cipher
     hash_buf=(unsigned char*)malloc(hash_size);
     if(!hash_buf)
     {
-      return NULL;
+      return nullptr;
     }
     mdctx= HMAC_CTX_new();
     if(!mdctx)
     {
-      return NULL;
+      return nullptr;
     }
-    HMAC_Init_ex(mdctx,key_hmac,key_hmac_size,md,NULL);
+    HMAC_Init_ex(mdctx,key_hmac,key_hmac_size,md,nullptr);
     HMAC_Update(mdctx,message,message_length);
     HMAC_Final(mdctx,hash_buf,(unsigned int*)&hash_size);
     HMAC_CTX_free(mdctx);

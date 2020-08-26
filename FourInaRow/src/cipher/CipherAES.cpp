@@ -4,6 +4,21 @@ namespace cipher
 
   CipherAES::CipherAES(SessionKey* session_key)
   {
+    if(session_key==nullptr)
+    {
+      verbose<<"-->[CipherAES][Costruct] error to create the object"<<'\n';
+      exit(1);
+    }
+    if(session_key->iv==nullptr)
+    {
+      verbose<<"-->[CipherAES][Costruct] error to create the object"<<'\n';
+      exit(1);
+    }
+    if(session_key->sessionKey==nullptr)
+    {
+      verbose<<"-->[CipherAES][Costruct] error to create the object"<<'\n';
+      exit(1);
+    }
     this->iv=session_key->iv;
     this->ivLength=session_key->ivLen;
     this->key=session_key->sessionKey;
@@ -12,7 +27,7 @@ namespace cipher
 
   bool CipherAES::modifyParam(SessionKey* session_key)
   {
-    if(session_key==NULL)
+    if(session_key==nullptr)
     {
       return false;
     }
@@ -42,7 +57,7 @@ error return -1 value
       verbose<<"-->[CipherAES][gcmEncrypt] error in the initialise the encryption operation"<<'\n';
       return -1;
     }
-    if(1!=EVP_EncryptUpdate(ctx,NULL,&len,aad,aadLen))
+    if(1!=EVP_EncryptUpdate(ctx,nullptr,&len,aad,aadLen))
     {
       verbose<<"-->[CipherAES][gcmEncrypt] error to provide AAD data"<<'\n';
       return -1;
@@ -89,7 +104,7 @@ verify the tag if there is an error return -1 value and -2 if the verify fails
       verbose<<"-->[CipherAES][gcmDecrypt] error in the initialise the decryption operation"<<'\n';
       return -1;
     }
-    if(!EVP_DecryptUpdate(ctx,NULL,&len,aad,aadLen))
+    if(!EVP_DecryptUpdate(ctx,nullptr,&len,aad,aadLen))
     {
       verbose<<"-->[CipherAES][gcmDecrypt] error to provide AAD data"<<'\n';
       return -1;
@@ -136,7 +151,7 @@ This function encryptMessage with AES_256 gcm
     if(netMessage==nullptr)
     {
        verbose<<"-->[CipherAES][encryptMessage] errorTo create a message compact"<<'\n';
-       return NULL;
+       return nullptr;
     }
     lengthToCipher=netMessage->length()-lengthPlaintext;
     if(lengthToCipher==0)
@@ -145,7 +160,7 @@ This function encryptMessage with AES_256 gcm
       int ret=gcmEncrypt(app,0,netMessage->getMessage(),lengthPlaintext,ciphertext,tag);
       if(ret==-1)
       {
-        return NULL;
+        return nullptr;
       }
       Message *newMessage=new Message(message );
       newMessage->setSignature( tag , 16 );
@@ -159,23 +174,23 @@ This function encryptMessage with AES_256 gcm
       if (res==false)
       {
        verbose<<"-->[CipherAES][encryptMessage] errorTo copy a message"<<'\n';
-       return NULL;
+       return nullptr;
       }
       res=copyToFrom(lengthPlaintext,netMessage->length(),netMessage->getMessage(),textToCipher);
       if (res==false)
       {
        verbose<<"-->[CipherAES][encryptMessage] errorTo copy a message"<<'\n';
-       return NULL;
+       return nullptr;
       }
       int lengthcipher=gcmEncrypt(textToCipher,lengthToCipher,textInPlain,lengthPlaintext,ciphertext,tag);
       if(lengthcipher==-1)
-        return NULL;
+        return nullptr;
       Message *newMessage=new Message(message );
       newMessage->setSignature( tag , 16 );
 
       bool result=insertField(newMessage->getMessageType(),newMessage,ciphertext,lengthcipher);
       if(result==false)
-        return NULL;
+        return nullptr;
 
       return newMessage;
     }
@@ -195,7 +210,7 @@ This function encryptMessage with AES_256 gcm
     if(netMessage==nullptr)
     {
        verbose<<"-->[CipherAES][dencryptMessage] errorTo create a message compact"<<'\n';
-       return NULL;
+       return nullptr;
     }
     lengthToDecrypt=netMessage->length()-lengthCleareText;
     if(lengthToDecrypt==0)
@@ -207,12 +222,12 @@ This function encryptMessage with AES_256 gcm
       if(res==-2)
       {
         verbose<<"-->[CipherAES][dencryptMessage] error message not valid"<<'\n';
-        return NULL;
+        return nullptr;
       }
       if(res==-1)
       {
         verbose<<"-->[CipherAES][dencryptMessage] error to decrypt the message"<<'\n';
-        return NULL;
+        return nullptr;
       }
       
       
@@ -226,13 +241,13 @@ This function encryptMessage with AES_256 gcm
       if (res==false)
       {
        verbose<<"-->[CipherAES][dencryptMessage] errorTo copy a message"<<'\n';
-       return NULL;
+       return nullptr;
       }
       res=copyToFrom(lengthCleareText,netMessage->length(),netMessage->getMessage(),textToDecrypt);
       if (res==false)
       {
        verbose<<"-->[CipherAES][dencryptMessage] errorTo copy a message"<<'\n';
-       return NULL;
+       return nullptr;
       }      
       Message *newMessage=new Message(message );
       tag=newMessage->getSignature();
@@ -240,16 +255,16 @@ This function encryptMessage with AES_256 gcm
       if(res==-2)
       {
         verbose<<"-->[CipherAES][dencryptMessage] error message not valid"<<'\n';
-        return NULL;
+        return nullptr;
       }
       if(res==-1)
       {
         verbose<<"-->[CipherAES][dencryptMessage] error to decrypt the message"<<'\n';
-        return NULL;
+        return nullptr;
       }
             bool result=insertField(newMessage->getMessageType(),newMessage,plaintext,lengthplain);
       if(result==false)
-        return NULL;
+        return nullptr;
 
       return newMessage;
     }

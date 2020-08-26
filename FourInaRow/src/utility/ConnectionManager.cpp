@@ -127,7 +127,7 @@ namespace utility
     if((isServer&&FD_ISSET(socket,&master))||(!isServer&&serverSocket==socket&&serverSocket!=-2))
     {
       
-      if(netmess==NULL)
+      if(netmess==nullptr)
       {
         verbose<<"-->[ConnectionManager][sendMessage] Error conversion"<<'\n';
         delete[]senderBuffer;
@@ -165,7 +165,7 @@ namespace utility
         return false;
       }
       
-      if(netmess==NULL)
+      if(netmess==nullptr)
       {
         verbose<<"-->[ConnectionManager][sendMessage] Error conversion"<<'\n';
         return false;
@@ -209,7 +209,7 @@ namespace utility
   {
     vector<int> descr;
     fdRead=master;
-    select(fdmax+1,&fdRead,NULL,NULL,NULL);
+    select(fdmax+1,&fdRead,nullptr,nullptr,nullptr);
     for(int i=0;i<=fdmax;i++)
     {
       if(FD_ISSET(i,&fdRead))
@@ -251,33 +251,34 @@ namespace utility
       {
         verbose<<"-->[ConnectionManager][sendMessage] connection closed"<<'\n';
         delete[]buffer;
-        return NULL;
+        throw std::exception("the connection is closed");
+        return nullptr;
       }
       if (len<BUFFER_LENGTH)
       {
         verbose<<"-->[ConnectionManager][sendMessage] length recived is too short"<<'\n';
         delete[]buffer;
-        return NULL;
+        return nullptr;
       }
       int messLength = ReturnIndexLastSimbolPosition(buffer,BUFFER_LENGTH,(unsigned char) '#');
       if(messLength==-1)
       {
-        verbose<<"-->[ConnectionManager][sendMessage] the message is NULL"<<'\n';
+        verbose<<"-->[ConnectionManager][sendMessage] the message is nullptr"<<'\n';
         delete[]buffer;
-        return NULL;
+        return nullptr;
       }
       unsigned char* bufMess=new unsigned char[messLength];
       copyBuffer(bufMess,buffer,messLength,BUFFER_LENGTH);
       NetMessage netmess(bufMess,messLength);
       Converter* conv=new Converter();
       Message* mess=conv->decodeMessage(netmess);
-      if(mess==NULL)
+      if(mess==nullptr)
       {
-        verbose<<"-->[ConnectionManager][sendMessage] the message is NULL"<<'\n';
+        verbose<<"-->[ConnectionManager][sendMessage] the message is nullptr"<<'\n';
         delete[]buffer;
         delete[]bufMess;
         delete conv;
-        return NULL;
+        return nullptr;
       }
         vverbose<<"-->[ConnectionManager][sendMessage] the message is recived correctly"<<'\n';
         delete[]buffer;
@@ -296,33 +297,33 @@ namespace utility
       {
         verbose<<"-->[ConnectionManager][sendMessage] connection closed"<<'\n';
         delete[]buffer;
-        return NULL;
+        return nullptr;
       }
       if (len<BUFFER_LENGTH)
       {
         verbose<<"-->[ConnectionManager][sendMessage] length recived is too short"<<'\n';
         delete[]buffer;
-        return NULL;
+        return nullptr;
       }
       int messLength = ReturnIndexLastSimbolPosition(buffer,BUFFER_LENGTH,(unsigned char) '#');
       if(messLength==-1)
       {
-        verbose<<"-->[ConnectionManager][sendMessage] the message is NULL"<<'\n';
+        verbose<<"-->[ConnectionManager][sendMessage] the message is nullptr"<<'\n';
         delete[]buffer;
-        return NULL;
+        return nullptr;
       }
       unsigned char* bufMess=new unsigned char[messLength];
       copyBuffer(bufMess,buffer,messLength,BUFFER_LENGTH);
       NetMessage netmess(bufMess,messLength);
       Converter* conv=new Converter();
       Message* mess=conv->decodeMessage( netmess);
-      if(mess==NULL)
+      if(mess==nullptr)
       {
-        verbose<<"-->[ConnectionManager][sendMessage] the message is NULL"<<'\n';
+        verbose<<"-->[ConnectionManager][sendMessage] the message is nullptr"<<'\n';
         delete[]buffer;
         delete[]bufMess;
         delete conv;
-        return NULL;
+        return nullptr;
       }
         vverbose<<"-->[ConnectionManager][sendMessage] the message is recived correctly"<<'\n';
         delete[]buffer;
@@ -331,7 +332,7 @@ namespace utility
         return mess;
     }
   }
-/*---------------------------------------------------------------------------------------------*/
+/*----------------------------------function initArray---------------------------------------------------*/
 
 
   void ConnectionManager::initArray(unsigned char* array,unsigned char elem,int length)
@@ -339,7 +340,7 @@ namespace utility
     for(int i=0;i<length;i++)
       array[i]=elem;
   }
-/*-------------------------------------------------------------------------------------------*/
+/*------------------------------function copyBuffer--------------------------------------------*/
 
   void ConnectionManager:: copyBuffer(unsigned char* arrayOne,unsigned char* arrayTwo,int lengthOne,int lengthTwo)
   { if(lengthOne<0||lengthTwo<0)
@@ -353,7 +354,7 @@ namespace utility
       arrayOne[i]=arrayTwo[i];
   } 
 
-  /*--------------------------------------------------------------------------------------*/
+  /*-----------------function ReturnIndexLastSimbolPosition-----------------------------------*/
   int ConnectionManager::ReturnIndexLastSimbolPosition(unsigned char* array,int length,unsigned char simbol)
   {
     if(length<0)
@@ -364,5 +365,15 @@ namespace utility
         return i;
     } 
     return -1;
+  }
+  /*------------------------------------------------------------------------------------------------------*/
+  int ConnectionManager::getsocketUDP()
+  {
+    return socketUDP;
+  }
+  /*-----------------------------------------------------------------------------------------------------*/
+  int ConnectionManager::getserverSocket()
+  {
+    return serverSocket;
   }
 }
