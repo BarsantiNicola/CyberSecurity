@@ -1,3 +1,7 @@
+
+#ifndef FOURINAROW_CIPHERAES_H
+#define FOURINAROW_CIPHERAES_H
+
 #include<string>
 #include<stdio.h>
 #include<string.h>
@@ -37,3 +41,4 @@ namespace cipher
 
 }
 
+#endif //FOURINAROW_CIPHERAES-H

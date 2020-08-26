@@ -69,6 +69,7 @@ namespace cipher {
             bool removeUserKey( string username );                             //  REMOVE THE KEY OF THE USER FROM THE ARCHIVE
             EVP_PKEY* getUserKey( string username );                           //  TAKE THE KEY OF THE USER FROM THE ARCHIVE
             bool serverVerifySignature( Message message, string username );    //  VERIFY THE SIGNATURE OF A MESSAGE[SERVER]
+            NetMessage* getServerCertificate();
 
             //  CLIENT UTILITIES
             bool setAdversaryKey( EVP_PKEY* signature );                        //  SET AN ADVERSARY KEY

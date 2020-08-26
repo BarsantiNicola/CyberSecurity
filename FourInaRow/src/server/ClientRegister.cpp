@@ -71,7 +71,6 @@ namespace server{
                 ClientInformation *client = new ClientInformation(this->clientRegister.at(a).getClientID(),
                                                                   this->clientRegister.at(a).getIPaddress(),
                                                                   this->clientRegister.at(a).getSocket());
-                client->setNonce(this->clientRegister.at(a).getNonce());
                 return client;
             }
         return nullptr;
@@ -85,7 +84,6 @@ namespace server{
                 ClientInformation *client = new ClientInformation(this->clientRegister.at(a).getClientID(),
                                                                   this->clientRegister.at(a).getIPaddress(),
                                                                   this->clientRegister.at(a).getSocket());
-                client->setNonce(this->clientRegister.at(a).getNonce());
                 return client;
             }
         return nullptr;
@@ -111,43 +109,6 @@ namespace server{
 
     }
 
-    bool ClientRegister::setNonceByID( int clientID , int nonce ){
-
-        for( int a = 0; a<this->clientRegister.size(); a++ )
-            if (this->clientRegister.at(a).getClientID() == clientID ) {
-                this->clientRegister[a].setNonce(nonce);
-                return true;
-            }
-
-        return false;
-
-    }
-
-    bool ClientRegister::setNonceBySocket( int socket, int nonce ){
-
-        for( int a = 0; a<this->clientRegister.size(); a++ )
-            if (this->clientRegister.at(a ).getSocket() == socket ){
-                this->clientRegister[a].setNonce(nonce);
-                return true;
-            }
-        return false;
-    }
-
-    int* ClientRegister::getNonceByID( int clientID ){
-        for( int a = 0; a<this->clientRegister.size(); a++ )
-            if (this->clientRegister.at(a ).getClientID() == clientID)
-                return new int( this->clientRegister.at(a).getNonce());
-
-        return nullptr;
-    }
-
-    int* ClientRegister::getNonceBySocket( int socket ){
-        for( int a = 0; a<this->clientRegister.size(); a++ )
-            if (this->clientRegister.at(a ).getSocket() == socket)
-                return new int( this->clientRegister.at(a).getNonce());
-
-        return nullptr;
-    }
 
 
     void ClientRegister::test(){

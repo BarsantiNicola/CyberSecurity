@@ -3,55 +3,38 @@
 
 namespace server{
 
-    UserInformation::UserInformation( string username ){
+    UserInformation::UserInformation( string username , string ip ){
 
         this->username = username;
-        this->sessionKey = nullptr;
-        this->len = 0;
         this->status = CONNECTED;
+        this->ip = ip;
 
     }
 
-    UserInformation::UserInformation( string username, UserStatus status , utility::NetMessage* key ){
+    UserInformation::UserInformation( string username, UserStatus status , string ip, cipher::SessionKey key ){
 
         this->username = username;
         this->status = status;
-        this->sessionKey = nullptr;
-        this->len = 0;
-
-        if( key->length() != 0 ){
-            unsigned char* app = key->getMessage();
-            this->sessionKey = new unsigned char[key->length()];
-            this->len = key->length();
-            for( int a = 0; a<this->len; a++ )
-                this->sessionKey[a] = app[a];
-            delete[] app;
-        }
+        this->sessionKey = key;
+        this->nonce = nullptr;
+        this->ip = ip;
 
     }
 
-    UserInformation::~UserInformation(){
-
-        if( this->sessionKey ){
-            delete[] this->sessionKey;
-        }
-
-    }
-
-    bool UserInformation::setSessionKey( unsigned char* key , int len ){
-
-        if( this->sessionKey )
-            return false;
+    bool UserInformation::setSessionKey( cipher::SessionKey key ){
 
         this->sessionKey = key;
-        this->len = len;
         return true;
 
     }
 
-    utility::NetMessage* UserInformation::getSessionKey(){
+    string UserInformation::getIP() {
+        return this->ip;
+    }
 
-        return new utility::NetMessage( this->sessionKey, this->len );
+    cipher::SessionKey UserInformation::getSessionKey(){
+
+        return this->sessionKey;
 
     }
 
@@ -64,6 +47,19 @@ namespace server{
     }
     string UserInformation::getUsername(){
         return this->username;
+    }
+
+    void UserInformation::setNonce( int nonce ) {
+
+        this->nonce = new int(nonce);
+    }
+
+    int* UserInformation::getNonce() {
+
+        if( this->nonce )
+            return new int(*(this->nonce));
+        return nullptr;
+
     }
 
 }

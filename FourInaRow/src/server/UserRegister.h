@@ -8,6 +8,8 @@
 #include "UserInformation.h"
 #include "../Logger.h"
 #include <vector>
+#include "../cipher/CipherDH.h"
+#include "../utility/NetMessage.h"
 
 namespace server {
 
@@ -17,14 +19,18 @@ namespace server {
             vector<UserInformation> userRegister;
 
         public:
-            bool addUser( string username );
+            bool addUser( string username , string IP );
             bool removeUser( string username );
             UserInformation* getUser( string username );
             bool hasUser( string username );
-            bool setLogged( string username , unsigned char* sessionKey , unsigned int len );
+            bool setLogged( string username , cipher::SessionKey key );
             bool setPlay( string username );
             bool setWait( string username );
             int* getUserID( string username );
+            NetMessage* getUserList();
+            bool setNonce( string username, int nonce );
+            int* getNonce( string username );
+            string getIP( string username );
             static void test();
 
     };

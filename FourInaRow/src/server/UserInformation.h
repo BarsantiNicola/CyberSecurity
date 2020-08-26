@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include "../utility/NetMessage.h"
+#include "../cipher/CipherDH.h"
 
 using namespace std;
 
@@ -21,19 +22,22 @@ namespace server {
     class UserInformation{
         private:
             string username;
-            unsigned char* sessionKey;
-            unsigned int len;
+            cipher::SessionKey sessionKey;
             UserStatus status;
+            int* nonce;
+            string ip;
 
         public:
-            UserInformation( string username );
-            UserInformation( string username, UserStatus status , utility::NetMessage* key );
-            ~UserInformation();
+            UserInformation( string username , string ip );
+            UserInformation( string username, UserStatus status ,string ip,  cipher::SessionKey key );
             string getUsername();
-            bool setSessionKey( unsigned char* key , int len );
-            utility::NetMessage* getSessionKey();
+            bool setSessionKey( cipher::SessionKey key );
+            cipher::SessionKey getSessionKey();
             void setStatus( UserStatus status );
             UserStatus getStatus();
+            void setNonce( int nonce );
+            int* getNonce();
+            string getIP();
 
     };
 

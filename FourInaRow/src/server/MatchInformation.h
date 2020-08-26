@@ -25,10 +25,12 @@ namespace server {
             string challenger;
             string challenged;
             MatchStatus status;
+            int nonce;
 
         public:
-            MatchInformation( int matchID , string challenger, string challenged );
+            MatchInformation( int matchID , string challenger, string challenged, int nonce );
             int getMatchID();
+            int getNonce();
             string getChallenger();
             string getChallenged();
             MatchStatus getStatus();

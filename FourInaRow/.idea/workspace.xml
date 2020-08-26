@@ -28,15 +28,25 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4cbb8ddf-e807-44fa-ae33-bda27674b47b" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/cipher/CipherServer.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/cipher/CipherServer.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/launchServer.sh" beforeDir="false" afterPath="$PROJECT_DIR$/launchServer.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/cipher/CipherAES.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/cipher/CipherAES.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/cipher/CipherRSA.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/cipher/CipherRSA.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/cipher/CipherRSA.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/cipher/CipherRSA.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/ClientInformation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/ClientInformation.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/ClientInformation.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/ClientInformation.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/ClientRegister.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/ClientRegister.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/ClientRegister.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/ClientRegister.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/MainServer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MainServer.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/MainServer.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MainServer.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/MatchInformation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MatchInformation.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/MatchInformation.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MatchInformation.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/MatchRegister.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MatchRegister.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/MatchRegister.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MatchRegister.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/UserInformation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/UserInformation.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/UserInformation.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/UserInformation.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/UserRegister.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/UserRegister.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/UserRegister.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/UserRegister.h" afterDir="false" />
     </list>
@@ -69,6 +79,13 @@
     <property name="node.js.path.for.package.tslint" value="project" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -110,7 +127,8 @@
       <workItem from="1598262635908" duration="319000" />
       <workItem from="1598279180866" duration="10291000" />
       <workItem from="1598359529317" duration="10038000" />
-      <workItem from="1598370185084" duration="843000" />
+      <workItem from="1598370185084" duration="900000" />
+      <workItem from="1598383188354" duration="14362000" />
     </task>
     <servers />
   </component>

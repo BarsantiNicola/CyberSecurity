@@ -3,7 +3,7 @@
 
 namespace server{
 
-    bool MatchRegister::addMatch( string challenger , string challenged ){
+    bool MatchRegister::addMatch( string challenger , string challenged , int nonce ){
 
         if( this->matchRegister.size() == this->matchRegister.max_size()){
 
@@ -20,7 +20,7 @@ namespace server{
         }
 
         while( this->hasMatchID( matchID )) this->matchID++;
-        MatchInformation match( this->matchID , challenger , challenged );
+        MatchInformation match( this->matchID , challenger , challenged , nonce );
 
         try{
 
@@ -162,7 +162,7 @@ namespace server{
         for( int a = 0; a<this->matchRegister.size(); a++ )
             if( this->matchRegister.at(a).getMatchID() == matchID ) {
                 MatchInformation *match = new MatchInformation(matchID, this->matchRegister.at(a).getChallenger(),
-                                                               this->matchRegister.at(a).getChallenged());
+                                                               this->matchRegister.at(a).getChallenged(), this->matchRegister.at(a).getNonce());
                 match->setStatus(this->matchRegister.at(a).getStatus());
                 return match;
             }
@@ -170,22 +170,38 @@ namespace server{
 
     }
 
+    vector<int> MatchRegister::getAllMatchID(string username){
+        vector<int> ret;
+        for( int a = 0; a<this->matchRegister.size(); a++ )
+            if( !this->matchRegister.at(a).getChallenger().compare(username) || !this->matchRegister.at(a).getChallenged().compare(username) ) {
+                ret.emplace_back(a);
+            }
+        return ret;
 
+    }
+
+    int* MatchRegister::getNonce( int matchID ){
+        for( int a = 0; a<this->matchRegister.size(); a++ )
+            if( this->matchRegister.at(a).getMatchID() == matchID ) {
+                return new int( this->matchRegister[a].getNonce());
+            }
+        return nullptr;
+    }
 
     void MatchRegister::test(){
 
         MatchRegister* reg = new MatchRegister();
-        if( !reg->addMatch("marco" , "luca")) {
+        if( !reg->addMatch("marco" , "luca" , 2)) {
             base << "Error1" << '\n';
             return;
         }
 
-        if( reg->addMatch("marco" , "lucia")) {
+        if( reg->addMatch("marco" , "lucia", 3)) {
             base << "Error2" << '\n';
             return;
         }
 
-        if( !reg->addMatch("nicola" , "marco")) {
+        if( !reg->addMatch("nicola" , "marco", 4)) {
             base << "Error3" << '\n';
             return;
         }

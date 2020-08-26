@@ -513,6 +513,15 @@ namespace cipher{
         return true;
     }
 
+    NetMessage* CipherRSA::getServerCertificate() {
+        if( !this->server ){
+            verbose<<"-->[CipherRSA][getServerCertificate] Error, not setted as server"<<'\n';
+            return nullptr;
+        }
+        return new NetMessage( this->serverCertificate, this->lenServerCertificate );
+
+    }
+
     EVP_PKEY* CipherRSA::getPubKey() {
         return this->myPubKey;
     }

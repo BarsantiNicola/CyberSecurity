@@ -3,14 +3,14 @@
 
 namespace server{
 
-    MatchInformation::MatchInformation( int matchID , string challenger, string challenged ){
+    MatchInformation::MatchInformation( int matchID , string challenger, string challenged , int nonce ){
 
         //utility::Information( matchID );
         this->matchID = matchID;
         this->challenger = challenger;
         this->challenged = challenged;
         this->status = OPEN;
-
+        this->nonce = nonce;
     }
 
     int MatchInformation::getMatchID() {
@@ -31,6 +31,10 @@ namespace server{
 
     void MatchInformation::setStatus( MatchStatus status ){
         this->status = status;
+    }
+
+    int MatchInformation::getNonce() {
+        return this->nonce;
     }
 
 }

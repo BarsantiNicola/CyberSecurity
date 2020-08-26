@@ -3,7 +3,7 @@
 
 namespace server{
 
-    bool UserRegister::addUser( string username ){
+    bool UserRegister::addUser( string username , string ip ){
 
         if( this->userRegister.size() == this->userRegister.max_size()){
 
@@ -19,7 +19,7 @@ namespace server{
 
         }
 
-        UserInformation user(username);
+        UserInformation user(username, ip);
 
         try{
 
@@ -58,7 +58,10 @@ namespace server{
 
         }
 
-        return new UserInformation( this->userRegister.at(*pos).getUsername() , this->userRegister.at(*pos).getStatus() , this->userRegister.at(*pos).getSessionKey());
+        UserInformation* user = new UserInformation( this->userRegister.at(*pos).getUsername() , this->userRegister.at(*pos).getStatus() , this->userRegister.at(*pos).getIP(), this->userRegister.at(*pos).getSessionKey());
+        if( this->userRegister[*pos].getNonce() )
+            user->setNonce(*(this->userRegister[*pos].getNonce()));
+        return user;
     }
 
     bool UserRegister::hasUser( string username ){
@@ -69,7 +72,7 @@ namespace server{
 
     }
 
-    bool UserRegister::setLogged( string username , unsigned char* sessionKey , unsigned int len ){
+    bool UserRegister::setLogged( string username , cipher::SessionKey key ){
         int* pos = getUserID(username);
         if( !pos ){
 
@@ -77,7 +80,7 @@ namespace server{
             return false;
 
         }
-        this->userRegister.at(*pos).setSessionKey( sessionKey, len );
+        this->userRegister.at(*pos).setSessionKey( key );
         this->userRegister.at(*pos).setStatus( LOGGED );
         return true;
     }
@@ -106,6 +109,26 @@ namespace server{
         return true;
     }
 
+    bool UserRegister::setNonce( string username, int nonce ){
+        int* pos = getUserID(username);
+        if( !pos ){
+
+            verbose<<"-->[UserRegister][removeUser] Error user not found"<<'\n';
+            return false;
+
+        }
+        this->userRegister.at(*pos).setNonce( nonce );
+        return true;
+    }
+
+    int* UserRegister::getNonce( string username ){
+
+        for( int a = 0; a<this->userRegister.size(); a++ )
+            if( !this->userRegister.at(a).getUsername().compare(username))
+                return new int(*(this->userRegister[a].getNonce()));
+        return nullptr;
+    }
+
     int* UserRegister::getUserID( string username ){
 
         for( int a = 0; a<this->userRegister.size(); a++ )
@@ -114,26 +137,49 @@ namespace server{
         return nullptr;
     }
 
+    NetMessage* UserRegister::getUserList(){
+        string user_list = "USER LIST:\n";
+        for( int a = 0; a<this->userRegister.size(); a++ )
+            if( this->userRegister[a].getStatus() != PLAY ) {
+                user_list.append("\n\tusername: ");
+                user_list.append(this->userRegister[a].getUsername());
+            }
+        return new NetMessage( (unsigned char*)user_list.c_str(), user_list.length());
+
+    }
+
+    string UserRegister::getIP(string username){
+
+        UserInformation* user = this->getUser(username);
+        if( !user ){
+            return "";
+        }
+        string ip = user->getIP();
+        delete user;
+        return ip;
+
+    }
+
     void UserRegister::test(){
 
         UserRegister *reg = new UserRegister();
-        if( !reg->addUser("marco")) {
+        if( !reg->addUser("marco","127.0.0.1")) {
             base << "Error1" << '\n';
             return;
         }
-        if( !reg->addUser("nicola")) {
+        if( !reg->addUser("nicola","127.0.0.1")) {
             base << "Error2" << '\n';
             return;
         }
-        if( !reg->addUser("alessia")) {
+        if( !reg->addUser("alessia","127.0.0.1")) {
             base << "Error3" << '\n';
             return;
         }
-        if( reg->addUser("marco")){
+        if( reg->addUser("marco","127.0.0.1")){
             base<<"Error4"<<'\n';
             return;
         }
-        if( reg->addUser("nicola")){
+        if( reg->addUser("nicola","127.0.0.1")){
             base<<"Error5"<<'\n';
             return;
         }
@@ -177,11 +223,13 @@ namespace server{
             base<<"Error15"<<'\n';
             return;
         }
-        if( !reg->setLogged("marco",(unsigned char*)"123124",6 )){
+        cipher::SessionKey key;
+        if( !reg->setLogged("marco",key)){
             base<<"Error16"<<'\n';
             return;
         }
-        if( reg->setLogged("jonni",(unsigned char*)"123124",6 )){
+
+        if( reg->setLogged("jonni",key )){
             base<<"Error17"<<'\n';
             return;
         }
@@ -193,7 +241,7 @@ namespace server{
             base<<"Error19"<<'\n';
             return;
         }
-        if( !reg->setLogged("alessia",(unsigned char*)"123124",6 )){
+        if( !reg->setLogged("alessia",key)){
             base<<"Error20"<<'\n';
             return;
         }
