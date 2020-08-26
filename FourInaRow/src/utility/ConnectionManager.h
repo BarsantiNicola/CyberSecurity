@@ -1,4 +1,4 @@
-#include<stdexcept>
+#include<exception>
 #include<unistd.h>
 #include<arpa/inet.h>
 #include<sys/types.h>
@@ -34,11 +34,11 @@ namespace utility
     public:
       ConnectionManager(bool,const char*,int);
       bool createConnectionWithServerTCP(const char*,int);
-      bool registerConnection();
+      //bool registerConnection();
       Message* getMessage(int); 
       bool closeConnection(int);
       bool sendMessage(Message,int,const char*,int);
-      vector<int> waitForMessage();
+      vector<int> waitForMessage(int*,string*);
       int getsocketUDP();
       int getserverSocket();
     private:
@@ -47,8 +47,8 @@ namespace utility
       bool createListenerTcp();
       int ReturnIndexLastSimbolPosition(unsigned char*,int,unsigned char);
       bool resendMessage();
-      int udpBind(int);//da verificare se necessaria
-      int tcpBind(int);
+      //int udpBind(int);//da verificare se necessaria
+      //int tcpBind(int);
   };
 
 }
