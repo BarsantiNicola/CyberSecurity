@@ -12,6 +12,7 @@ int main()
   vector<int> vect;
   const char* IP="127.0.0.1";
   int port= 10005;
+  bool connectClosed=false;
   int idsock;
   string *s;
   Message m;
@@ -23,10 +24,24 @@ int main()
   if(!connect)
   {
     std::cout<<"connection not create"<<endl;
+    return 0;
   }
   int sock_serv=connectionman.getserverSocket();
-  bool result=connectionman.sendMessage(m,sock_serv,m1,0);
+  bool result=connectionman.sendMessage(m,sock_serv,&connectClosed,m1,0);
   std::cout<<"result: "<<result<<endl;
+  Message ma;
+  const char *c1=nullptr;
+  ma.setNonce( 1 );
+  ma.setMessageType(CERTIFICATE_REQ);
+  if(!connect)
+  {
+    std::cout<<"connection not create"<<endl;
+    return 0;
+  }
+  sock_serv=connectionman.getserverSocket();
+  result=connectionman.sendMessage(ma,sock_serv,&connectClosed,c1,0);
+  std::cout<<"result: "<<result<<endl;
+ /* while(true)
  /* while(true)
   {
      vect=connectionman.waitForMessage(&idsock,s);
