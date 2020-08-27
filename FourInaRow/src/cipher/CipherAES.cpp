@@ -3,7 +3,7 @@ namespace cipher
 {
   CipherAES::CipherAES()
   {
-    verbose<<"-->[CipherAES][Costruct] error to create the object"<<'\n';
+    vverbose<<"-->[CipherAES][Costruct] object create succesfully"<<'\n';
 
   }
   CipherAES::CipherAES(SessionKey* session_key)
@@ -333,7 +333,7 @@ This function encryptMessage with AES_256 gcm
    }
    return result;
  }
- ~CipherAES()
+ ~CipherAES::CipherAES()
  {
    vverbose<<"destruct the object"<<n;
    delete[] iv;
