@@ -1,7 +1,11 @@
 #include"CipherAES.h"
 namespace cipher
 {
+  CipherAES::CipherAES()
+  {
+    verbose<<"-->[CipherAES][Costruct] error to create the object"<<'\n';
 
+  }
   CipherAES::CipherAES(SessionKey* session_key)
   {
     if(session_key==nullptr)
@@ -11,12 +15,12 @@ namespace cipher
     }
     if(session_key->iv==nullptr)
     {
-      verbose<<"-->[CipherAES][Costruct] error to create the object"<<'\n';
+      verbose<<"-->[CipherAES][Costruct] error to create the object iv is null"<<'\n';
       exit(1);
     }
     if(session_key->sessionKey==nullptr)
     {
-      verbose<<"-->[CipherAES][Costruct] error to create the object"<<'\n';
+      verbose<<"-->[CipherAES][Costruct] error to create the object sessionkey is null"<<'\n';
       exit(1);
     }
     this->iv=session_key->iv;
@@ -29,6 +33,16 @@ namespace cipher
   {
     if(session_key==nullptr)
     {
+      return false;
+    }
+    if(session_key->iv==nullptr)
+    {
+      verbose<<"-->[CipherAES][Costruct] error to create the object iv is null"<<'\n';
+      return false;
+    }
+    if(session_key->sessionKey==nullptr)
+    {
+      verbose<<"-->[CipherAES][Costruct] error to create the object sessionkey is null"<<'\n';
       return false;
     }
     this->iv=session_key->iv;
@@ -319,4 +333,11 @@ This function encryptMessage with AES_256 gcm
    }
    return result;
  }
+ ~CipherAES()
+ {
+   vverbose<<"destruct the object"<<n;
+   delete[] iv;
+   delete[] key;
+ }
 }
+ 

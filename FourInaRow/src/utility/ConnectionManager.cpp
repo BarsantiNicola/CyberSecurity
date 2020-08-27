@@ -206,6 +206,7 @@ namespace utility
       }
       return true;
     }
+    return false;
   }
  
  /* This function close  a connection and return true in case of success false in case of failure
@@ -382,6 +383,7 @@ namespace utility
         delete conv;
         return mess;
     }
+    return nullptr;
   }
 /*----------------------------------function initArray------------------------------------------*/
 
