@@ -9,6 +9,11 @@
 #include "../Logger.h"
 #include "../utility/Message.h"
 #include "../cipher/CipherServer.h"
+#include "../utility/ConnectionManager.h"
+#include <stdlib.h>
+#include <time.h>
+#include <stdio.h>
+
 using namespace server;
 
 namespace server {
@@ -18,27 +23,32 @@ namespace server {
             ClientRegister clientRegister;
             MatchRegister matchRegister;
             UserRegister userRegister;
+            // ConnectionManager manager;
             cipher::CipherServer cipherServer;
 
             Message* certificateHandler( Message* message );
-            Message* loginHandler( Message* message, string ip);
-            Message* keyExchangeHandler( Message* message , int matchID, string username );
+            Message* loginHandler( Message* message,  int socket );
+            Message* keyExchangeHandler( Message* message , string username );
             Message* gameParamHandler( string source , int match , bool step );
-            Message* userListHandler( Message* message);
-            Message* rankListHandler( Message* message);
+            Message* userListHandler( Message* message, string username );
+            Message* rankListHandler( Message* message, string username );
             Message* matchListHandler( Message* message );
             Message* acceptHandler( Message* message);
             Message* rejectHandler( Message* message);
             Message* disconnectHandler( Message* message, int matchID);
             Message* logoutHandler( Message* message , string username );
-            Message* errorResponse( string errorMessage );
+            Message* sendError( string errorMessage );
             Message* closeMatch(int matchID);
 
         public:
             MainServer( string ipAddr , int port );
-            Message* clientManager(Message* message, int socket );
-            Message* userManager(Message* message, string username );
+            Message* userManager(Message* message, string username , int socket );
             Message* matchManager(Message* message, string username );
+            Message* waitMessage( int& socket );
+            bool sendMessage( Message* message , string username );
+            void logoutClient(int socket);
+            bool registerClient( int socket, string ip );
+            void server();
 
     };
 }

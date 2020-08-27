@@ -15,15 +15,10 @@ namespace server {
             vector<ClientInformation> clientRegister;
 
         public:
-            bool addClient( int clientID , string ip , int socket );
-            bool removeClientBySocket( int socket );
-            bool removeClientByID( int clientID );
-            bool hasID( int clientID );
-            bool hasSocket( int socket );
-            ClientInformation* getClientBySocket( int socket );
-            ClientInformation* getClientByID( int clientID );
-
-            static void test();
+            bool   addClient( string ip , int socket );      // ADD NEW CLIENT
+            bool   removeClient( int socket );               // REMOVE A CLIENT
+            bool   has( int socket );                        // SEARCH IF A SOCKET IS PRESENT
+            string getClientNetInformation( int socket );    // RETURN THE CLIENT IP ADDRESS
 
     };
 

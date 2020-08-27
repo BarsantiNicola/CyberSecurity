@@ -19,20 +19,26 @@ namespace server {
             vector<UserInformation> userRegister;
 
         public:
-            bool addUser( string username , string IP );
-            bool removeUser( string username );
-            UserInformation* getUser( string username );
-            bool hasUser( string username );
-            bool setLogged( string username , cipher::SessionKey key );
+            bool addUser( int socket , string username );
+
+            bool setSessionKey( string username , cipher::SessionKey* key );
+            bool setNonce( string username , int nonce );
+            bool setLogged( string username , cipher::SessionKey* key );
             bool setPlay( string username );
             bool setWait( string username );
-            int* getUserID( string username );
-            NetMessage* getUserList();
-            bool setNonce( string username, int nonce );
-            int* getNonce( string username );
-            string getIP( string username );
-            static void test();
+            bool setDisconnected( string username );
 
+            bool removeUser( string username );
+            bool removeUser( int socket );
+
+            bool has( int socket );
+            bool has( string username );
+
+            cipher::SessionKey* getSessionKey( string username );
+            int*        getNonce( string username );
+            UserStatus*  getStatus( string username );
+            string      getUsername( int socket );
+            NetMessage* getUserList();
     };
 
 }

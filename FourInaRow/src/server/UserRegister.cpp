@@ -3,7 +3,7 @@
 
 namespace server{
 
-    bool UserRegister::addUser( string username , string ip ){
+    bool UserRegister::addUser( int socket , string username ){
 
         if( this->userRegister.size() == this->userRegister.max_size()){
 
@@ -12,135 +12,216 @@ namespace server{
 
         }
 
-        if( this->getUserID(username)){
+        if( this->has( username )){
 
             verbose<<"--> [UserRegister][addUser] Error, the user is already registered"<<'\n';
             return false;
 
         }
 
-        UserInformation user(username, ip);
+        UserInformation user( socket, username );
 
         try{
 
             this->userRegister.emplace_back( user );
+            return true;
 
         }catch(const bad_alloc& e){
 
-            verbose<<"-->[UserRegister][addUser] Error bad allocation"<<'\n';
+            verbose<<"-->[UserRegister][addUser] Error during memory allocation"<<'\n';
             return false;
 
         }
-        return true;
 
     }
 
-    bool UserRegister::removeUser( string username ){
+    bool UserRegister::setSessionKey( string username , cipher::SessionKey* key ){
 
-        int* pos = getUserID(username);
-        if( !pos ){
-
-            verbose<<"-->[UserRegister][removeUser] Error user not found"<<'\n';
-            return false;
-
-        }
-        this->userRegister.erase( this->userRegister.begin()+*pos);
-        delete pos;
-        return true;
-    }
-
-    UserInformation* UserRegister::getUser( string username ){
-        int* pos = getUserID(username);
-        if( !pos ){
-
-            verbose<<"-->[UserRegister][removeUser] Error user not found"<<'\n';
-            return nullptr;
-
-        }
-
-        UserInformation* user = new UserInformation( this->userRegister.at(*pos).getUsername() , this->userRegister.at(*pos).getStatus() , this->userRegister.at(*pos).getIP(), this->userRegister.at(*pos).getSessionKey());
-        if( this->userRegister[*pos].getNonce() )
-            user->setNonce(*(this->userRegister[*pos].getNonce()));
-        return user;
-    }
-
-    bool UserRegister::hasUser( string username ){
         for( int a = 0; a<this->userRegister.size(); a++ )
-            if( !this->userRegister.at(a).getUsername().compare(username))
-                return true;
+            if( !this->userRegister[a].getUsername().compare( username ))
+                return this->userRegister[a].setSessionKey( key );
+
+        verbose<<"-->[UserRegister][setSessionKey] Error, user not found"<<'\n';
         return false;
 
     }
 
-    bool UserRegister::setLogged( string username , cipher::SessionKey key ){
-        int* pos = getUserID(username);
-        if( !pos ){
+    bool UserRegister::setNonce( string username , int nonce ){
 
-            verbose<<"-->[UserRegister][removeUser] Error user not found"<<'\n';
-            return false;
+        for( int a = 0; a<this->userRegister.size(); a++ )
+            if( !this->userRegister[a].getUsername().compare( username )) {
 
-        }
-        this->userRegister.at(*pos).setSessionKey( key );
-        this->userRegister.at(*pos).setStatus( LOGGED );
-        return true;
+                this->userRegister[a].setNonce(nonce);
+                return true;
+
+            }
+
+        verbose<<"-->[UserRegister][setSessionKey] Error, user not found"<<'\n';
+        return false;
+
+    }
+
+    bool UserRegister::setLogged( string username , cipher::SessionKey* key ){
+
+        for( int a = 0; a<this->userRegister.size(); a++ )
+            if( !this->userRegister[a].getUsername().compare( username )) {
+
+                if( !this->userRegister[a].setStatus(LOGGED ))
+                    return false;
+
+                if( !this->userRegister[a].setSessionKey( key )){
+
+                    this->userRegister[a].setStatus( CONNECTED );
+                    return false;
+
+                }
+
+                return true;
+
+            }
+
+        verbose<<"-->[UserRegister][setSessionKey] Error, user not found"<<'\n';
+        return false;
+
     }
 
     bool UserRegister::setPlay( string username ){
-        int* pos = getUserID(username);
-        if( !pos ){
 
-            verbose<<"-->[UserRegister][removeUser] Error user not found"<<'\n';
-            return false;
+        for( int a = 0; a<this->userRegister.size(); a++ )
+            if( !this->userRegister[a].getUsername().compare( username ))
+                return this->userRegister[a].setStatus( PLAY );
 
-        }
-        this->userRegister.at(*pos).setStatus( PLAY );
-        return true;
+        verbose<<"-->[UserRegister][setSessionKey] Error, user not found"<<'\n';
+        return false;
+
     }
 
     bool UserRegister::setWait( string username ){
-        int* pos = getUserID(username);
-        if( !pos ){
 
-            verbose<<"-->[UserRegister][removeUser] Error user not found"<<'\n';
-            return false;
+        for( int a = 0; a<this->userRegister.size(); a++ )
+            if( !this->userRegister[a].getUsername().compare( username ))
+                return this->userRegister[a].setStatus( WAIT_MATCH );
 
-        }
-        this->userRegister.at(*pos).setStatus( WAIT_MATCH );
-        return true;
+        verbose<<"-->[UserRegister][setSessionKey] Error, user not found"<<'\n';
+        return false;
+
     }
 
-    bool UserRegister::setNonce( string username, int nonce ){
-        int* pos = getUserID(username);
-        if( !pos ){
+    bool UserRegister::setDisconnected( string username ){
 
-            verbose<<"-->[UserRegister][removeUser] Error user not found"<<'\n';
-            return false;
+        for( int a = 0; a<this->userRegister.size(); a++ )
+            if( !this->userRegister[a].getUsername().compare( username ))
+                return this->userRegister[a].setStatus( CONNECTED );
 
-        }
-        this->userRegister.at(*pos).setNonce( nonce );
-        return true;
+        verbose<<"-->[UserRegister][setSessionKey] Error, user not found"<<'\n';
+        return false;
+
     }
+
+
+    bool UserRegister::removeUser( string username ){
+
+        for( int a = 0; a<this->userRegister.size(); a++ )
+            if( !this->userRegister[a].getUsername().compare( username )) {
+
+                this->userRegister.erase(this->userRegister.begin() + a);
+                return true;
+
+            }
+
+        verbose<<"-->[UserRegister][removeUser] Error user not found"<<'\n';
+        return false;
+
+    }
+
+    bool UserRegister::removeUser( int socket ){
+
+        for( int a = 0; a<this->userRegister.size(); a++ )
+            if( !this->userRegister[a].getSocket() == socket ) {
+
+                this->userRegister.erase(this->userRegister.begin() + a);
+                return true;
+
+            }
+
+        verbose<<"-->[UserRegister][removeUser] Error user not found"<<'\n';
+        return false;
+
+    }
+
+    bool UserRegister::has( int socket ){
+
+
+        for( int a = 0; a<this->userRegister.size(); a++ )
+            if( !this->userRegister[a].getSocket() == socket )
+                return true;
+
+        verbose<<"-->[UserRegister][removeUser] Error user not found"<<'\n';
+        return false;
+
+    }
+
+    bool UserRegister::has( string username ){
+
+
+        for( int a = 0; a<this->userRegister.size(); a++ )
+            if( !this->userRegister[a].getUsername().compare( username ))
+                return true;
+
+        verbose<<"-->[UserRegister][removeUser] Error user not found"<<'\n';
+        return false;
+
+    }
+
+    cipher::SessionKey* UserRegister::getSessionKey( string username ){
+
+        for( int a = 0; a<this->userRegister.size(); a++ )
+            if( !this->userRegister[a].getUsername().compare( username ))
+                return this->userRegister[a].getSessionKey();
+
+        verbose<<"-->[UserRegister][removeUser] Error user not found"<<'\n';
+        return nullptr;
+
+    }
+
 
     int* UserRegister::getNonce( string username ){
 
         for( int a = 0; a<this->userRegister.size(); a++ )
-            if( !this->userRegister.at(a).getUsername().compare(username))
-                return new int(*(this->userRegister[a].getNonce()));
+            if( !this->userRegister[a].getUsername().compare( username ))
+                return this->userRegister[a].getNonce();
+
+        verbose<<"-->[UserRegister][removeUser] Error user not found"<<'\n';
         return nullptr;
+
     }
 
-    int* UserRegister::getUserID( string username ){
+    string UserRegister::getUsername( int socket ){
 
         for( int a = 0; a<this->userRegister.size(); a++ )
-            if( !this->userRegister.at(a).getUsername().compare(username))
-                return new int(a);
+            if( !this->userRegister[a].getSocket() == socket )
+                return this->userRegister[a].getUsername();
+
+        verbose<<"-->[UserRegister][removeUser] Error user not found"<<'\n';
+        return string();
+
+    }
+
+    UserStatus* UserRegister::getStatus( string username ){
+
+        for( int a = 0; a<this->userRegister.size(); a++ )
+            if( !this->userRegister[a].getUsername().compare( username ))
+                return this->userRegister[a].getStatus();
+
+        verbose<<"-->[UserRegister][removeUser] Error user not found"<<'\n';
         return nullptr;
+
     }
 
     NetMessage* UserRegister::getUserList(){
         string user_list = "USER LIST:\n";
         for( int a = 0; a<this->userRegister.size(); a++ )
-            if( this->userRegister[a].getStatus() != PLAY ) {
+            if( *(this->userRegister[a].getStatus()) != PLAY ) {
                 user_list.append("\n\tusername: ");
                 user_list.append(this->userRegister[a].getUsername());
             }
@@ -148,124 +229,5 @@ namespace server{
 
     }
 
-    string UserRegister::getIP(string username){
-
-        UserInformation* user = this->getUser(username);
-        if( !user ){
-            return "";
-        }
-        string ip = user->getIP();
-        delete user;
-        return ip;
-
-    }
-
-    void UserRegister::test(){
-
-        UserRegister *reg = new UserRegister();
-        if( !reg->addUser("marco","127.0.0.1")) {
-            base << "Error1" << '\n';
-            return;
-        }
-        if( !reg->addUser("nicola","127.0.0.1")) {
-            base << "Error2" << '\n';
-            return;
-        }
-        if( !reg->addUser("alessia","127.0.0.1")) {
-            base << "Error3" << '\n';
-            return;
-        }
-        if( reg->addUser("marco","127.0.0.1")){
-            base<<"Error4"<<'\n';
-            return;
-        }
-        if( reg->addUser("nicola","127.0.0.1")){
-            base<<"Error5"<<'\n';
-            return;
-        }
-        if( !reg->removeUser("nicola")){
-            base<<"Error6"<<'\n';
-            return;
-        }
-        if( reg->removeUser("nicola")){
-            base<<"Error7"<<'\n';
-            return;
-        }
-        if( reg->removeUser("luca")){
-            base<<"Error8"<<'\n';
-            return;
-        }
-        if( !reg->hasUser("marco")){
-            base<<"Error9"<<'\n';
-            return;
-        }
-        if( reg->hasUser("nicola")){
-            base<<"Error10"<<'\n';
-            return;
-        }
-        if( !reg->hasUser("alessia")){
-            base<<"Error11"<<'\n';
-            return;
-        }
-        if( reg->hasUser("luca")){
-            base<<"Error12"<<'\n';
-            return;
-        }
-        if( reg->hasUser("lucia")){
-            base<<"Error13"<<'\n';
-            return;
-        }
-        if( reg->getUserID("marco") == nullptr ){
-            base<<"Error14"<<'\n';
-            return;
-        }
-        if( reg->getUserID("lucia") != nullptr ){
-            base<<"Error15"<<'\n';
-            return;
-        }
-        cipher::SessionKey key;
-        if( !reg->setLogged("marco",key)){
-            base<<"Error16"<<'\n';
-            return;
-        }
-
-        if( reg->setLogged("jonni",key )){
-            base<<"Error17"<<'\n';
-            return;
-        }
-        if( !reg->setWait("marco")){
-            base<<"Error18"<<'\n';
-            return;
-        }
-        if( !reg->setWait("alessia")){
-            base<<"Error19"<<'\n';
-            return;
-        }
-        if( !reg->setLogged("alessia",key)){
-            base<<"Error20"<<'\n';
-            return;
-        }
-        if( !reg->setPlay("marco")){
-            base<<"Error21"<<'\n';
-            return;
-        }
-        if( !reg->setPlay("alessia")){
-            base<<"Error22"<<'\n';
-            return;
-        }
-        UserInformation* user = reg->getUser("marco");
-        if( !user || user->getUsername().compare("marco")!=0 || user->getStatus() != PLAY ){
-            base<<"Error23"<<'\n';
-            return;
-        }
-        delete user;
-        if( reg->getUser("luca")) {
-            base << "Error24" << '\n';
-            return;
-        }
-        verbose<<"Success"<<'\n';
-
-
-    }
 
 }

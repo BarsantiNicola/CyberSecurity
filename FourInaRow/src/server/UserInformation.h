@@ -20,24 +20,27 @@ namespace server {
     };
 
     class UserInformation{
+
         private:
+            int socket;
             string username;
-            cipher::SessionKey sessionKey;
+            cipher::SessionKey* sessionKey;
             UserStatus status;
             int* nonce;
-            string ip;
 
         public:
-            UserInformation( string username , string ip );
-            UserInformation( string username, UserStatus status ,string ip,  cipher::SessionKey key );
-            string getUsername();
-            bool setSessionKey( cipher::SessionKey key );
-            cipher::SessionKey getSessionKey();
-            void setStatus( UserStatus status );
-            UserStatus getStatus();
+            UserInformation( int socket, string username  );
+            UserInformation( int socket, string username, UserStatus status,  cipher::SessionKey* key, int* nonce );
+
+            bool setSessionKey( cipher::SessionKey* key );
+            bool setStatus( UserStatus status );
             void setNonce( int nonce );
+
+            int getSocket();
+            string getUsername();
+            cipher::SessionKey* getSessionKey();
+            UserStatus* getStatus();
             int* getNonce();
-            string getIP();
 
     };
 

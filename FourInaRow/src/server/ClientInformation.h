@@ -11,14 +11,13 @@ namespace server {
 class ClientInformation{
 
         private:
-            int clientID;
+
             string IPaddress;
             int socket;
 
-
         public:
-            ClientInformation(int clientID, string IPaddress, int socket);
-            int getClientID();
+            ClientInformation( string IPaddress, int socket );
+
             string getIPaddress();
             int getSocket();
 

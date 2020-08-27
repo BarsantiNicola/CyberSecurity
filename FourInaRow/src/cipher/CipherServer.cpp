@@ -7,11 +7,17 @@ namespace cipher{
 
         this->rsa = new CipherRSA("server", "serverPassword", true );
         this->dh  = new CipherDH();
-        this->aes = nullptr;//new CipherAES();
+        this->aes = new CipherAES( new SessionKey() );
+        if( !this->rsa || !this->dh || !this->aes ){
+
+            verbose<<"-->[CipherServer][Costructor] Fatal error, unable to load cipher suites"<<'\n';
+            exit(1);
+
+        }
 
     }
 
-    Message* CipherServer::toSecureForm( MessageType type , Message* message ){
+    Message* CipherServer::toSecureForm( Message* message ){
 
         if( message == nullptr ){
 
@@ -19,7 +25,7 @@ namespace cipher{
             return nullptr;
 
         }
-
+/*
         NetMessage* msg;
         message->setMessageType( type );
         switch( type ){
@@ -117,7 +123,8 @@ namespace cipher{
             default:
                 verbose<<"-->[CipherServer][toSecureForm] Error, messageType not supported:"<<type<<'\n';
                 return nullptr;
-        }
+        }*/
+        return message;
 
     }
     Message* CipherServer::fromSecureForm( Message* message , string username ){
@@ -128,7 +135,7 @@ namespace cipher{
             return nullptr;
 
         }
-        switch( message->getMessageType()){
+    /*    switch( message->getMessageType()){
             case LOGIN_REQ:
                 return this->rsa->serverVerifySignature(*message, message->getUsername())?message:nullptr;
             case KEY_EXCHANGE:
@@ -153,7 +160,9 @@ namespace cipher{
                 verbose<<"-->[CipherServer][fromSecureForm] Error, MessageType not supported:"<<message->getMessageType()<<'\n';
                 return nullptr;
 
-        }
+        }*/
+        return message;
+
     }
 
     Message* CipherServer::setServerCertificate( Message* message ){
@@ -169,9 +178,15 @@ namespace cipher{
 
     }
 
-    SessionKey* CipherServer::getSessionKey( Message* message){
+    SessionKey* CipherServer::getSessionKey( unsigned char* param , unsigned int paramLen ){
 
-        return this->dh->generateSessionKey( message->getDHkey(), message->getDHkeyLength());
+        return this->dh->generateSessionKey( param , paramLen );
+
+    }
+
+    NetMessage* CipherServer::getPartialKey(){
+
+        return this->dh->generatePartialKey();
 
     }
 

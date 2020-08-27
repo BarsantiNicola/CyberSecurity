@@ -22,10 +22,11 @@ namespace cipher {
         public:
             CipherServer();
             ~CipherServer();
-            Message* toSecureForm( MessageType type , Message* message );
+            Message* toSecureForm( Message* message );
             Message* fromSecureForm( Message* message , string username );
             Message* setServerCertificate( Message* message );
-            SessionKey* getSessionKey( Message* message);
+            SessionKey* getSessionKey( unsigned char* param, unsigned int len );
+            NetMessage* getPartialKey();
     };
 }
 
