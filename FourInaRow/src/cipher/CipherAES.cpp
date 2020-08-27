@@ -333,7 +333,7 @@ This function encryptMessage with AES_256 gcm
    }
    return result;
  }
- ~CipherAES::CipherAES()
+ CipherAES::~CipherAES()
  {
    vverbose<<"destruct the object"<<n;
    delete[] iv;
