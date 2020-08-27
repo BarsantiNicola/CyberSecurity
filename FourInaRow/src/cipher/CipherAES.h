@@ -26,7 +26,7 @@ namespace cipher
     unsigned char* key;
     int keyLen;
   public:
-    CipherAES();
+    //CipherAES();
     CipherAES(SessionKey*);
     bool modifyParam(SessionKey*);
     Message* encryptMessage(Message);

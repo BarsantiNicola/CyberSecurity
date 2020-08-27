@@ -4,13 +4,15 @@ namespace utility
   ConnectionManager::ConnectionManager(bool isServer,const char* myIP,int myPort)
   { 
     
-    
+    if(myIP==nullptr)
+      exit(-1);
     int ret;
     bool ris;
     FD_ZERO(&master);
     FD_ZERO(&fdRead);
     FD_SET(fileno(stdin),&master);
     fdmax=fileno(stdin);
+    vverbose<<"-->[ConnectionManager][Costructor] The value of fdmax is "<<fdmax<<'\n';
     memset(&my_addr,0,sizeof(my_addr));
     my_addr.sin_family=AF_INET;
     my_addr.sin_port=htons(myPort);
@@ -24,7 +26,7 @@ namespace utility
     if(isServer)
     {
       ris=createListenerTcp();
-      if(!ris)
+      if(ris==false)
       {
         verbose<<"-->[ConnectionManager][Costructor] Error to creating a ListenerTCP exit"<<'\n';
         exit(-1);     
@@ -38,21 +40,26 @@ namespace utility
       socketUDP=socket(AF_INET,SOCK_DGRAM,0);
       if(socketUDP==-1)
         exit(-1);
-    }
-    ret=bind(socketUDP,(struct sockaddr*) &my_addr,sizeof(my_addr));
-    if(ret==-1)
-    {
-       verbose<<"-->[ConnectionManager][Costructor] Error to UDP bind exit"<<'\n';
-       exit(-1);     
-    }
-    FD_SET(socketUDP,&master);
-    if(fdmax<socketUDP)
-     {
-       fdmax=socketUDP;
-     }  
+    
+      ret=bind(socketUDP,(struct sockaddr*) &my_addr,sizeof(my_addr));
+      if(ret==-1)
+      {
+         verbose<<"-->[ConnectionManager][Costructor] Error to UDP bind exit"<<'\n';
+         exit(-1);     
+      }
+      FD_SET(socketUDP,&master);
+      if(fdmax<socketUDP)
+      {
+        fdmax=socketUDP;
+        vverbose<<"-->[ConnectionManager][Costructor] The value of fdmax is "<<fdmax<<'\n';
+      } 
+      vverbose<<"-->[ConnectionManager][Costructor] Connection manager Object was created succesfully"<<'\n';
+    } 
   }
 
-
+/*
+-----------function createListenerTcp------------------
+*/
 
   bool ConnectionManager::createListenerTcp()
   {
@@ -68,7 +75,13 @@ namespace utility
     listen(listener,150);
     FD_SET(listener,&master);
     if(fdmax<listener)
-      fdmax=listener;
+     {
+       fdmax=listener;
+       vverbose<<"-->[ConnectionManager][createListenerTcp] The value of fdmax is "<<fdmax<<'\n';
+    
+
+     }
+      verbose<<"-->[ConnectionManager][createListenerTcp] Connection create succesfully "<<'\n';
     return true;
     
   }
@@ -83,10 +96,10 @@ namespace utility
        verbose<<"-->[ConnectionManager][createConnectionWithServer] Error can't create a connection between two servers, return false"<<'\n';
        return false;
      }
-    memset(&my_addr,0,sizeof(server_addr));
+    memset(&server_addr,0,sizeof(server_addr));
     server_addr.sin_family=AF_INET;
     server_addr.sin_port=htons(port);
-    ret=inet_pton(AF_INET,IP,&my_addr.sin_addr);
+    ret=inet_pton(AF_INET,IP,&server_addr.sin_addr);
     if(ret==-1)
     {
       throw invalid_argument("Invalid IP address");
@@ -109,7 +122,7 @@ namespace utility
 
 
 
-  bool ConnectionManager::sendMessage(Message message,int socket,const char* recIP,int recPort)
+  bool ConnectionManager::sendMessage(Message message,int socket,const char* recIP=nullptr,int recPort=0)
   {  
     int ret;
     uint16_t lmsg;
@@ -205,7 +218,7 @@ namespace utility
     return false;
   }
   //funzione che restituisce un vector di id di socket pronti in caso non ci siano descrittori pronti restituisce un vector vuoto
-  vector<int> ConnectionManager::waitForMessage()
+  vector<int> ConnectionManager::waitForMessage(int* idsock,std::string* ip)
   {
     vector<int> descr;
     fdRead=master;
@@ -214,11 +227,17 @@ namespace utility
     {
       if(FD_ISSET(i,&fdRead))
       {
+        vverbose<<"-->[ConnectionManager][waitForMessage] one descriptor is ready"<<'\n';
         if(isServer&&(i==listener))
         {
           struct sockaddr_in cl_addr;
           int addrlen=sizeof(cl_addr);
           int newfd=accept(listener,(struct sockaddr*)&cl_addr,(socklen_t*)&addrlen);
+          if(newfd==-1)
+          {
+            verbose<<"-->[ConnectionManager][waitForMessage] error to create connection"<<'\n';
+            continue;
+          }
           FD_SET(newfd,&master);
           vverbose<<"-->[ConnectionManager][waitForMessage] new connection created"<<'\n';
           if(newfd>fdmax)
@@ -226,16 +245,28 @@ namespace utility
                     
             fdmax=newfd;
           }
-
+          vverbose<<"-->[ConnectionManager][waitForMessage] returning parameters"<<'\n';
+          *idsock = newfd;
+          //const char ipApp=inet_ntoa(cl_addr.sin_addr);
+          char *ipApp=new char[INET_ADDRSTRLEN];
+          int length =sizeof(ipApp);
+          inet_ntop(AF_INET,&cl_addr.sin_addr,ipApp,INET_ADDRSTRLEN);
+          vverbose<<"-->[ConnectionManager][waitForMessage] first ip char "<<ipApp[0]<<ipApp[1]<<'\n';
+          vverbose<<"-->[ConnectionManager][waitForMessage] obtain address"<<'\n';
+          ip->append(ipApp,INET_ADDRSTRLEN);
+          //*ip=ipApp;
+          vverbose<<"-->[ConnectionManager][waitForMessage] give address"<<'\n';
         }          
         else
           descr.push_back(i);
       }
     }
+    vverbose<<"-->[ConnectionManager][waitForMessage] fuction finished"<<'\n';
     return descr;
   }
 
-  /*The fuction return a message Type Message from the socket with identifier socket
+  /*---------------function getMessage---------------
+    The fuction return a message Type Message from the socket with identifier socket
     return false in case on error*/
   Message* ConnectionManager::getMessage(int socket)
   {
@@ -249,21 +280,24 @@ namespace utility
       len=recv(socket,(void*)buffer,BUFFER_LENGTH,0);
       if(len==0)
       {
-        verbose<<"-->[ConnectionManager][sendMessage] connection closed"<<'\n';
+        verbose<<"-->[ConnectionManager][getMessage] connection closed"<<'\n';
         delete[]buffer;
-        throw std::exception("the connection is closed");
+        closeConnection(socket);
+        throw std::runtime_error("the connection is closed");
+        
         return nullptr;
       }
       if (len<BUFFER_LENGTH)
       {
-        verbose<<"-->[ConnectionManager][sendMessage] length recived is too short"<<'\n';
-        delete[]buffer;
+        verbose<<"-->[ConnectionManager][getMessage] length recived is too short"<<'\n';
+        if(len!=0)
+         delete[]buffer;
         return nullptr;
       }
       int messLength = ReturnIndexLastSimbolPosition(buffer,BUFFER_LENGTH,(unsigned char) '#');
       if(messLength==-1)
       {
-        verbose<<"-->[ConnectionManager][sendMessage] the message is nullptr"<<'\n';
+        verbose<<"-->[ConnectionManager][getMessage] the message is nullptr"<<'\n';
         delete[]buffer;
         return nullptr;
       }
@@ -274,13 +308,13 @@ namespace utility
       Message* mess=conv->decodeMessage(netmess);
       if(mess==nullptr)
       {
-        verbose<<"-->[ConnectionManager][sendMessage] the message is nullptr"<<'\n';
+        verbose<<"-->[ConnectionManager][getMessage] the message is nullptr"<<'\n';
         delete[]buffer;
         delete[]bufMess;
         delete conv;
         return nullptr;
       }
-        vverbose<<"-->[ConnectionManager][sendMessage] the message is recived correctly"<<'\n';
+        vverbose<<"-->[ConnectionManager][getMessage] the message is recived correctly"<<'\n';
         delete[]buffer;
         delete[]bufMess;
         delete conv;
@@ -332,7 +366,7 @@ namespace utility
         return mess;
     }
   }
-/*----------------------------------function initArray---------------------------------------------------*/
+/*----------------------------------function initArray------------------------------------------*/
 
 
   void ConnectionManager::initArray(unsigned char* array,unsigned char elem,int length)
