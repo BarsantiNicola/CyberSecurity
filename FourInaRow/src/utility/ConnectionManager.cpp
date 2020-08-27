@@ -10,9 +10,14 @@ namespace utility
     bool ris;
     FD_ZERO(&master);
     FD_ZERO(&fdRead);
-    FD_SET(fileno(stdin),&master);
-    fdmax=fileno(stdin);
-    vverbose<<"-->[ConnectionManager][Costructor] The value of fdmax is "<<fdmax<<'\n';
+    if(isServer==false)
+    {
+      FD_SET(fileno(stdin),&master);
+      fdmax=fileno(stdin);
+      vverbose<<"-->[ConnectionManager][Costructor] The value of fdmax is "<<fdmax<<'\n';
+
+    }
+
     memset(&my_addr,0,sizeof(my_addr));
     my_addr.sin_family=AF_INET;
     my_addr.sin_port=htons(myPort);
@@ -146,9 +151,11 @@ namespace utility
         delete[]senderBuffer;
         return false;
       }
+      vverbose<<"-->[ConnectionManager][sendMessage] original message length"<<netmess->length()<<'\n';
       copyBuffer(senderBuffer,netmess->getMessage(),BUFFER_LENGTH,netmess->length());
       
       ret=send(socket,(void*)senderBuffer,BUFFER_LENGTH,0);
+      vverbose<<"-->[ConnectionManager][sendMessage] Bit sended"<<ret<<'\n';
       if(ret==0)
       {
         verbose<<"-->[ConnectionManager][sendMessage] connection closed"<<'\n';
@@ -247,13 +254,14 @@ namespace utility
           }
           vverbose<<"-->[ConnectionManager][waitForMessage] returning parameters"<<'\n';
           *idsock = newfd;
-          //const char ipApp=inet_ntoa(cl_addr.sin_addr);
-          char *ipApp=new char[INET_ADDRSTRLEN];
-          int length =sizeof(ipApp);
+          //const char* ipApp=inet_ntoa(cl_addr.sin_addr);
+          char *ipApp=new char[INET_ADDRSTRLEN+1];
+          
           inet_ntop(AF_INET,&cl_addr.sin_addr,ipApp,INET_ADDRSTRLEN);
-          vverbose<<"-->[ConnectionManager][waitForMessage] first ip char "<<ipApp[0]<<ipApp[1]<<'\n';
+          
+          vverbose<<"-->[ConnectionManager][waitForMessage] first ip char "<<ipApp<<'\n';
           vverbose<<"-->[ConnectionManager][waitForMessage] obtain address"<<'\n';
-          ip->append(ipApp,INET_ADDRSTRLEN);
+          ip->append(ipApp);
           //*ip=ipApp;
           vverbose<<"-->[ConnectionManager][waitForMessage] give address"<<'\n';
         }          
@@ -272,12 +280,18 @@ namespace utility
   {
     struct sockaddr_in sender_addr; 
     int addrlen =sizeof(sender_addr);
+    if((!isServer&&serverSocket==socket&&serverSocket==-2))
+    {  
+      verbose<<"-->[ConnectionManager][getMessage] bad socket "<<'\n';
+      return nullptr;
+    }
     if((isServer&&FD_ISSET(socket,&master))||(!isServer&&serverSocket==socket&&serverSocket!=-2))
     {
       int len;
       unsigned char *buffer=new unsigned char[BUFFER_LENGTH];
       
       len=recv(socket,(void*)buffer,BUFFER_LENGTH,0);
+      vverbose<<"-->[ConnectionManager][getMessage] byte recived "<<len<<'\n';
       if(len==0)
       {
         verbose<<"-->[ConnectionManager][getMessage] connection closed"<<'\n';
@@ -290,8 +304,8 @@ namespace utility
       if (len<BUFFER_LENGTH)
       {
         verbose<<"-->[ConnectionManager][getMessage] length recived is too short"<<'\n';
-        if(len!=0)
-         delete[]buffer;
+        
+        delete[]buffer;
         return nullptr;
       }
       int messLength = ReturnIndexLastSimbolPosition(buffer,BUFFER_LENGTH,(unsigned char) '#');
@@ -301,6 +315,7 @@ namespace utility
         delete[]buffer;
         return nullptr;
       }
+      messLength+=1;//correctLength
       unsigned char* bufMess=new unsigned char[messLength];
       copyBuffer(bufMess,buffer,messLength,BUFFER_LENGTH);
       NetMessage netmess(bufMess,messLength);
@@ -327,6 +342,7 @@ namespace utility
       unsigned char *buffer=new unsigned char[BUFFER_LENGTH];
       
       len=recvfrom(socket,(void*)buffer,BUFFER_LENGTH,0,(struct sockaddr*)&sender_addr,(socklen_t*)&addrlen);
+      vverbose<<"-->[ConnectionManager][getMessage] byte recived "<<len<<'\n';
       if(len==0)
       {
         verbose<<"-->[ConnectionManager][sendMessage] connection closed"<<'\n';
@@ -346,6 +362,7 @@ namespace utility
         delete[]buffer;
         return nullptr;
       }
+      messLength+=1;
       unsigned char* bufMess=new unsigned char[messLength];
       copyBuffer(bufMess,buffer,messLength,BUFFER_LENGTH);
       NetMessage netmess(bufMess,messLength);

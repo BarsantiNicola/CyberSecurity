@@ -13,14 +13,14 @@ int main()
   const char* IP="127.0.0.1";
   int port= 10001;
   int idsock;
-  string *s;
+  std::string s="";
   Message *m;
   
   ConnectionManager connectionman(true,IP,port);
   while(true)
   {
      std::cout<<"siamo entrati nel ciclo"<<endl;
-     vect=connectionman.waitForMessage(&idsock,s);
+     vect=connectionman.waitForMessage(&idsock,&s);
      std::cout<<"fine prima wait"<<endl;
      if(vect.size()!=0)
      {
@@ -33,6 +33,7 @@ int main()
            if(m==nullptr)
            {
              cout<<"errore message null";
+             return 0;
            }
            std::cout<<m->getUsername()<<endl;
          }

@@ -12,7 +12,7 @@
 #include "Converter.h"
 #include "../Logger.h"
 
-#define BUFFER_LENGTH 450000
+#define BUFFER_LENGTH 32000
 using namespace std;
 namespace utility
 {
@@ -23,7 +23,7 @@ namespace utility
       int serverSocket=-2;
       int socketUDP=-2;
       int standardIO;
-      int fdmax;
+      int fdmax=0;
       bool isServer;
       fd_set master;
       fd_set fdRead;
