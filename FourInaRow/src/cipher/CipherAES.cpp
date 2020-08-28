@@ -6,7 +6,7 @@ namespace cipher
     vverbose<<"-->[CipherAES][Costruct] object create succesfully"<<'\n';
 
   }
-  CipherAES::CipherAES(SessionKey* session_key)
+  CipherAES::CipherAES(struct SessionKey* session_key)
   {
     if(session_key==nullptr)
     {
@@ -29,7 +29,7 @@ namespace cipher
     this->keyLen=session_key->sessionKeyLen;
   }
 
-  bool CipherAES::modifyParam(SessionKey* session_key)
+  bool CipherAES::modifyParam(struct SessionKey* session_key)
   {
     if(session_key==nullptr)
     {
@@ -335,7 +335,7 @@ This function encryptMessage with AES_256 gcm
  }
  CipherAES::~CipherAES()
  {
-   vverbose<<"destruct the object"<<n;
+   vverbose<<"destruct the object"<<'\n';
    delete[] iv;
    delete[] key;
  }

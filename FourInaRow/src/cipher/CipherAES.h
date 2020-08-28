@@ -27,8 +27,8 @@ namespace cipher
     int keyLen;
   public:
     CipherAES();
-    CipherAES(SessionKey*);
-    bool modifyParam(SessionKey*);
+    CipherAES(struct SessionKey*);
+    bool modifyParam(struct SessionKey*);
     Message* encryptMessage(Message);
     Message* decryptMessage(Message);
     ~CipherAES();
