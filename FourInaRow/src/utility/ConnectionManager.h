@@ -37,7 +37,7 @@ namespace utility
       //bool registerConnection();
       Message* getMessage(int); 
       bool closeConnection(int);
-      bool sendMessage(Message,int,const char*,int);
+      bool sendMessage(Message,int,bool*,const char*,int);
       vector<int> waitForMessage(int*,string*);
       int getsocketUDP();
       int getserverSocket();

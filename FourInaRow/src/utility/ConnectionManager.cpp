@@ -125,10 +125,14 @@ namespace utility
   }
 
 
+/*
+------------------function sendMessage------------------------------------------
+send a message and return true in case of success and false in case of failure
+*/
 
-
-  bool ConnectionManager::sendMessage(Message message,int socket,const char* recIP=nullptr,int recPort=0)
+  bool ConnectionManager::sendMessage(Message message,int socket,bool*socketIsClosed,const char* recIP=nullptr,int recPort=0)
   {  
+    *socketIsClosed=false;
     int ret;
     uint16_t lmsg;
     Converter* conv=new Converter();
@@ -160,6 +164,7 @@ namespace utility
       {
         verbose<<"-->[ConnectionManager][sendMessage] connection closed"<<'\n';
         closeConnection(socket);
+        *socketIsClosed=true;
         delete[]senderBuffer;
         return false;
       }
@@ -196,6 +201,7 @@ namespace utility
       if(ret==0)
       {
         closeConnection(socket);
+        *socketIsClosed=true;
         verbose<<"-->[ConnectionManager][sendMessage] connection closed"<<'\n';
         return false;
       }
@@ -206,6 +212,7 @@ namespace utility
       }
       return true;
     }
+    return false;
   }
  
  /* This function close  a connection and return true in case of success false in case of failure
@@ -275,7 +282,8 @@ namespace utility
 
   /*---------------function getMessage---------------
     The fuction return a message Type Message from the socket with identifier socket
-    return false in case on error*/
+    return false in case on error in case of close connection with the sender
+*/
   Message* ConnectionManager::getMessage(int socket)
   {
     struct sockaddr_in sender_addr; 
@@ -347,6 +355,7 @@ namespace utility
       {
         verbose<<"-->[ConnectionManager][sendMessage] connection closed"<<'\n';
         delete[]buffer;
+        throw std::runtime_error("the connection is closed");
         return nullptr;
       }
       if (len<BUFFER_LENGTH)
@@ -382,6 +391,7 @@ namespace utility
         delete conv;
         return mess;
     }
+    return nullptr;
   }
 /*----------------------------------function initArray------------------------------------------*/
 

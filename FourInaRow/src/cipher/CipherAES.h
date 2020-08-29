@@ -26,11 +26,12 @@ namespace cipher
     unsigned char* key;
     int keyLen;
   public:
-    //CipherAES();
-    CipherAES(SessionKey*);
-    bool modifyParam(SessionKey*);
+    CipherAES();
+    CipherAES(struct SessionKey*);
+    bool modifyParam(struct SessionKey*);
     Message* encryptMessage(Message);
     Message* decryptMessage(Message);
+    ~CipherAES();
   private:
     unsigned char* fromIntToUnsignedChar(int,int*);
     int gcmEncrypt(unsigned char*,int,unsigned char*,int,unsigned char*,unsigned char*);
