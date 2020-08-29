@@ -23,7 +23,7 @@ namespace server {
             ClientRegister clientRegister;
             MatchRegister matchRegister;
             UserRegister userRegister;
-            // ConnectionManager manager;
+            utility::ConnectionManager* manager;
             cipher::CipherServer cipherServer;
 
             Message* certificateHandler( Message* message );
@@ -39,16 +39,19 @@ namespace server {
             Message* logoutHandler( Message* message , string username );
             Message* sendError( string errorMessage );
             Message* closeMatch(int matchID);
+            Message* manageMessage( Message* message, int socket );
 
-        public:
-            MainServer( string ipAddr , int port );
             Message* userManager(Message* message, string username , int socket );
             Message* matchManager(Message* message, string username );
             Message* waitMessage( int& socket );
             bool sendMessage( Message* message , string username );
             void logoutClient(int socket);
             bool registerClient( int socket, string ip );
+
+        public:
+            MainServer( string ipAddr , int port );
             void server();
+            static void test();
 
     };
 }

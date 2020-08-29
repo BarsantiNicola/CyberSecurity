@@ -18,32 +18,39 @@ namespace server {
     }
 
     Message* MainServer::certificateHandler( Message* message ){
-
+        cout<<"_---------------------------------------------------"<<endl;
         int* nonce = message->getNonce();
         if( !nonce ){
             verbose<<"-->[MainServer][certificateHandler] Error, invalid message. Missing Nonce"<<'\n';
             return this->sendError( string("MISSING USERNAME")  );
         }
-
+        cout<<"_---------------------------------------------------"<<endl;
         Message* ret = new Message();
+        NetMessage* param = this->cipherServer.getServerCertificate();
+
+        if(! param ){
+            verbose<<"-->[MainServer][certificateHandler] Error, invalid message. Missing Nonce"<<'\n';
+            return this->sendError( string("MISSING USERNAME")  );
+        }
+        cout<<"_---------------------------------------------------"<<endl;
         ret->setNonce( *nonce );
         ret->setMessageType(CERTIFICATE );
+        ret->setServer_Certificate( param->getMessage(), param->length());
 
         delete message;
-        message = this->cipherServer.setServerCertificate( ret );
 
-        delete ret;
-        ret = this->cipherServer.toSecureForm( message );
-        if( !ret ){
+        message = this->cipherServer.toSecureForm( ret );
+        if( !message ){
             verbose << "-->[MainServer][acceptHandler] Error, invalid message Missing Diffie-Hellman Parameter" << '\n';
-            delete message;
+            delete ret;
             delete nonce;
             return this->sendError(string("MISSING USERNAME")  );
         }
-        delete message;
         delete nonce;
-
-        return ret;
+        cout<<"TYPE: "<<ret->getMessageType()<<'\n';
+       // NetMessage* prova = Converter::encodeMessage(ret->getMessageType(), *ret );
+//        delete prova;
+        return message;
 
     }
 
@@ -69,7 +76,6 @@ namespace server {
         ret = this->cipherServer.fromSecureForm( message, message->getUsername() );
         response->setNonce(*nonce);
         delete nonce;
-        delete message;
 
         if( !ret ){
 
@@ -77,7 +83,6 @@ namespace server {
             verbose<<"-->[MainServer][loginHandler] Error during security verification"<<'\n';
             message =  this->cipherServer.toSecureForm( response );
 
-            delete response;
             return message;
 
         }
@@ -90,7 +95,6 @@ namespace server {
             verbose<<"-->[MainServer][loginHandler] Error, user already logged"<<'\n';
             message = this->cipherServer.toSecureForm( response );
 
-            delete response;
             return message;
 
         }
@@ -101,7 +105,6 @@ namespace server {
             verbose<<"-->[MainServer][loginHandler] Error, during user registration"<<'\n';
             message = this->cipherServer.toSecureForm( response );
 
-            delete response;
             return message;
 
         }
@@ -113,24 +116,22 @@ namespace server {
             verbose<<"-->[MainServer][loginHandler] Error, during user registration"<<'\n';
             message = this->cipherServer.toSecureForm( response );
 
-            delete response;
             return message;
 
         }
 
         vverbose<<"-->[MainServer][loginHandler] "<<ret->getUsername()<<" registration correctly started"<<'\n';
-        delete ret;
-
         response->setMessageType( LOGIN_OK );
         message = this->cipherServer.toSecureForm( response );
-
+        delete ret;
         if( !message ){
             verbose << "-->[MainServer][acceptHandler] Error, invalid message Missing Diffie-Hellman Parameter" << '\n';
             delete response;
             return this->sendError(string("MISSING USERNAME")  );
         }
-        delete response;
 
+        cout<<"type: "<<message->getMessageType()<<endl;
+        cout<<"nonce: "<<message->getNonce()<<endl;
         return message;
 
     }
@@ -489,16 +490,20 @@ return nullptr;
 
 
 
-    MainServer::MainServer( string ipAddr , int port ){}
+    MainServer::MainServer( string ipAddr , int port ){
+
+        this->manager = new utility::ConnectionManager( true , ipAddr.c_str(), port );
+
+
+    }
 
 
     Message* MainServer::userManager(Message* message, string username , int socket ) {
 
-        message = this->cipherServer.fromSecureForm( message, username );
         Message* ret;
         switch( message->getMessageType() ){
 
-            case utility::CERTIFICATE:
+            case utility::CERTIFICATE_REQ:
                 ret = this->certificateHandler(message);
                 break;
             case utility::LOGIN_REQ:
@@ -519,12 +524,9 @@ return nullptr;
                 verbose<<"-->[MainServer][userManager] Error unknow message type: "<<message->getMessageType()<<'\n';
                 return nullptr;
         }
-
-        delete message;
-        message = this->cipherServer.toSecureForm( message );
-        delete ret;
-
-        return message;
+        cout<<"type: "<<ret->getMessageType()<<endl;
+        cout<<"nonce: "<<ret->getNonce()<<endl;
+        return ret;
 
     }
 
@@ -532,56 +534,108 @@ return nullptr;
 
         return nullptr;
     }
+
     void MainServer::server() {
 
-    Message *message;
-    int socket;
-    string username;
+        Message *message;
+        Message *response;
+        int socket;
+        string username;
+        string ipAddr;
+        vector<int> waitSockets;
 
-    while (true) {
+        if( !this->manager ){
+            verbose<<"--> [MainServer][server] Fatal error, unable to find connectionManager"<<'\n';
+            return;
+        }
 
-        //  OPT REGISTRATION
-        //  OPT DEREGISTRATION
+        while( true ){
 
-        //  GET MESSAGE & SOCKET
+            socket = -1;
+            ipAddr.clear();
+            waitSockets.clear();
+
+            waitSockets = this->manager->waitForMessage( &socket, &ipAddr );
+
+            if( !waitSockets.size() ){
+
+                if( socket != -1 && !ipAddr.empty()){
+
+                    vverbose<<"--> [MainServer][server] New client connection received: "<<socket<<'\n';
+                    this->clientRegister.addClient( ipAddr, socket );
+                    continue;
+                }
+
+                verbose<<"--> [MainServer][server] Error into connection management"<<'\n';
+                continue;
+
+            }
+
+            for( int sock : waitSockets ){
+                if( sock == -1 ) continue;
+                try {
+                    message = this->manager->getMessage(sock);
+                }catch( runtime_error){
+                    vverbose<<"--> [MainServer][server] Client "<<socket<<" disconnected"<<'\n';
+                    //  remove from match
+                    this->userRegister.removeUser( socket );
+                    this->clientRegister.removeClient( socket );
+                    continue;
+                }
+                if( message ){
+
+                    vverbose<<"--> [MainServer][server] New message("<<message->getMessageType()<<") received from client: "<<sock<<'\n';
+
+                    response = this->manageMessage( message , sock );
+                    cout<<"OKOK"<<endl;
+                    cout<<response->getMessageType()<<"  "<<response->getNonce()<<endl;
+                    NetMessage* prova = Converter::encodeMessage(response->getMessageType(), *response );
+                    delete prova;
+                    if( response )
+                        if( !this->manager->sendMessage( *response , sock, nullptr, 0  )){
+                            vverbose<<"--> [MainServer][server] Error, client "<<socket<<" disconnected"<<'\n';
+                            delete response;
+                            this->userRegister.removeUser( socket );
+                            this->clientRegister.removeClient( socket );
+                        }
+                }
+            }
+        }
+    }
+
+    Message* MainServer::manageMessage( Message* message, int socket ){
 
         //  verify the user is not already registered
         if (!this->clientRegister.has(socket)) {
             verbose << "-->[MainServer][server] Error, unregistered socket try to contact server" << '\n';
-            continue;
+            return sendError(string("UNREGISTERED_SOCK"));
         }
 
-        if (!this->userRegister.has(socket) && message->getMessageType() != LOGIN_REQ) {
+        if (!this->userRegister.has(socket) && message->getMessageType() != LOGIN_REQ && message->getMessageType() != CERTIFICATE_REQ ) {
 
             vverbose << "-->[MainServer][server] Warning, user not already logged. Invalid request" << '\n';
-            continue;
+            return sendError(string("INVALID_REQUEST"));
 
         }
 
         string username = this->userRegister.getUsername(socket);
-        if (username.empty()) {
+        if (username.empty() && message->getMessageType() != CERTIFICATE_REQ && message->getMessageType() != LOGIN_REQ ) {
 
             vverbose << "-->[MainServer][server] Error, username not found" << '\n';
-            continue;
+            return sendError(string("USER_NOT_FOUND"));
 
         }
 
-        message = this->userManager(message, username, socket);
+        return this->userManager(message, username, socket);
 
-        /*if( !server->sendMessage( message , username )){
-            vverbose<<"-->[MainServer][server] Error trying to send request. Socket closed"<<'\n';
-            //  MATCHREGISTER DELETE
-            this->userRegister.removeUser( socket );
-            this->clientRegister.removeClient( socket );
-        }*/
 
     }
-}
+
 
 }
 int main() {
 
-    MainServer* server = new MainServer( "127.0.0.1" , 12345 );
+    MainServer* server = new MainServer( string("127.0.0.1") , 12345 );
     server->server();
     return 0;
 

@@ -17,6 +17,12 @@ namespace utility {
         server_certificate = nullptr;
         certificate_len = 0;
 
+        user_list = nullptr;
+        user_list_len = 0;
+
+        rank_list = nullptr;
+        rank_list_len = 0;
+
         signature = nullptr;
         signature_len = 0;
 

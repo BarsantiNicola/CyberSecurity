@@ -7,8 +7,8 @@ namespace cipher{
 
         this->rsa = new CipherRSA("server", "serverPassword", true );
         this->dh  = new CipherDH();
-        this->aes = new CipherAES( new SessionKey() );
-        if( !this->rsa || !this->dh || !this->aes ){
+        this->aes = nullptr;//new CipherAES();
+        if( !this->rsa || !this->dh /*|| !this->aes*/ ){
 
             verbose<<"-->[CipherServer][Costructor] Fatal error, unable to load cipher suites"<<'\n';
             exit(1);
@@ -16,7 +16,11 @@ namespace cipher{
         }
 
     }
-
+    CipherServer::~CipherServer(){
+        delete this->rsa;
+        delete this->dh;
+       // delete this->aes;
+    }
     Message* CipherServer::toSecureForm( Message* message ){
 
         if( message == nullptr ){
@@ -25,10 +29,10 @@ namespace cipher{
             return nullptr;
 
         }
-/*
+
         NetMessage* msg;
-        message->setMessageType( type );
-        switch( type ){
+
+        switch( message->getMessageType()){
 
             case CERTIFICATE:
 
@@ -121,9 +125,9 @@ namespace cipher{
                     return nullptr;
 
             default:
-                verbose<<"-->[CipherServer][toSecureForm] Error, messageType not supported:"<<type<<'\n';
+                verbose<<"-->[CipherServer][toSecureForm] Error, messageType not supported:"<<message->getMessageType()<<'\n';
                 return nullptr;
-        }*/
+        }
         return message;
 
     }
@@ -165,16 +169,9 @@ namespace cipher{
 
     }
 
-    Message* CipherServer::setServerCertificate( Message* message ){
+    NetMessage* CipherServer::getServerCertificate(){
 
-        NetMessage* ret = this->rsa->getServerCertificate();
-        if( !ret || !ret->length()){
-            verbose<<"-->[CipherServer][setServerCertificate] Error, unable to load certificate"<<'\n';
-            return nullptr;
-        }
-        message->setServer_Certificate( ret->getMessage() , ret->length() );
-        delete ret;
-        return message;
+        return this->rsa->getServerCertificate();
 
     }
 

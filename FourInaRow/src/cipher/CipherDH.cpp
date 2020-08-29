@@ -225,20 +225,20 @@ namespace cipher{
     SessionKey* CipherDH::generateKeys(unsigned char *value, int len) {
         vverbose<<"--> [CipherDH][generateKeys] Generation of session parameters"<<'\n';
         unsigned char* hashed;
-        unsigned char* sessionKey = new unsigned char[256];
+        unsigned char* sessionKey = new unsigned char[32];
         unsigned char* iv = new unsigned char[16];
-        unsigned char* splittedValue = new unsigned char[28];
+        unsigned char* splittedValue = new unsigned char[128];
 
-        for( int a = 0; a<9; a++ ){
-            for( int b = 0; b<28; b++ )
-                splittedValue[b] = value[ a*28+b];
-            hashed = CipherHASH::hashFunction( splittedValue, 28 );
-            if( a == 8 ) {
+        for( int a = 0; a<2; a++ ){
+            for( int b = 0; b<128; b++ )
+                splittedValue[b] = value[ a*128+b];
+            hashed = CipherHASH::hashFunction( splittedValue, 128 );
+            if( a ) {
                 for( int b = 0; b<16;b++)
                     iv[b] = hashed[b];
             }else{
                 for (int b = 0; b < 32; b++)
-                    sessionKey[a * 32 + b] = hashed[b];
+                    sessionKey[b] = hashed[b];
             }
             delete[] hashed;
         }
@@ -246,7 +246,7 @@ namespace cipher{
 
         SessionKey* ret = new SessionKey;
         ret->sessionKey = sessionKey;
-        ret->sessionKeyLen = 256;
+        ret->sessionKeyLen = 32;
         ret->iv = iv;
         ret->ivLen = 16;
         vverbose<<"--> [CipherDH][generateKeys] Session parameters correctly created"<<'\n';
