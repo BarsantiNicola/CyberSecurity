@@ -9,6 +9,15 @@ using namespace utility;
 
 namespace server {
 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //                                                                                   //
+    //                                   CLIENT REGISTER                                 //
+    //    The class maintans information about the connected clients(socket and ip)      //
+    //    It permits easely to add or remove a client basing on its socket and a search  //
+    //    into the archive to know if a client is present or get its net address.        //
+    //                                                                                   //
+    ///////////////////////////////////////////////////////////////////////////////////////
+
     class ClientRegister {
 
         private:

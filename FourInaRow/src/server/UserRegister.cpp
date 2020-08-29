@@ -3,6 +3,12 @@
 
 namespace server{
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    //                                                                                           //
+    //                                      PUBLIC FUNCTIONS                                     //
+    //                                                                                           //
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    
     bool UserRegister::addUser( int socket , string username ){
 
         if( this->userRegister.size() == this->userRegister.max_size()){

@@ -17,41 +17,55 @@
 using namespace server;
 
 namespace server {
+
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //                                                                                   //
+    //                                   MAIN SERVER                                     //
+    //    The class implements a server based on a given ipv4 address and a port.        //
+    //    The server wait to receive a message after sanitization and identification of  //
+    //    its content is assign it to a protocol handler which generate the correct      //
+    //    behavior. The server is based on three register which collect information      //
+    //    about the connected clients and a CipherServer class which contains the        //
+    //    security routines to be applied during its work.                               //
+    //                                                                                   //
+    ///////////////////////////////////////////////////////////////////////////////////////
+
     class MainServer {
 
         private:
-            ClientRegister clientRegister;
-            MatchRegister matchRegister;
-            UserRegister userRegister;
-            utility::ConnectionManager* manager;
-            cipher::CipherServer cipherServer;
+            ClientRegister clientRegister;        //  COLLECTS INFORMATION ABOUT CONNECTED CLIENTS(IPADDR, SOCKET)
+            UserRegister userRegister;            //  COLLECTS INFORMATION ABOUT THE LOGGED USERS(NAME,KEYS,STATUS)
+            MatchRegister matchRegister;          //  COLLECTS INFORMATION ABOUT THE OPENED MATCHES(PARTECIPANTS, STATUS)
+            utility::ConnectionManager* manager;  //  GIVES ROUTINES TO RECEIVE AND SEND MESSAGES INTO NETWORK
+            cipher::CipherServer cipherServer;    //  GIVES ROUTINES TO APPLY SECURITY PROTOCOLS
 
-            Message* certificateHandler( Message* message );
-            Message* loginHandler( Message* message,  int socket );
-            Message* keyExchangeHandler( Message* message , string username );
-            Message* gameParamHandler( string source , int match , bool step );
-            Message* userListHandler( Message* message, string username );
-            Message* rankListHandler( Message* message, string username );
-            Message* matchListHandler( Message* message );
-            Message* acceptHandler( Message* message);
-            Message* rejectHandler( Message* message);
-            Message* disconnectHandler( Message* message, int matchID);
-            Message* logoutHandler( Message* message , string username );
-            Message* sendError( string errorMessage );
-            Message* closeMatch(int matchID);
-            Message* manageMessage( Message* message, int socket );
+            //  PROTOCOL HANDLERS
+            Message* certificateHandler( Message* message );                    //  MANAGES MESSAGE CERTIFICATE_REQ
+            Message* loginHandler( Message* message,  int socket );             //  MANAGES MESSAGE LOGIN_REQ
+            Message* keyExchangeHandler( Message* message , string username );  //  MANAGES MESSAGE KEY_EXCHANGE
+            Message* gameParamHandler( string source , int match , bool step ); //  MANAGES MESSAGE GAME_PARAM
+            Message* userListHandler( Message* message, string username );      //  MANAGES MESSAGE USER_LIST_REQ
+            Message* rankListHandler( Message* message, string username );      //  MANAGES MESSAGE RANK_LIST_REQ
+            Message* matchListHandler( Message* message );                      //  MANAGES MESSAGE MATCH
+            Message* acceptHandler( Message* message);                          //  MANAGES MESSAGE ACCEPT
+            Message* rejectHandler( Message* message);                          //  MANAGES MESSAGE REJECT
+            Message* disconnectHandler( Message* message, int matchID);         //  MANAGES MESSAGE DISCONNECT
+            Message* logoutHandler( Message* message , string username );       //  MANAGES MESSAGE LOGOUT_REQ
+            Message* sendError( string errorMessage );                          //  GENERATES AN ERROR MESSAGE
+            Message* closeMatch(int matchID);                                   //  CLOSES A MATCH AND ADVERTICE PARTICIPANTS
 
-            Message* userManager(Message* message, string username , int socket );
-            Message* matchManager(Message* message, string username );
-            Message* waitMessage( int& socket );
-            bool sendMessage( Message* message , string username );
-            void logoutClient(int socket);
-            bool registerClient( int socket, string ip );
+            //  MESSAGE HANDLERS
+            Message* manageMessage( Message* message, int socket );                 //  HANDLES MESSAGES AND SENT THEM TO THE CORRECT PROTOCOL
+            Message* userManager(Message* message, string username , int socket );  //  HANDLES MESSAGES WHICH INVOLVE ONLY THE USER AND THE SERVER
+            Message* matchManager(Message* message, string username );              //  HANDLES MESSAGES WHICH INVOLVE MANY USERS
+
+            //  EVENT HANDLERS
+            void logoutClient(int socket);                           //  SECURE DISCONNECTION OF A CLIENT FROM THE SERVER
+            bool registerClient( int socket, string ip );            //  SECURE REGISTRATION OF A CLIENT INTO THE SERVER
 
         public:
-            MainServer( string ipAddr , int port );
-            void server();
-            static void test();
+            MainServer( string ipAddr , int port );                  //  GENERATES THE SERVER
+            void server();                                           //  STARTS THE SERVER
 
     };
 }

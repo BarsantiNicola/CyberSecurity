@@ -3,6 +3,12 @@
 
 namespace server{
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    //                                                                                           //
+    //                                    COSTRUCTORS/DESTRUCTORS                                //
+    //                                                                                           //
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
     UserInformation::UserInformation( int socket , string username ){
 
         this->username = username;
@@ -35,6 +41,13 @@ namespace server{
 
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    //                                                                                           //
+    //                                           SETTERS                                         //
+    //                                                                                           //
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    //  set aes session key information for the user. The method can only be called once
     bool UserInformation::setSessionKey( cipher::SessionKey* key ){
 
         if( this->sessionKey ) {
@@ -62,6 +75,8 @@ namespace server{
 
     }
 
+    //  sets the status of the user. Only near states can be changed
+    //         CONNECTED <--> LOGGED <--> WAIT_MATCH <--> PLAY
     bool UserInformation::setStatus( UserStatus status ){
 
         switch( this->status ){
@@ -80,14 +95,14 @@ namespace server{
                 break;
 
             case WAIT_MATCH:
-                if( status == LOGGED ){
+                if( status == CONNECTED ){
                     verbose<<"--> [UserInformation][setStatus] Error, trying to perform an invalid status change"<<'\n';
                     return false;
                 }
                 break;
 
             case PLAY:
-                if( status != LOGGED ){
+                if( status != WAIT_MATCH ){
                     verbose<<"--> [UserInformation][setStatus] Error, trying to perform an invalid status change"<<'\n';
                     return false;
                 }
@@ -103,6 +118,7 @@ namespace server{
 
     }
 
+    // sets a nonce for a user(useful for linked protocols like login and key-exchange)
     void UserInformation::setNonce( int nonce ) {
 
         if( this->nonce == nullptr )
@@ -110,6 +126,12 @@ namespace server{
         *(this->nonce) = nonce;
 
     }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    //                                                                                           //
+    //                                           GETTERS                                         //
+    //                                                                                           //
+    ///////////////////////////////////////////////////////////////////////////////////////////////
 
     int UserInformation::getSocket() {
         return this->socket;

@@ -75,7 +75,6 @@ namespace server {
         ret = this->cipherServer.fromSecureForm( message, message->getUsername() );
         response->setNonce(*nonce);
 
-        cout<<"---------------1----------"<<endl;
         if( !ret ){
 
             response->setMessageType( LOGIN_FAIL );
@@ -87,7 +86,7 @@ namespace server {
         }
 
         //////
-        cout<<"---------------2----------"<<endl;
+
         if( this->userRegister.has( ret->getUsername() )){         //  if a user is already logger login has to fail
 
             response->setMessageType( LOGIN_FAIL );

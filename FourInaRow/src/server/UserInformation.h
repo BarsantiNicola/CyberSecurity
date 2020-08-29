@@ -19,6 +19,14 @@ namespace server {
 
     };
 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //                                                                                   //
+    //                                   USER INFORMATION                                //
+    //    The class maintans information about a user(socket,username,keys and           //
+    //    a status)                                                                      //
+    //                                                                                   //
+    ///////////////////////////////////////////////////////////////////////////////////////
+
     class UserInformation{
 
         private:
@@ -36,7 +44,7 @@ namespace server {
             bool setStatus( UserStatus status );
             void setNonce( int nonce );
 
-            int getSocket();
+            int    getSocket();
             string getUsername();
             cipher::SessionKey* getSessionKey();
             UserStatus* getStatus();

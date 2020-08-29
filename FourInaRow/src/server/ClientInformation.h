@@ -8,16 +8,22 @@ using namespace std;
 
 namespace server {
 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //                                                                                   //
+    //                                   CLIENT INFORMATION                              //
+    //    The class maintans information about a client(the linked socket and its ip     //
+    //    address                                                                        //
+    //                                                                                   //
+    ///////////////////////////////////////////////////////////////////////////////////////
+
 class ClientInformation{
 
         private:
-
             string IPaddress;
             int socket;
 
         public:
             ClientInformation( string IPaddress, int socket );
-
             string getIPaddress();
             int getSocket();
 

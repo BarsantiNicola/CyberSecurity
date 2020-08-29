@@ -19,6 +19,8 @@ namespace cipher {
         unsigned int sessionKeyLen;
         unsigned char* iv;
         unsigned int ivLen;
+        unsigned char* seed;
+        unsigned char* seedLen
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////

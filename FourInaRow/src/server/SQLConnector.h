@@ -34,7 +34,7 @@ namespace server {
 
     class SQLConnector {
         private:
-            static bool checkField( string username );                  //  WHITELIST VERIFICATION
+            static bool checkField( string field );                     //  WHITELIST VERIFICATION OF GIVEN FIELD
 
         public:
             static string getRankList();                                //  GIVES A FORMATTED STRING OF THE USERS RANKS

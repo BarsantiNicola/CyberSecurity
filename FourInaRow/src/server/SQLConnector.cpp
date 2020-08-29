@@ -3,6 +3,12 @@
 
 namespace server {
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    //                                                                                           //
+    //                                      PUBLIC FUNCTIONS                                     //
+    //                                                                                           //
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
     //  the function contact a remote sql database to generate and return a formatted string containing of the users rank
     string SQLConnector::getRankList() {
 
