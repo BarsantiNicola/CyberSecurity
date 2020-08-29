@@ -126,7 +126,7 @@ namespace cipher{
 
             default:
                 verbose<<"-->[CipherServer][toSecureForm] Error, messageType not supported:"<<message->getMessageType()<<'\n';
-                return nullptr;
+                return new Message(*message);
         }
         return message;
 
@@ -139,8 +139,9 @@ namespace cipher{
             return nullptr;
 
         }
-    /*    switch( message->getMessageType()){
+        switch( message->getMessageType()){
             case LOGIN_REQ:
+                if( !this->rsa->loadUserKey(username )) return nullptr;
                 return this->rsa->serverVerifySignature(*message, message->getUsername())?message:nullptr;
             case KEY_EXCHANGE:
                 return this->rsa->serverVerifySignature(*message, username)?message:nullptr;
@@ -158,14 +159,11 @@ namespace cipher{
 
             case DISCONNECT:
 
-            case WITHDRAW_REQ:
-
             default:
                 verbose<<"-->[CipherServer][fromSecureForm] Error, MessageType not supported:"<<message->getMessageType()<<'\n';
-                return nullptr;
+                return new Message(*message);
 
-        }*/
-        return message;
+        }
 
     }
 
@@ -177,6 +175,7 @@ namespace cipher{
 
     SessionKey* CipherServer::getSessionKey( unsigned char* param , unsigned int paramLen ){
 
+        cout<<"Session key generation___________________________________________________"<<endl;
         return this->dh->generateSessionKey( param , paramLen );
 
     }

@@ -1364,7 +1364,7 @@ namespace utility{
 
             case CERTIFICATE_REQ:
                 nonce = message.getNonce();
-                len = 10+to_string(type).length()+to_string(*nonce).length();
+                len = 13+to_string(type).length()+to_string(*nonce).length();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1379,7 +1379,7 @@ namespace utility{
             case CERTIFICATE:
                 nonce = message.getNonce();
                 sign = message.getSignature();
-                len = 20+to_string(type).length()+to_string(*nonce).length() + message.getServerCertificateLength()+message.getSignatureLen();
+                len = 29+to_string(type).length()+to_string(*nonce).length() + message.getServerCertificateLength()+message.getSignatureLen();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1400,7 +1400,7 @@ namespace utility{
             case LOGIN_REQ:
                 nonce = message.getNonce();
                 sign = message.getSignature();
-                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
+                len = 29+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1419,7 +1419,7 @@ namespace utility{
             case LOGIN_OK:
                 nonce = message.getNonce();
                 sign = message.getSignature();
-                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                len = 21+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1437,7 +1437,7 @@ namespace utility{
             case LOGIN_FAIL:
                 nonce = message.getNonce();
                 sign = message.getSignature();
-                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                len = 21+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1456,7 +1456,7 @@ namespace utility{
                 nonce = message.getNonce();
                 sign = message.getSignature();
                 key = message.getDHkey();
-                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getDHkeyLength()+message.getSignatureLen();
+                len = 29+to_string(type).length()+to_string(*nonce).length()+message.getDHkeyLength()+message.getSignatureLen();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1476,7 +1476,7 @@ namespace utility{
             case USER_LIST_REQ:
                 nonce = message.getNonce();
                 sign = message.getSignature();
-                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                len = 21+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1494,7 +1494,7 @@ namespace utility{
             case USER_LIST:
                 nonce = message.getNonce();
                 sign = message.getSignature();
-                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUserListLen()+message.getSignatureLen();
+                len = 29+to_string(type).length()+to_string(*nonce).length()+message.getUserListLen()+message.getSignatureLen();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1513,7 +1513,7 @@ namespace utility{
             case RANK_LIST_REQ:
                 nonce = message.getNonce();
                 sign = message.getSignature();
-                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                len = 21+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1531,7 +1531,7 @@ namespace utility{
             case RANK_LIST:
                 nonce = message.getNonce();
                 sign = message.getSignature();
-                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getRankListLen()+message.getSignatureLen();
+                len = 29+to_string(type).length()+to_string(*nonce).length()+message.getRankListLen()+message.getSignatureLen();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1550,7 +1550,7 @@ namespace utility{
             case MATCH:
                 nonce = message.getNonce();
                 sign = message.getSignature();
-                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
+                len = 29+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1569,7 +1569,7 @@ namespace utility{
             case ACCEPT:
                 nonce = message.getNonce();
                 sign = message.getSignature();
-                len = 25+to_string(type).length()+to_string(*nonce).length()+message.getAdversary_1().length()+message.getAdversary_2().length()+message.getSignatureLen();
+                len = 37+to_string(type).length()+to_string(*nonce).length()+message.getAdversary_1().length()+message.getAdversary_2().length()+message.getSignatureLen();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1589,7 +1589,7 @@ namespace utility{
             case REJECT:
                 nonce = message.getNonce();
                 sign = message.getSignature();
-                len = 25+to_string(type).length()+to_string(*nonce).length()+message.getAdversary_1().length()+message.getAdversary_2().length()+message.getSignatureLen();
+                len = 37+to_string(type).length()+to_string(*nonce).length()+message.getAdversary_1().length()+message.getAdversary_2().length()+message.getSignatureLen();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1609,7 +1609,7 @@ namespace utility{
             case WITHDRAW_REQ:
                 nonce = message.getNonce();
                 sign = message.getSignature();
-                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
+                len = 29+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1629,7 +1629,7 @@ namespace utility{
             case WITHDRAW_OK:
                 nonce = message.getNonce();
                 sign = (unsigned char*)message.getSignature();
-                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                len = 21+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1647,7 +1647,7 @@ namespace utility{
             case LOGOUT_REQ:
                 nonce = message.getNonce();
                 sign = message.getSignature();
-                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                len = 21+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1665,7 +1665,7 @@ namespace utility{
             case LOGOUT_OK:
                 nonce = message.getNonce();
                 sign = message.getSignature();
-                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                len = 21+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1683,7 +1683,7 @@ namespace utility{
             case GAME_PARAM:
                 nonce = message.getNonce();
                 sign = message.getSignature();
-                len = 25+to_string(type).length()+to_string(*nonce).length()+message.getPubKeyLength()+message.getNetInformationsLength()+message.getSignatureLen();
+                len = 37+to_string(type).length()+to_string(*nonce).length()+message.getPubKeyLength()+message.getNetInformationsLength()+message.getSignatureLen();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1706,7 +1706,7 @@ namespace utility{
             case MOVE:
                 nonce = message.getCurrent_Token();
                 sign = message.getSignature();
-                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen();
+                len = 29+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen();
                 key = message.getChosenColumn();
                 value = new unsigned char[len];
                 if( !value ){
@@ -1727,7 +1727,7 @@ namespace utility{
             case CHAT:
                 nonce = message.getCurrent_Token();
                 sign = message.getSignature();
-                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getMessageLength()+message.getSignatureLen();
+                len = 29+to_string(type).length()+to_string(*nonce).length()+message.getMessageLength()+message.getSignatureLen();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1748,7 +1748,7 @@ namespace utility{
             case ACK:
                 nonce = message.getCurrent_Token();
                 sign = message.getSignature();
-                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                len = 21+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1766,7 +1766,7 @@ namespace utility{
             case DISCONNECT:
                 nonce = message.getNonce();
                 sign = message.getSignature();
-                len = 15+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
+                len = 21+to_string(type).length()+to_string(*nonce).length()+message.getSignatureLen();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1783,7 +1783,7 @@ namespace utility{
             case ERROR:
                 nonce = message.getNonce();
                 sign = message.getSignature();
-                len = 20+to_string(type).length()+to_string(*nonce).length()+message.getMessageLength()+message.getSignatureLen();
+                len = 29+to_string(type).length()+to_string(*nonce).length()+message.getMessageLength()+message.getSignatureLen();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1855,10 +1855,10 @@ namespace utility{
                 break;
             }
 
-            if( position<msg.length()-2 && text[position] == '"' && text[position+1] == '&'){
+            if( position<msg.length()-5 && text[position] == '"' && text[position+1] == '&' && text[position+2] == '&' && text[position+3] == '&' && text[position+4] == '&'){
                 vverbose<<"--> [Converter][computeNextField] Field founded, Position: "<<position<<'\n';
                 highPos = position-1;
-                position = position + 2;
+                position = position + 5;
                 found = true;
                 break;
             }
@@ -1968,22 +1968,13 @@ namespace utility{
     //  verify the presence of the &" sequence into a given field
     bool Converter::checkField( const unsigned char* field , int len){
         vverbose<<"--> [Converter][checkField] Verification of Message consistence"<<'\n';
-        bool warn = false;
 
-        for( int a= 0; a<len;a++){
-            if( field[a] == '&') {
-                if (warn) {
-                    verbose << "--> [Converter][checkField] Error, sequence \"& founded into the field" << '\n';
-                    return true;
-                } else {
-                    continue;
-                }
+        for( int a= 4; a<len;a++)
+            if( field[a] == '&'&& field[a-1] == '&' && field[a-2] == '&' && field[a-3] == '&' && field[a-4] == '"' ) {
+                verbose << "--> [Converter][checkField] Error, sequence \"& founded into the field" << '\n';
+                return true;
             }
-            if( field[a] == '"' )
-                warn = true;
-            else
-                warn = false;
-        }
+
         vverbose<<"--> [Converter][checkField] Verification success"<<'\n';
         return false;
     }
@@ -3324,8 +3315,12 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
 
         if (finish)
             value[pos++] = '\0';
-        else
+        else{
             value[pos++] = '&';
+            value[pos++] = '&';
+            value[pos++] = '&';
+            value[pos++] = '&';
+        }
 
         return pos;
     }

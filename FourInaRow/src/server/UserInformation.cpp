@@ -105,10 +105,9 @@ namespace server{
 
     void UserInformation::setNonce( int nonce ) {
 
-        if( !nonce )
+        if( this->nonce == nullptr )
             this->nonce = new int(nonce);
-        else
-            *(this->nonce) = nonce;
+        *(this->nonce) = nonce;
 
     }
 

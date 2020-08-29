@@ -11,9 +11,8 @@ namespace server {
         response->setNonce( 0 );  //  to be srand()
         response->setMessage( (unsigned char*)errorMessage.c_str() , errorMessage.length() );
 
-        Message* message = this->cipherServer.toSecureForm( response );
-        delete response;
-        return message;
+        this->cipherServer.toSecureForm( response );
+        return response;
 
     }
 
@@ -75,8 +74,8 @@ namespace server {
         Message* response = new Message();
         ret = this->cipherServer.fromSecureForm( message, message->getUsername() );
         response->setNonce(*nonce);
-        delete nonce;
 
+        cout<<"---------------1----------"<<endl;
         if( !ret ){
 
             response->setMessageType( LOGIN_FAIL );
@@ -88,7 +87,7 @@ namespace server {
         }
 
         //////
-
+        cout<<"---------------2----------"<<endl;
         if( this->userRegister.has( ret->getUsername() )){         //  if a user is already logger login has to fail
 
             response->setMessageType( LOGIN_FAIL );
@@ -98,8 +97,9 @@ namespace server {
             return message;
 
         }
-
-        if( !this->userRegister.addUser( socket, ret->getUsername() )){  // add user to register
+        cout<<"---------------3----------"<<endl;
+        cout<<"SOCKET: "<<socket<<endl;
+        if( !this->userRegister.addUser( socket, message->getUsername() )){  // add user to register
 
             response->setMessageType( LOGIN_FAIL );
             verbose<<"-->[MainServer][loginHandler] Error, during user registration"<<'\n';
@@ -108,9 +108,12 @@ namespace server {
             return message;
 
         }
-
-        if( !this->userRegister.setNonce(ret->getUsername(), *nonce) ){ //  save nonce for key_exchange
-
+        cout<<"USER: "<<this->userRegister.has( message->getUsername())<<endl;
+        cout<<"USER: "<<this->userRegister.has( socket )<<endl;
+        cout<<"---------------4----------"<<endl;
+        if( !this->userRegister.setNonce(message->getUsername(), *nonce) ){ //  save nonce for key_exchange
+            cout<<"errore"<<endl;
+            delete nonce;
             this->userRegister.removeUser( socket );
             response->setMessageType( LOGIN_FAIL );
             verbose<<"-->[MainServer][loginHandler] Error, during user registration"<<'\n';
@@ -120,18 +123,21 @@ namespace server {
 
         }
 
-        vverbose<<"-->[MainServer][loginHandler] "<<ret->getUsername()<<" registration correctly started"<<'\n';
+        cout<<"---------------5----------"<<endl;
+        vverbose<<"-->[MainServer][loginHandler] "<<message->getUsername()<<" registration correctly started"<<'\n';
         response->setMessageType( LOGIN_OK );
         message = this->cipherServer.toSecureForm( response );
         delete ret;
         if( !message ){
-            verbose << "-->[MainServer][acceptHandler] Error, invalid message Missing Diffie-Hellman Parameter" << '\n';
+            verbose << "-->[MainServer][loginHandler] Error, invalid message Missing Diffie-Hellman Parameter" << '\n';
             delete response;
             return this->sendError(string("MISSING USERNAME")  );
         }
-
+        cout<<"---------------6----------"<<endl;
         cout<<"type: "<<message->getMessageType()<<endl;
         cout<<"nonce: "<<message->getNonce()<<endl;
+     //   cout<<"USER: "<<this->userRegister.has( message->getUsername())<<endl;
+        cout<<"USER: "<<this->userRegister.has( socket )<<endl;
         return message;
 
     }
@@ -143,29 +149,28 @@ namespace server {
 
         if ( !nonce ){
 
-            verbose << "-->[MainServer][acceptHandler] Error, invalid message. Missing Nonce" << '\n';
-            return this->sendError(string("MISSING USERNAME") );
+            verbose << "-->[MainServer][keyExchangeHandler] Error, invalid message. Missing Nonce" << '\n';
+            return this->sendError(string("MISSING_NONCE") );
 
         }
 
         if ( !userNonce ){
 
-            verbose << "-->[MainServer][acceptHandler] Error, invalid message. Missing Nonce" << '\n';
-            return this->sendError(string("MISSING USERNAME") );
+            verbose << "-->[MainServer][keyExchangeHandler] Error, user nonce not present" << '\n';
+                return this->sendError(string("MISSION_NONCE") );
 
         }
 
         if( *nonce != *userNonce ){
-            verbose<<"-->[MainServer][loginHandler] Error during security verification"<<'\n';
-            return this->sendError(string("MISSING USERNAME") );
+            verbose<<"-->[MainServer][keyExchangeHandler] Error invalid nonce"<<'\n';
+            return this->sendError(string("INVALID_NONCE") );
         }
 
         Message* result = this->cipherServer.fromSecureForm( message, username );
-        delete message;
 
         if( !result->getDHkey() ){
-            verbose << "-->[MainServer][acceptHandler] Error, invalid message Missing Diffie-Hellman Parameter" << '\n';
-            return this->sendError(string("MISSING USERNAME")  );
+            verbose << "-->[MainServer][keyExchangeHandler] Error, invalid message Missing Diffie-Hellman Parameter" << '\n';
+            return this->sendError(string("MISSING_DHPARAM")  );
         }
 
 
@@ -181,15 +186,12 @@ namespace server {
         this->userRegister.setLogged( username , this->cipherServer.getSessionKey( result->getDHkey() , result->getDHkeyLength()));
 
         message = this->cipherServer.toSecureForm( response );
-        delete response;
 
         if( !message ){
-            verbose << "-->[MainServer][acceptHandler] Error, invalid message Missing Diffie-Hellman Parameter" << '\n';
+            verbose << "-->[MainServer][keyExchangeHandler] Error, during message convertion" << '\n';
             delete result;
             return this->sendError(string("MISSING USERNAME") );
         }
-
-        delete result;
 
         return message;
 
@@ -202,22 +204,30 @@ namespace server {
         int* nonce = message->getNonce();
 
         if( !nonce ){
-            verbose<<"-->[MainServer][loginHandler] Error, invalid message. Missing Nonce"<<'\n';
+            verbose<<"-->[MainServer][userListHandler] Error, invalid message. Missing Nonce"<<'\n';
             return this->sendError( string("MISSING USERNAME")  );
         }
 
         Message* ret = this->cipherServer.fromSecureForm( message, message->getUsername() );
-        delete message;
 
         if( !ret ){
 
-            verbose<<"-->[MainServer][loginHandler] Error, invalid message. Missing username"<<'\n';
+            verbose<<"-->[MainServer][userListHandler] Error. Verification Failure"<<'\n';
             return this->sendError( string("MISSING USERNAME")  );
 
         }
-        delete ret;
 
         //////
+
+        if( !this->userRegister.has( username )){
+            verbose << "-->[MainServer][rankListHandler] Error, user not registered" << '\n';
+            return this->sendError(string("MISSING USERNAME") );
+        }
+
+        if( *(this->userRegister.getStatus(username)) != LOGGED ){
+            verbose << "-->[MainServer][rankListHandler] Error, user not allowed" << '\n';
+            return this->sendError(string("MISSING USERNAME") );
+        }
 
         Message* response = new Message();
         NetMessage *user_list = this->userRegister.getUserList();
@@ -232,11 +242,10 @@ namespace server {
         message = this->cipherServer.toSecureForm(response );
 
         if( !message ){
-            verbose << "-->[MainServer][acceptHandler] Error, invalid message Missing Diffie-Hellman Parameter" << '\n';
+            verbose << "-->[MainServer][userListHandler] Error during securing of message" << '\n';
             delete response;
             return this->sendError(string("MISSING USERNAME")  );
         }
-        delete response;
 
         return message;
 
@@ -250,37 +259,37 @@ namespace server {
         int* nonce = message->getNonce();
 
         if( !nonce ){
-            verbose<<"-->[MainServer][loginHandler] Error, invalid message. Missing Nonce"<<'\n';
+            verbose<<"-->[MainServer][rankListHandler] Error, invalid message. Missing Nonce"<<'\n';
             return this->sendError( string("INVALID_NONCE") );
         }
 
         Message* ret = this->cipherServer.fromSecureForm( message, message->getUsername() );
-        delete message;
+
 
         if( !ret ){
 
-            verbose<<"-->[MainServer][loginHandler] Error, invalid message. Missing username"<<'\n';
+            verbose<<"-->[MainServer][rankListHandler] Error. Verification Failure"<<'\n';
             return this->sendError( string("MISSING USERNAME") );
 
         }
-        delete ret;
+
 
         //////
 
         if( !this->userRegister.has( username )){
-            verbose << "-->[MainServer][acceptHandler] Error, invalid message. Missing Nonce" << '\n';
+            verbose << "-->[MainServer][rankListHandler] Error, user not registered" << '\n';
             return this->sendError(string("MISSING USERNAME") );
         }
 
         if( *(this->userRegister.getStatus(username)) != LOGGED ){
-            verbose << "-->[MainServer][acceptHandler] Error, invalid message. Missing Nonce" << '\n';
+            verbose << "-->[MainServer][rankListHandler] Error, user not allowed" << '\n';
             return this->sendError(string("MISSING USERNAME") );
         }
 
         Message* response = new Message();
         string rank_list = SQLConnector::getRankList();
 
-        response->setMessageType( USER_LIST );
+        response->setMessageType( RANK_LIST );
         response->setNonce( *nonce );
         response->setRankList( (unsigned char*) rank_list.c_str(), rank_list.length() );
 
@@ -288,12 +297,11 @@ namespace server {
 
         message = this->cipherServer.toSecureForm(response );
         if( !message ){
-            verbose << "-->[MainServer][acceptHandler] Error, invalid message Missing Diffie-Hellman Parameter" << '\n';
+            verbose << "-->[MainServer][rankListHandler] Error. Verification Failure"<< '\n';
             delete response;
             return this->sendError(string("MISSING USERNAME")  );
         }
 
-        delete response;
 
         return message;
 
@@ -305,26 +313,25 @@ namespace server {
 
         int *nonce = message->getNonce();
         if (!nonce) {
-            verbose << "-->[MainServer][acceptHandler] Error, invalid message. Missing Nonce" << '\n';
-            return this->sendError(string("MISSING USERNAME") );
+            verbose << "-->[MainServer][logoutHandler] Error, invalid message. Missing Nonce" << '\n';
+            return this->sendError(string("MISSING_NONCE") );
         }
 
         Message* response = this->cipherServer.fromSecureForm( message , username );
-        delete message;
 
         if( !response ){
-            verbose << "-->[MainServer][acceptHandler] Error, invalid message. Missing Nonce" << '\n';
-            return this->sendError(string("MISSING USERNAME") );
+            verbose << "-->[MainServer][logoutHandler] Error, Verification failure" << '\n';
+            return this->sendError(string("AUTH_FAIL") );
         }
 
         if( !this->userRegister.has( username )){
-            verbose << "-->[MainServer][acceptHandler] Error, invalid message. Missing Nonce" << '\n';
+            verbose << "-->[MainServer][logoutHandler] Error user not registered" << '\n';
             return this->sendError(string("MISSING USERNAME") );
         }
 
         if( *(this->userRegister.getStatus(username)) != LOGGED ){
-            verbose << "-->[MainServer][acceptHandler] Error, invalid message. Missing Nonce" << '\n';
-            return this->sendError(string("MISSING USERNAME") );
+            verbose << "-->[MainServer][logoutHandler] Error, user not in the correct state" << '\n';
+            return this->sendError(string("NOT_LOGGED") );
         }
 
         Message* ret = new Message();
@@ -342,7 +349,6 @@ namespace server {
             this->closeMatch(i);
         }*/
         message = this->cipherServer.toSecureForm(ret);
-        delete ret;
         return message;
 
     }
@@ -509,6 +515,9 @@ return nullptr;
             case utility::LOGIN_REQ:
                 ret = this->loginHandler(message, socket );
                 break;
+            case utility::KEY_EXCHANGE:
+                ret = this->keyExchangeHandler(message, username );
+                break;
             case utility::USER_LIST_REQ:
                 ret = this->userListHandler(message, username );
                 break;
@@ -551,12 +560,13 @@ return nullptr;
 
         while( true ){
 
+            cout<<"restart"<<endl;
             socket = -1;
             ipAddr.clear();
             waitSockets.clear();
-
+            cout<<"start waiting"<<endl;
             waitSockets = this->manager->waitForMessage( &socket, &ipAddr );
-
+            cout<<"ok finish"<<endl;
             if( !waitSockets.size() ){
 
                 if( socket != -1 && !ipAddr.empty()){
@@ -582,22 +592,26 @@ return nullptr;
                     this->clientRegister.removeClient( socket );
                     continue;
                 }
-                if( message ){
+                if( message ) {
 
-                    vverbose<<"--> [MainServer][server] New message("<<message->getMessageType()<<") received from client: "<<sock<<'\n';
+                    vverbose << "--> [MainServer][server] New message(" << message->getMessageType()
+                             << ") received from client: " << sock << '\n';
 
-                    response = this->manageMessage( message , sock );
-                    cout<<"OKOK"<<endl;
-                    cout<<response->getMessageType()<<"  "<<response->getNonce()<<endl;
-                    NetMessage* prova = Converter::encodeMessage(response->getMessageType(), *response );
-                    delete prova;
-                    if( response )
-                        if( !this->manager->sendMessage( *response , sock, nullptr, 0  )){
-                            vverbose<<"--> [MainServer][server] Error, client "<<socket<<" disconnected"<<'\n';
+                    response = this->manageMessage(message, sock);
+                    cout << "OKOK" << endl;
+                    cout << response->getMessageType() << "  " << *(response->getNonce()) << endl;
+                    //   NetMessage* prova = Converter::encodeMessage(response->getMessageType(), *response );
+                    bool socketClosed = false;
+                    if (response) {
+                        cout<<"ok"<<endl;
+                        if (!this->manager->sendMessage(*response, sock, &socketClosed, nullptr, 0) && socketClosed) {
+                            vverbose << "--> [MainServer][server] Error, client " << socket << " disconnected" << '\n';
                             delete response;
-                            this->userRegister.removeUser( socket );
-                            this->clientRegister.removeClient( socket );
+                            this->userRegister.removeUser(socket);
+                            this->clientRegister.removeClient(socket);
                         }
+                        cout<<"okok"<<endl;
+                    }
                 }
             }
         }
@@ -607,13 +621,13 @@ return nullptr;
 
         //  verify the user is not already registered
         if (!this->clientRegister.has(socket)) {
-            verbose << "-->[MainServer][server] Error, unregistered socket try to contact server" << '\n';
+            verbose << "-->[MainServer][manageMessage] Error, unregistered socket try to contact server" << '\n';
             return sendError(string("UNREGISTERED_SOCK"));
         }
 
         if (!this->userRegister.has(socket) && message->getMessageType() != LOGIN_REQ && message->getMessageType() != CERTIFICATE_REQ ) {
 
-            vverbose << "-->[MainServer][server] Warning, user not already logged. Invalid request" << '\n';
+            vverbose << "-->[MainServer][manageMessage] Warning, user not already logged. Invalid request" << '\n';
             return sendError(string("INVALID_REQUEST"));
 
         }
@@ -621,7 +635,7 @@ return nullptr;
         string username = this->userRegister.getUsername(socket);
         if (username.empty() && message->getMessageType() != CERTIFICATE_REQ && message->getMessageType() != LOGIN_REQ ) {
 
-            vverbose << "-->[MainServer][server] Error, username not found" << '\n';
+            vverbose << "-->[MainServer][manageMessage] Error, username not found" << '\n';
             return sendError(string("USER_NOT_FOUND"));
 
         }
@@ -635,6 +649,7 @@ return nullptr;
 }
 int main() {
 
+    Logger::setThreshold( VERY_VERBOSE );
     MainServer* server = new MainServer( string("127.0.0.1") , 12345 );
     server->server();
     return 0;

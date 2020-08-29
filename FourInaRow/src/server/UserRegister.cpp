@@ -50,13 +50,14 @@ namespace server{
 
         for( int a = 0; a<this->userRegister.size(); a++ )
             if( !this->userRegister[a].getUsername().compare( username )) {
-
+                cout<<"ok found"<<endl;
                 this->userRegister[a].setNonce(nonce);
+                cout<<"ok found2"<<endl;
                 return true;
 
             }
 
-        verbose<<"-->[UserRegister][setSessionKey] Error, user not found"<<'\n';
+        verbose<<"-->[UserRegister][setNonce] Error, user not found"<<'\n';
         return false;
 
     }
@@ -80,7 +81,7 @@ namespace server{
 
             }
 
-        verbose<<"-->[UserRegister][setSessionKey] Error, user not found"<<'\n';
+        verbose<<"-->[UserRegister][setLogged] Error, user not found"<<'\n';
         return false;
 
     }
@@ -91,7 +92,7 @@ namespace server{
             if( !this->userRegister[a].getUsername().compare( username ))
                 return this->userRegister[a].setStatus( PLAY );
 
-        verbose<<"-->[UserRegister][setSessionKey] Error, user not found"<<'\n';
+        verbose<<"-->[UserRegister][setPlay] Error, user not found"<<'\n';
         return false;
 
     }
@@ -102,7 +103,7 @@ namespace server{
             if( !this->userRegister[a].getUsername().compare( username ))
                 return this->userRegister[a].setStatus( WAIT_MATCH );
 
-        verbose<<"-->[UserRegister][setSessionKey] Error, user not found"<<'\n';
+        verbose<<"-->[UserRegister][setWait] Error, user not found"<<'\n';
         return false;
 
     }
@@ -113,7 +114,7 @@ namespace server{
             if( !this->userRegister[a].getUsername().compare( username ))
                 return this->userRegister[a].setStatus( CONNECTED );
 
-        verbose<<"-->[UserRegister][setSessionKey] Error, user not found"<<'\n';
+        verbose<<"-->[UserRegister][setDisconnected] Error, user not found"<<'\n';
         return false;
 
     }
@@ -137,7 +138,7 @@ namespace server{
     bool UserRegister::removeUser( int socket ){
 
         for( int a = 0; a<this->userRegister.size(); a++ )
-            if( !this->userRegister[a].getSocket() == socket ) {
+            if( this->userRegister[a].getSocket() == socket ) {
 
                 this->userRegister.erase(this->userRegister.begin() + a);
                 return true;
@@ -153,10 +154,10 @@ namespace server{
 
 
         for( int a = 0; a<this->userRegister.size(); a++ )
-            if( !this->userRegister[a].getSocket() == socket )
+            if( this->userRegister[a].getSocket() == socket )
                 return true;
 
-        verbose<<"-->[UserRegister][removeUser] Error user not found"<<'\n';
+        verbose<<"-->[UserRegister][has] Error user not found"<<'\n';
         return false;
 
     }
@@ -168,7 +169,7 @@ namespace server{
             if( !this->userRegister[a].getUsername().compare( username ))
                 return true;
 
-        verbose<<"-->[UserRegister][removeUser] Error user not found"<<'\n';
+        verbose<<"-->[UserRegister][has] Error user not found"<<'\n';
         return false;
 
     }
@@ -179,7 +180,7 @@ namespace server{
             if( !this->userRegister[a].getUsername().compare( username ))
                 return this->userRegister[a].getSessionKey();
 
-        verbose<<"-->[UserRegister][removeUser] Error user not found"<<'\n';
+        verbose<<"-->[UserRegister][getSessionKey] Error user not found"<<'\n';
         return nullptr;
 
     }
@@ -191,7 +192,7 @@ namespace server{
             if( !this->userRegister[a].getUsername().compare( username ))
                 return this->userRegister[a].getNonce();
 
-        verbose<<"-->[UserRegister][removeUser] Error user not found"<<'\n';
+        verbose<<"-->[UserRegister][getNonce] Error user not found"<<'\n';
         return nullptr;
 
     }
@@ -199,10 +200,10 @@ namespace server{
     string UserRegister::getUsername( int socket ){
 
         for( int a = 0; a<this->userRegister.size(); a++ )
-            if( !this->userRegister[a].getSocket() == socket )
+            if( this->userRegister[a].getSocket() == socket )
                 return this->userRegister[a].getUsername();
 
-        verbose<<"-->[UserRegister][removeUser] Error user not found"<<'\n';
+        verbose<<"-->[UserRegister][getUsername] Error user not found"<<'\n';
         return string();
 
     }
@@ -213,7 +214,7 @@ namespace server{
             if( !this->userRegister[a].getUsername().compare( username ))
                 return this->userRegister[a].getStatus();
 
-        verbose<<"-->[UserRegister][removeUser] Error user not found"<<'\n';
+        verbose<<"-->[UserRegister][getStatus] Error user not found"<<'\n';
         return nullptr;
 
     }
