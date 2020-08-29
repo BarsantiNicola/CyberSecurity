@@ -1,8 +1,6 @@
 #include<iostream>
-#include"utility/Register.h"
 #include "Logger.h"
-#include "server/ClientInformation.h"
-#include "utility/Information.h"
+#include "utility/NetMessage.h"
 #include "utility/Message.h"
 #include "cipher/CipherAES.h"
 #include"cipher/CipherDH.h"
@@ -10,12 +8,54 @@ using namespace cipher;
 
 int main()
 {
-  unsigned char k[]="123456789101112";
-  struct SessionKey sk;
-  sk.sessionkey=
-
   Logger::setThreshold( VERY_VERBOSE );
-  server::ClientInformation c1 (1, "64654664",5);
+  unsigned char k[]="01234567890123456789012345678901";
+  unsigned char iv[]="0000000000000001";
+  unsigned char rl[]="prova";
+  std::cout<<"lunghezza campo:"<<sizeof(rl)<<endl;
+  int keyLen=32;
+  std::cout<<"prova in esadecimale:"<<'\n';
+  BIO_dump_fp(stdout,(const char*)rl,sizeof(rl));
+  utility::Message mess;
+  utility::Message *resMess;
+  utility::Message *messCiph;
+  int ivLength=16;
+  struct SessionKey sk;
+  sk.sessionKey=k;
+  sk.sessionKeyLen=keyLen;
+  sk.iv=iv;
+  sk.ivLen=ivLength;
+  CipherAES cAES(&sk);
+  mess.setMessageType(RANK_LIST);
+  mess.setNonce(1);
+  mess.setRankList( rl, sizeof(rl) );
+  messCiph=cAES.encryptMessage(mess);
+  /*DEBUG ELIMINARE PIÙ TARDI*/
+  vverbose<<"-->[Prova][main] the value of ciphertxt"<<'\n';
+  BIO_dump_fp(stdout,(const char*)messCiph->getRankList(),messCiph->getRankListLen());
+    
+    /*--FINE DEBUG*/
+  if(messCiph==nullptr)
+  {
+    std::cout<<"someError"<<endl;
+  }
+  else
+  {
+   std::cout<<"for now ok"<<endl;
+  }
+  
+  resMess=cAES.decryptMessage(*messCiph);
+  if(resMess==nullptr)
+  {
+    std::cout<<"someError"<<endl;
+  }
+  else
+  {
+   std::cout<<"for now ok"<<endl;
+  }
+  return 0;
+  
+  
   
 }
 
