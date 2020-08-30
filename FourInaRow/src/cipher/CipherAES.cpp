@@ -68,14 +68,15 @@ error return -1 value
       verbose<<"-->[CipherAES][gcmEncrypt] aad is null pointer"<<'\n';
       return -1;
     }
-    if(ciphertext==nullptr)
-    {
-      verbose<<"-->[CipherAES][gcmEncrypt] ciphertext is null pointer"<<'\n';
-      return -1;
-    }
+
     if(tag==nullptr)
     {
       verbose<<"-->[CipherAES][gcmEncrypt] tag is null pointer"<<'\n';
+      return -1;
+    }    
+    if(ciphertext==nullptr)
+    {
+      verbose<<"-->[CipherAES][gcmEncrypt] ciphertext is null pointer"<<'\n';
       return -1;
     }
     EVP_CIPHER_CTX *ctx;
@@ -96,6 +97,9 @@ error return -1 value
       verbose<<"-->[CipherAES][gcmEncrypt] error to provide AAD data"<<'\n';
       return -1;
     }
+  
+
+
     if(1!=EVP_EncryptUpdate(ctx,ciphertext,&len,plaintext,plaintextLen))
     {
       verbose<<"-->[CipherAES][gcmEncrypt] error to encrypt message"<<'\n';
@@ -114,11 +118,7 @@ error return -1 value
       return -1;
     }
     EVP_CIPHER_CTX_free(ctx);
-    /*DEBUG ELIMINARE PIÙ TARDI*/
-    vverbose<<"-->[CipherAES][gcmDecrypt] the value of ciphertxt"<<'\n';
-    BIO_dump_fp(stdout,(const char*)ciphertext,ciphertextLen);
-    
-    /*--FINE DEBUG*/
+    vverbose<<"-->[CipherAES][gcmEncrypt] message encrypt correctly"<<'\n';
     return ciphertextLen;
 }
 /*
@@ -149,11 +149,7 @@ verify the tag if there is an error return -1 value and -2 if the verify fails
       verbose<<"-->[CipherAES][gcmDecrypt] tag is null pointer"<<'\n';
       return -1;
     }
-        /*DEBUG ELIMINARE PIÙ TARDI*/
-    vverbose<<"-->[CipherAES][gcmDecrypt] the value of ciphertxt"<<'\n';
-    BIO_dump_fp(stdout,(const char*)ciphertext,ciphertextLen);
-    
-    /*--FINE DEBUG*/
+
     EVP_CIPHER_CTX* ctx;
     int len;
     int plaintextLen;
@@ -187,13 +183,11 @@ verify the tag if there is an error return -1 value and -2 if the verify fails
     }
     ret= EVP_DecryptFinal(ctx,plaintext + len, &len);
     EVP_CIPHER_CTX_cleanup(ctx);
-    /*DEBUG ELIMINARE PIÙ TARDI*/
-    BIO_dump_fp(stdout,(const char*)plaintext,plaintextLen);
-    
-    /*--FINE DEBUG*/
+
     if(ret>0)
     {
       plaintextLen+=len;
+      vverbose<<"-->[CipherAES][gcmDecrypt] message decrypt correctly"<<'\n';
       return plaintextLen;
     }
     else
@@ -228,6 +222,7 @@ This function encryptMessage with AES_256 gcm
     if(lengthToCipher==0)
     {
       unsigned char app[]="";
+      ciphertext=new unsigned char[0];
       int ret=gcmEncrypt(app,0,netMessage->getMessage(),lengthPlaintext,ciphertext,tag);
       if(ret==-1)
       {
@@ -235,7 +230,7 @@ This function encryptMessage with AES_256 gcm
         return nullptr;
       }
       Message *newMessage=new Message(message );
-      BIO_dump_fp(stdout,(const char*)tag,16);//da togliere
+
       newMessage->setSignature( tag , 16 );
       //delete[]tag;
       return newMessage;
@@ -267,7 +262,7 @@ This function encryptMessage with AES_256 gcm
         return nullptr;
       }
       vverbose<<"-->[CipherAES][encryptMessage] cipher message created succesfully cipherLength: "<<lengthcipher<<'\n';
-      BIO_dump_fp(stdout,(const char*)tag,16);//da togliere
+
       Message *newMessage=new Message(message );
       newMessage->setSignature( tag , 16 );
 
@@ -300,12 +295,12 @@ This function encryptMessage with AES_256 gcm
        verbose<<"-->[CipherAES][decryptMessage] errorTo create a message compact"<<'\n';
        return nullptr;
     }
+
     lengthToDecrypt=netMessage->length()-lengthCleareText;
     if(lengthToDecrypt==0)
     {
       Message *newMessage=new Message(message );
       tag=newMessage->getSignature();
-      BIO_dump_fp(stdout,(const char*)tag,16);//da togliere
       unsigned char app[]="";
       int res=gcmDecrypt(app,0,netMessage->getMessage(),lengthCleareText,tag,plaintext);
       if(res==-2)
@@ -345,7 +340,6 @@ This function encryptMessage with AES_256 gcm
       }      
       Message *newMessage=new Message(message );
       tag=newMessage->getSignature();
-      BIO_dump_fp(stdout,(const char*)tag,16);//da togliere
       plaintext=new unsigned char[lengthToDecrypt];
       int lengthplain=gcmDecrypt(textToDecrypt,lengthToDecrypt,textInPlain,lengthCleareText,tag,plaintext);
       if(lengthplain==-2)
@@ -379,11 +373,13 @@ This function encryptMessage with AES_256 gcm
 */
   bool CipherAES::copyToFrom(int start,int end,unsigned char* originalArray,unsigned char* copyArray)
   {
+    int j=0;
     if(start>end||start<0||end<0)
       return false;
     for(int i=start;i<end;i++)
     {
-      copyArray[i]=originalArray[i];
+      copyArray[j]=originalArray[i];
+      ++j;
     } 
     return true;
   } 
