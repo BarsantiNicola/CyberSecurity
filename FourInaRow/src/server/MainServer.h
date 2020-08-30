@@ -51,7 +51,6 @@ namespace server {
             Message* rejectHandler( Message* message);                          //  MANAGES MESSAGE REJECT
             Message* disconnectHandler( Message* message, int matchID);         //  MANAGES MESSAGE DISCONNECT
             Message* logoutHandler( Message* message , string username );       //  MANAGES MESSAGE LOGOUT_REQ
-            Message* sendError( string errorMessage );                          //  GENERATES AN ERROR MESSAGE
             Message* closeMatch(int matchID);                                   //  CLOSES A MATCH AND ADVERTICE PARTICIPANTS
 
             //  MESSAGE HANDLERS
@@ -61,6 +60,7 @@ namespace server {
 
             //  EVENT HANDLERS
             void logoutClient(int socket);                           //  SECURE DISCONNECTION OF A CLIENT FROM THE SERVER
+            Message* sendError( string errorMessage , int* nonce );  //  GENERATES AN ERROR MESSAGE
 
         public:
             MainServer( string ipAddr , int port );                  //  GENERATES THE SERVER

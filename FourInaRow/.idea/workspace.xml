@@ -63,13 +63,6 @@
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors.C/C++" />
   </component>
-  <component name="RunManager">
-    <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -119,7 +112,10 @@
       <workItem from="1598681222429" duration="5298000" />
       <workItem from="1598699727283" duration="11243000" />
       <workItem from="1598714911215" duration="4610000" />
-      <workItem from="1598765207298" duration="5789000" />
+      <workItem from="1598765207298" duration="6613000" />
+      <workItem from="1598796241829" duration="315000" />
+      <workItem from="1598808974013" duration="91000" />
+      <workItem from="1598809078256" duration="63000" />
     </task>
     <servers />
   </component>
