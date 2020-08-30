@@ -20,7 +20,7 @@ namespace cipher {
         unsigned char* iv;
         unsigned int ivLen;
         unsigned char* seed;
-        unsigned char* seedLen
+        unsigned int seedLen;
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////

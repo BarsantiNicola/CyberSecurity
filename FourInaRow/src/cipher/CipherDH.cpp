@@ -34,6 +34,7 @@ namespace cipher{
         unsigned char* hashed;
         unsigned char* sessionKey = new unsigned char[32];
         unsigned char* iv = new unsigned char[16];
+        unsigned char* seed = new unsigned char[16];
         unsigned char* splittedValue = new unsigned char[128];
 
         for( int a = 0; a<2; a++ ){
@@ -58,6 +59,8 @@ namespace cipher{
         ret->sessionKeyLen = 32;
         ret->iv = iv;
         ret->ivLen = 16;
+        ret->seed = seed;
+        ret->seedLen = 16;
         vverbose<<"--> [CipherDH][generateKeys] Session parameters correctly created"<<'\n';
         return ret;
     }

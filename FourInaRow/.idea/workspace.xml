@@ -31,16 +31,8 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/cipher/CipherDH.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/cipher/CipherDH.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/cipher/CipherDH.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/cipher/CipherDH.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/ClientInformation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/ClientInformation.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/ClientInformation.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/ClientInformation.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/ClientRegister.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/ClientRegister.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/ClientRegister.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/ClientRegister.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/cipher/CipherServer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/cipher/CipherServer.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/MainServer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MainServer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/MainServer.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MainServer.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/SQLConnector.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/SQLConnector.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/SQLConnector.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/SQLConnector.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/UserInformation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/UserInformation.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/UserInformation.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/UserInformation.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/UserRegister.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/UserRegister.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/UserRegister.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/UserRegister.h" afterDir="false" />
     </list>
@@ -76,9 +68,9 @@
     <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors.C/C++" />
   </component>
   <component name="RunManager">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
   </component>
@@ -131,6 +123,7 @@
       <workItem from="1598681222429" duration="5298000" />
       <workItem from="1598699727283" duration="11243000" />
       <workItem from="1598714911215" duration="4610000" />
+      <workItem from="1598765207298" duration="2566000" />
     </task>
     <servers />
   </component>

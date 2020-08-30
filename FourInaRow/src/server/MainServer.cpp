@@ -229,7 +229,7 @@ namespace server {
         }
 
         Message* response = new Message();
-        NetMessage *user_list = this->userRegister.getUserList();
+        NetMessage *user_list = this->userRegister.getUserList( username );
 
         response->setMessageType( USER_LIST );
         response->setNonce( *nonce );
@@ -646,6 +646,7 @@ return nullptr;
 
 
 }
+
 int main() {
 
     Logger::setThreshold( VERY_VERBOSE );

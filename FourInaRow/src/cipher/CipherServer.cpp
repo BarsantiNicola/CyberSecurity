@@ -16,6 +16,7 @@ namespace cipher{
         }
 
     }
+
     CipherServer::~CipherServer(){
         delete this->rsa;
         delete this->dh;
