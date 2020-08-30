@@ -61,7 +61,6 @@ namespace server {
 
             //  EVENT HANDLERS
             void logoutClient(int socket);                           //  SECURE DISCONNECTION OF A CLIENT FROM THE SERVER
-            bool registerClient( int socket, string ip );            //  SECURE REGISTRATION OF A CLIENT INTO THE SERVER
 
         public:
             MainServer( string ipAddr , int port );                  //  GENERATES THE SERVER
