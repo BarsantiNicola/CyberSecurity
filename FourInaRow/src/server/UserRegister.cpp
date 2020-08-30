@@ -82,7 +82,7 @@ namespace server{
             if( this->userRegister[a].getSocket() == socket )
                 return true;
 
-        verbose<<"-->[UserRegister][has] Error user not found"<<'\n';
+        vverbose<<"-->[UserRegister][has] Error user not found"<<'\n';
         return false;
 
     }
@@ -95,7 +95,7 @@ namespace server{
             if( !this->userRegister[a].getUsername().compare( username ))
                 return true;
 
-        verbose<<"-->[UserRegister][has] Error user not found"<<'\n';
+        vverbose<<"-->[UserRegister][has] Error user not found"<<'\n';
         return false;
 
     }
@@ -207,7 +207,7 @@ namespace server{
             if( !this->userRegister[a].getUsername().compare( username ))
                 return this->userRegister[a].getSessionKey();
 
-        verbose<<"-->[UserRegister][getSessionKey] Error user not found"<<'\n';
+        vverbose<<"-->[UserRegister][getSessionKey] Error user not found"<<'\n';
         return nullptr;
 
     }
@@ -219,7 +219,7 @@ namespace server{
             if( !this->userRegister[a].getUsername().compare( username ))
                 return this->userRegister[a].getNonce();
 
-        verbose<<"-->[UserRegister][getNonce] Error user not found"<<'\n';
+        vverbose<<"-->[UserRegister][getNonce] Error user not found"<<'\n';
         return nullptr;
 
     }
@@ -231,7 +231,7 @@ namespace server{
             if( this->userRegister[a].getSocket() == socket )
                 return this->userRegister[a].getUsername();
 
-        verbose<<"-->[UserRegister][getUsername] Error user not found"<<'\n';
+        vverbose<<"-->[UserRegister][getUsername] Error user not found"<<'\n';
         return string();
 
     }
@@ -243,7 +243,7 @@ namespace server{
             if( !this->userRegister[a].getUsername().compare( username ))
                 return this->userRegister[a].getStatus();
 
-        verbose<<"-->[UserRegister][getStatus] Error user not found"<<'\n';
+        vverbose<<"-->[UserRegister][getStatus] Error user not found"<<'\n';
         return nullptr;
 
     }

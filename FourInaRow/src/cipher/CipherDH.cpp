@@ -127,7 +127,6 @@ namespace cipher{
     NetMessage* CipherDH::generatePartialKey(){
 
         vverbose<<"--> [CipherDH][generatePartialKey] Starting generation of ephemeral key"<<'\n';
-
         if( this->ephemeralKey ){
 
             verbose<<"--> [CipherDH][generatePartialKey] Error, another session already open. Use generateSessionKey() or stash() before" << '\n';

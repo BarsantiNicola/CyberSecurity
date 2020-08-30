@@ -28,8 +28,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4cbb8ddf-e807-44fa-ae33-bda27674b47b" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/program" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/PowerClient.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/PowerClient.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/launchTestClient.sh" beforeDir="false" afterPath="$PROJECT_DIR$/launchTestClient.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ClientProva.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/ClientProva.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/cipher/CipherDH.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/cipher/CipherDH.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/cipher/CipherServer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/cipher/CipherServer.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/MainServer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MainServer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/UserRegister.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/UserRegister.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -126,7 +133,7 @@
       <workItem from="1598809974993" duration="3000" />
       <workItem from="1598809998900" duration="206000" />
       <workItem from="1598810213201" duration="10000" />
-      <workItem from="1598810388817" duration="7307000" />
+      <workItem from="1598810388817" duration="13756000" />
     </task>
     <servers />
   </component>
@@ -162,9 +169,9 @@
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state x="660" y="252" key="run.anything.popup/72.27.1848.1053@72.27.1848.1053" timestamp="1598477713107" />
-    <state x="659" y="259" width="672" height="678" key="search.everywhere.popup" timestamp="1598813584210">
+    <state x="659" y="259" width="672" height="678" key="search.everywhere.popup" timestamp="1598822228189">
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
-    <state x="659" y="259" width="672" height="678" key="search.everywhere.popup/72.27.1848.1053@72.27.1848.1053" timestamp="1598813584210" />
+    <state x="659" y="259" width="672" height="678" key="search.everywhere.popup/72.27.1848.1053@72.27.1848.1053" timestamp="1598822228189" />
   </component>
 </project>

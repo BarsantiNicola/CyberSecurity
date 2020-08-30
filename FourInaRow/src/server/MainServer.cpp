@@ -166,7 +166,7 @@ namespace server {
             default:
                 ret = this->matchManager( message , username );
         }
-        
+
         return ret;
 
     }
@@ -731,7 +731,7 @@ return nullptr;
 
 int main() {
 
-    Logger::setThreshold( VERY_VERBOSE );
+    Logger::setThreshold( VERBOSE );
     MainServer* server = new MainServer( string("127.0.0.1") , 12345 );
     server->server();
     return 0;

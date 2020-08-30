@@ -9,9 +9,24 @@
 #include<stdlib.h>
 #include<iostream>
 using namespace utility;
+
+void sendMessage( MessageType type , bool correctness ){
+
+    switch( type ){
+
+        case utility::CERTIFICATE_REQ:
+        case utility::LOGIN_REQ:
+        case utility::KEY_EXCHANGE:
+        case utility::USER_LIST_REQ:
+        case utility::RANK_LIST_REQ:
+
+    }
+}
 int main()
 {
     cipher::CipherRSA* cipherRSA = new cipher::CipherRSA( "bob", "bobPassword", false );
+
+    Logger::setThreshold( NO_VERBOSE );
 
     vector<int> vect;
     const char* IP="127.0.0.1";
@@ -23,16 +38,17 @@ int main()
     ConnectionManager connectionManager(false,IP,port);
 
     bool connect=connectionManager.createConnectionWithServerTCP("127.0.0.1",12345);
-    if(!connect)
-    {
-        std::cout<<"connection not create"<<endl;
+    if(!connect){
+
+        std::cout<<"connection not created"<<endl;
+        return 1;
+
     }
 
     string *s;
     Message* m;
 
     int sock_serv=connectionManager.getserverSocket();
-
 
     m = new Message();
     const char *m1=nullptr;

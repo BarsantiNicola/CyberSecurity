@@ -56,10 +56,6 @@ namespace cipher{
 
             case KEY_EXCHANGE:
 
-                param = this->dh->generatePartialKey();
-                message->set_DH_key( param->getMessage(), param->length());
-                delete param;
-
                 if( !this->rsa->sign(message))
                     return false;
                 break;
@@ -125,7 +121,7 @@ namespace cipher{
                 break;
 
             default:
-                verbose<<"--> [CipherServer][toSecureForm] Error, messageType not supported:"<<message->getMessageType()<<'\n';
+                vverbose<<"--> [CipherServer][toSecureForm] Error, messageType not supported:"<<message->getMessageType()<<'\n';
                 return false;
         }
 
@@ -169,7 +165,7 @@ namespace cipher{
             case DISCONNECT:
 
             default:
-                verbose<<"--> [CipherServer][fromSecureForm] Error, MessageType not supported:"<<message->getMessageType()<<'\n';
+                vverbose<<"--> [CipherServer][fromSecureForm] Error, MessageType not supported:"<<message->getMessageType()<<'\n';
 
 
         }
