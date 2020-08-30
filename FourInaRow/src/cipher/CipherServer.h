@@ -22,8 +22,8 @@ namespace cipher {
         public:
             CipherServer();
             ~CipherServer();
-            Message* toSecureForm( Message* message );
-            Message* fromSecureForm( Message* message , string username );
+            bool toSecureForm( Message* message );
+            bool fromSecureForm( Message* message , string username );
             NetMessage* getServerCertificate();
             SessionKey* getSessionKey( unsigned char* param, unsigned int len );
             NetMessage* getPartialKey();

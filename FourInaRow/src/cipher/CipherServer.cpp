@@ -22,130 +22,138 @@ namespace cipher{
         delete this->dh;
        // delete this->aes;
     }
-    Message* CipherServer::toSecureForm( Message* message ){
+
+    bool CipherServer::toSecureForm( Message* message ){
 
         if( message == nullptr ){
 
             verbose<<"-->[CipherServer][toSecureForm] Error, null pointer message"<<'\n';
-            return nullptr;
+            return false;
 
         }
 
-        NetMessage* msg;
+        NetMessage* param;
 
         switch( message->getMessageType()){
 
             case CERTIFICATE:
 
-               if( this->rsa->sign(message))
-                   return message;
-               else
-                   return nullptr;
+                if( !this->rsa->sign(message))
+                    return false;
+                break;
 
             case LOGIN_OK:
-                if( this->rsa->sign(message))
-                    return message;
-                else
-                    return nullptr;
+
+                if( !this->rsa->sign(message))
+                    return false;
+                break;
 
             case LOGIN_FAIL:
-                if( this->rsa->sign(message))
-                    return message;
-                else
-                    return nullptr;
+
+                if( !this->rsa->sign(message))
+                    return false;
+                break;
 
             case KEY_EXCHANGE:
-                msg = this->dh->generatePartialKey();
-                message->set_DH_key(msg->getMessage(), msg->length());
-                if( this->rsa->sign(message))
-                    return message;
-                else
-                    return nullptr;
+
+                param = this->dh->generatePartialKey();
+                message->set_DH_key( param->getMessage(), param->length());
+                delete param;
+
+                if( !this->rsa->sign(message))
+                    return false;
+                break;
 
             case RANK_LIST:
 
-                if( this->rsa->sign(message))
-                    return message;
-                else
-                    return nullptr;
+                if( !this->rsa->sign(message))
+                    return false;
+                break;
 
             case USER_LIST:
 
-                if( this->rsa->sign(message))
-                    return message;
-                else
-                    return nullptr;
+                if( !this->rsa->sign(message))
+                    return false;
+                break;
 
             case MATCH:
-                if( this->rsa->sign(message))
-                    return message;
-                else
-                    return nullptr;
+
+                if( !this->rsa->sign(message))
+                    return false;
+                break;
 
             case GAME_PARAM:
 
-                if( this->rsa->sign(message))
-                    return message;
-                else
-                    return nullptr;
+                if( !this->rsa->sign(message))
+                    return false;
+                break;
 
             case ACCEPT:
-                if( this->rsa->sign(message))
-                    return message;
-                else
-                    return nullptr;
+
+                if( !this->rsa->sign(message))
+                    return false;
+                break;
 
             case REJECT:
-                if( this->rsa->sign(message))
-                    return message;
-                else
-                    return nullptr;
+
+                if( !this->rsa->sign(message))
+                    return false;
+                break;
 
             case WITHDRAW_OK:
-                if( this->rsa->sign(message))
-                    return message;
-                else
-                    return nullptr;
+
+                if( !this->rsa->sign(message))
+                    return false;
+                break;
 
             case DISCONNECT:
-                if( this->rsa->sign(message))
-                    return message;
-                else
-                    return nullptr;
+
+                if( !this->rsa->sign(message))
+                    return false;
+                break;
 
             case LOGOUT_OK:
-                if( this->rsa->sign(message))
-                    return message;
-                else
-                    return nullptr;
+
+                if( !this->rsa->sign(message))
+                    return false;
+                break;
 
             case ERROR:
-                if( this->rsa->sign(message))
-                    return message;
-                else
-                    return nullptr;
+
+                if( !this->rsa->sign(message))
+                    return false;
+                break;
 
             default:
-                verbose<<"-->[CipherServer][toSecureForm] Error, messageType not supported:"<<message->getMessageType()<<'\n';
-                return new Message(*message);
+                verbose<<"--> [CipherServer][toSecureForm] Error, messageType not supported:"<<message->getMessageType()<<'\n';
+                return false;
         }
-        return message;
+
+        return true;
 
     }
-    Message* CipherServer::fromSecureForm( Message* message , string username ){
+    bool CipherServer::fromSecureForm( Message* message , string username ){
 
         if( !message ){
 
             verbose<<"-->[CipherServer][fromSecureForm] Error, null pointer message"<<'\n';
-            return nullptr;
+            return false;
 
         }
+
         switch( message->getMessageType()){
+
             case LOGIN_REQ:
-                if( !this->rsa->loadUserKey(username )) return nullptr;
-                return this->rsa->serverVerifySignature(*message, message->getUsername())?message:nullptr;
+
+                if( !this->rsa->loadUserKey(username ))
+                    return false;
+
+                return this->rsa->serverVerifySignature(*message, message->getUsername());
+
             case KEY_EXCHANGE:
-                return this->rsa->serverVerifySignature(*message, username)?message:nullptr;
+
+                return this->rsa->serverVerifySignature(*message, username);
+
             case USER_LIST_REQ:
 
             case RANK_LIST_REQ:
@@ -161,10 +169,12 @@ namespace cipher{
             case DISCONNECT:
 
             default:
-                verbose<<"-->[CipherServer][fromSecureForm] Error, MessageType not supported:"<<message->getMessageType()<<'\n';
-                return new Message(*message);
+                verbose<<"--> [CipherServer][fromSecureForm] Error, MessageType not supported:"<<message->getMessageType()<<'\n';
+
 
         }
+
+        return true;
 
     }
 
@@ -176,7 +186,6 @@ namespace cipher{
 
     SessionKey* CipherServer::getSessionKey( unsigned char* param , unsigned int paramLen ){
 
-        cout<<"Session key generation___________________________________________________"<<endl;
         return this->dh->generateSessionKey( param , paramLen );
 
     }

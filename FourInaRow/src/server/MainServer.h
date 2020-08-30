@@ -40,18 +40,18 @@ namespace server {
             cipher::CipherServer cipherServer;    //  GIVES ROUTINES TO APPLY SECURITY PROTOCOLS
 
             //  PROTOCOL HANDLERS
-            Message* certificateHandler( Message* message );                    //  MANAGES MESSAGE CERTIFICATE_REQ
-            Message* loginHandler( Message* message,  int socket );             //  MANAGES MESSAGE LOGIN_REQ
-            Message* keyExchangeHandler( Message* message , string username );  //  MANAGES MESSAGE KEY_EXCHANGE
-            Message* gameParamHandler( string source , int match , bool step ); //  MANAGES MESSAGE GAME_PARAM
-            Message* userListHandler( Message* message, string username );      //  MANAGES MESSAGE USER_LIST_REQ
-            Message* rankListHandler( Message* message, string username );      //  MANAGES MESSAGE RANK_LIST_REQ
-            Message* matchListHandler( Message* message );                      //  MANAGES MESSAGE MATCH
-            Message* acceptHandler( Message* message);                          //  MANAGES MESSAGE ACCEPT
-            Message* rejectHandler( Message* message);                          //  MANAGES MESSAGE REJECT
-            Message* disconnectHandler( Message* message, int matchID);         //  MANAGES MESSAGE DISCONNECT
-            Message* logoutHandler( Message* message , string username );       //  MANAGES MESSAGE LOGOUT_REQ
-            Message* closeMatch(int matchID);                                   //  CLOSES A MATCH AND ADVERTICE PARTICIPANTS
+            Message* certificateHandler( Message* message );                    //  MANAGES MESSAGE CERTIFICATE_REQ                        //////////////// DONE
+            Message* loginHandler( Message* message,  int socket );             //  MANAGES MESSAGE LOGIN_REQ                              //////////////// DONE
+            Message* tokenHandler( Message* message );                          //  MANAGES MESSAGE TOKEN_REQ                              //////////////// TODO
+            Message* keyExchangeHandler( Message* message , string username );  //  MANAGES MESSAGE KEY_EXCHANGE                           //////////////// DONE
+            Message* gameParamHandler( string source , int match , bool step ); //  MANAGES MESSAGE GAME_PARAM                             //////////////// TODO
+            Message* userListHandler( Message* message, string username );      //  MANAGES MESSAGE USER_LIST_REQ                          //////////////// DONE
+            Message* rankListHandler( Message* message, string username );      //  MANAGES MESSAGE RANK_LIST_REQ                          //////////////// DONE
+            Message* matchListHandler( Message* message );                      //  MANAGES MESSAGE MATCH                                  //////////////// TODO
+            Message* acceptHandler( Message* message);                          //  MANAGES MESSAGE ACCEPT                                 //////////////// TODO
+            Message* rejectHandler( Message* message);                          //  MANAGES MESSAGE REJECT                                 //////////////// TODO
+            Message* disconnectHandler( Message* message, int matchID);         //  MANAGES MESSAGE DISCONNECT                             //////////////// TODO
+            Message* logoutHandler( Message* message , string username );       //  MANAGES MESSAGE LOGOUT_REQ                             //////////////// DONE
 
             //  MESSAGE HANDLERS
             Message* manageMessage( Message* message, int socket );                 //  HANDLES MESSAGES AND SENT THEM TO THE CORRECT PROTOCOL
@@ -61,6 +61,7 @@ namespace server {
             //  EVENT HANDLERS
             void logoutClient(int socket);                           //  SECURE DISCONNECTION OF A CLIENT FROM THE SERVER
             Message* sendError( string errorMessage , int* nonce );  //  GENERATES AN ERROR MESSAGE
+            bool closeMatch( int matchID );                            //  CLOSES A MATCH AND ADVERTICE PARTICIPANTS
 
         public:
             MainServer( string ipAddr , int port );                  //  GENERATES THE SERVER
