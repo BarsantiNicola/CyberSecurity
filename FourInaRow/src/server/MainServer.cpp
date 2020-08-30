@@ -166,8 +166,7 @@ namespace server {
             default:
                 ret = this->matchManager( message , username );
         }
-
-        delete message;
+        
         return ret;
 
     }
