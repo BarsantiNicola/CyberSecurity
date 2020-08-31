@@ -9,6 +9,7 @@
 #include"utility/ConnectionManager.h"
 #include "cipher/CipherRSA.h"
 #include "cipher/CipherDH.h"
+#include "cipher/CipherAES.h"
 #include"utility/NetMessage.h"
 #include<stdlib.h>
 #include<iostream>
@@ -19,6 +20,7 @@ class PowerClient {
     private:
         cipher::CipherRSA *cipher,*cipher2;
         cipher::CipherDH *cipherDH;
+        cipher::CipherAES* cipherAes;
         ConnectionManager *manager;
         int server_socket;
         int nonce;

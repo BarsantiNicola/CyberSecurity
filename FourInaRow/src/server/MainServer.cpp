@@ -242,14 +242,13 @@ namespace server {
 
         Message* response = new Message();
         response->setMessageType( ERROR );
-        if( !nonce ) {
-            srand(time(nullptr));
-            response->setNonce(rand());
-        }else
+        if( !nonce )
+            response->setNonce(generateRandomNonce());
+        else
             response->setNonce(*nonce);
         response->setMessage( (unsigned char*)errorMessage.c_str() , errorMessage.length() );
 
-        this->cipherServer.toSecureForm( response );
+        this->cipherServer.toSecureForm( response , nullptr );
         return response;
 
     }
@@ -314,7 +313,7 @@ namespace server {
         result->setServer_Certificate( param->getMessage(), param->length());
         delete param;
 
-        if( !this->cipherServer.toSecureForm( result )){
+        if( !this->cipherServer.toSecureForm( result , nullptr )){
             verbose << "--> [MainServer][certificateHandler] Error, message didn't pass security verification" << '\n';
             delete result;
             result = this->sendError(string("SECURITY_ERROR"), nonce );
@@ -341,11 +340,11 @@ namespace server {
         response->setNonce(*nonce);
 
 
-        if( !this->cipherServer.fromSecureForm( message , message->getUsername() )){
+        if( !this->cipherServer.fromSecureForm( message , message->getUsername(), nullptr )){
 
             verbose<<"--> [MainServer][loginHandler] Error during security verification"<<'\n';
             response->setMessageType( LOGIN_FAIL );
-            this->cipherServer.toSecureForm( response );
+            this->cipherServer.toSecureForm( response , nullptr );
 
             delete nonce;
             return response;
@@ -358,7 +357,7 @@ namespace server {
 
             verbose<<"--> [MainServer][loginHandler] Error, user already logged"<<'\n';
             response->setMessageType( LOGIN_FAIL );
-            this->cipherServer.toSecureForm( response );
+            this->cipherServer.toSecureForm( response , nullptr );
 
             delete nonce;
             return response;
@@ -369,7 +368,7 @@ namespace server {
 
             verbose<<"--> [MainServer][loginHandler] Error, during user registration"<<'\n';
             response->setMessageType( LOGIN_FAIL );
-            this->cipherServer.toSecureForm( response );
+            this->cipherServer.toSecureForm( response, nullptr );
 
             delete nonce;
             return response;
@@ -381,7 +380,7 @@ namespace server {
             verbose<<"-->[MainServer][loginHandler] Error, during the setting of user nonce"<<'\n';
             this->userRegister.removeUser( socket );
             response->setMessageType( LOGIN_FAIL );
-            this->cipherServer.toSecureForm( response );
+            this->cipherServer.toSecureForm( response, nullptr );
 
             delete nonce;
             return response;
@@ -390,7 +389,7 @@ namespace server {
 
         response->setMessageType( LOGIN_OK );
 
-        if( !this->cipherServer.toSecureForm( response )){
+        if( !this->cipherServer.toSecureForm( response , nullptr )){
             verbose << "-->[MainServer][loginHandler] Error, invalid message Missing Diffie-Hellman Parameter" << '\n';
 
             delete response;
@@ -411,7 +410,7 @@ namespace server {
         int *nonce = message->getNonce();
         Message* response;
 
-        if( !this->cipherServer.fromSecureForm( message, username )){
+        if( !this->cipherServer.fromSecureForm( message, username, nullptr )){
 
             verbose << "--> [MainServer][keyExchangeHandler] Error, message didn't pass the security checks" << '\n';
             response = this->sendError(string( "SECURITY_ERROR" ), nonce );
@@ -432,7 +431,7 @@ namespace server {
 
         this->userRegister.setLogged( username , this->cipherServer.getSessionKey( message->getDHkey() , message->getDHkeyLength()));
 
-        if( !this->cipherServer.toSecureForm( response )){
+        if( !this->cipherServer.toSecureForm( response, nullptr )){
 
             verbose << "--> [MainServer][keyExchangeHandler] Error, during message generation" << '\n';
 
@@ -453,7 +452,7 @@ namespace server {
         int* nonce = message->getNonce();
         Message* response;
 
-        if( !this->cipherServer.fromSecureForm( message, message->getUsername() )){
+        if( !this->cipherServer.fromSecureForm( message, message->getUsername(), this->userRegister.getSessionKey(username) )){
 
             verbose<<"--> [MainServer][userListHandler] Error. Verification Failure"<<'\n';
             response = this->sendError( string( "SECURITY_ERROR" ), nonce );
@@ -484,7 +483,7 @@ namespace server {
 
         delete user_list;
 
-        if( !this->cipherServer.toSecureForm(response ) ){
+        if( !this->cipherServer.toSecureForm(response, this->userRegister.getSessionKey(username)) ){
 
             verbose << "--> [MainServer][userListHandler] Error during message generation" << '\n';
             delete response;
@@ -502,7 +501,7 @@ namespace server {
         int* nonce = message->getNonce();
         Message* response;
 
-        if( !this->cipherServer.fromSecureForm( message, message->getUsername() )){
+        if( !this->cipherServer.fromSecureForm( message, message->getUsername(),this->userRegister.getSessionKey(username) )){
 
             verbose<<"--> [MainServer][rankListHandler] Error. Verification Failure"<<'\n';
             response = this->sendError( string( "VERIFICATION_ERROR" ), nonce );
@@ -530,7 +529,7 @@ namespace server {
         response->setNonce( *nonce );
         response->setRankList( (unsigned char*) rank_list.c_str(), rank_list.length() );
 
-        if( !this->cipherServer.toSecureForm(response ) ){
+        if( !this->cipherServer.toSecureForm(response, this->userRegister.getSessionKey(username) ) ){
 
             verbose << "-->[MainServer][rankListHandler] Error. Verification Failure"<< '\n';
             delete response;
@@ -557,7 +556,7 @@ namespace server {
 
         Message* response;
 
-        if( !this->cipherServer.fromSecureForm( message , username ) ){
+        if( !this->cipherServer.fromSecureForm( message , username, this->userRegister.getSessionKey(username) ) ){
 
             verbose << "--> [MainServer][logoutHandler] Error, Verification failure" << '\n';
             response = this->sendError(string( "SECURITY_ERROR" ), nonce );
@@ -600,7 +599,7 @@ namespace server {
             return response;
         }
 
-        if( !this->cipherServer.toSecureForm( response )){
+        if( !this->cipherServer.toSecureForm( response, this->userRegister.getSessionKey(username) )){
 
             verbose << "-->[MainServer][logoutHandler] Error. User not found"<< '\n';
 

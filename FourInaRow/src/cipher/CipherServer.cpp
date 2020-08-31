@@ -7,8 +7,8 @@ namespace cipher{
 
         this->rsa = new CipherRSA("server", "serverPassword", true );
         this->dh  = new CipherDH();
-        this->aes = nullptr;//new CipherAES();
-        if( !this->rsa || !this->dh /*|| !this->aes*/ ){
+        this->aes = new CipherAES();
+        if( !this->rsa || !this->dh || !this->aes ){
 
             verbose<<"-->[CipherServer][Costructor] Fatal error, unable to load cipher suites"<<'\n';
             exit(1);
@@ -20,10 +20,10 @@ namespace cipher{
     CipherServer::~CipherServer(){
         delete this->rsa;
         delete this->dh;
-       // delete this->aes;
+        delete this->aes;
     }
 
-    bool CipherServer::toSecureForm( Message* message ){
+    bool CipherServer::toSecureForm( Message* message , SessionKey* key ){
 
         if( message == nullptr ){
 
@@ -32,7 +32,7 @@ namespace cipher{
 
         }
 
-        NetMessage* param;
+        Message* app;
 
         switch( message->getMessageType()){
 
@@ -61,15 +61,30 @@ namespace cipher{
                 break;
 
             case RANK_LIST:
-
-                if( !this->rsa->sign(message))
+                if( !key ) return false;
+                cout<<"RANK: "<<message->getUserListLen()<<endl;
+                this->aes->modifyParam( key );
+                app = this->aes->encryptMessage(*message);
+                if( app == nullptr )
                     return false;
+                cout<<"RANK: "<<app->getUserListLen()<<endl;
+                message->setSignature( app->getSignature(), app->getSignatureLen() );
+                message->setRankList( app->getRankList(), app->getRankListLen() );
+                delete app;
                 break;
 
             case USER_LIST:
-
-                if( !this->rsa->sign(message))
+                if( !key ) return false;
+                cout<<"USER: "<<message->getUserListLen()<<endl;
+                this->aes->modifyParam( key );
+                app = this->aes->encryptMessage(*message);
+                if( app == nullptr )
                     return false;
+                cout<<"USER: "<<app->getUserListLen()<<endl;
+                message->setSignature( app->getSignature(), app->getSignatureLen() );
+                message->setUserList( app->getUserList(), app->getUserListLen() );
+                delete app;
+
                 break;
 
             case MATCH:
@@ -110,8 +125,17 @@ namespace cipher{
 
             case LOGOUT_OK:
 
-                if( !this->rsa->sign(message))
+                if( !key ) return false;
+                cout<<"key present"<<endl;
+                this->aes->modifyParam( key );
+                app = this->aes->encryptMessage(*message);
+                if( app == nullptr ) {
+                    cout << "vuota" << endl;
                     return false;
+                }
+                message->setSignature( app->getSignature(), app->getSignatureLen() );
+                delete app;
+
                 break;
 
             case ERROR:
@@ -128,7 +152,7 @@ namespace cipher{
         return true;
 
     }
-    bool CipherServer::fromSecureForm( Message* message , string username ){
+    bool CipherServer::fromSecureForm( Message* message , string username , SessionKey* key ){
 
         if( !message ){
 
@@ -137,6 +161,7 @@ namespace cipher{
 
         }
 
+        Message* app;
         switch( message->getMessageType()){
 
             case LOGIN_REQ:
@@ -151,8 +176,26 @@ namespace cipher{
                 return this->rsa->serverVerifySignature(*message, username);
 
             case USER_LIST_REQ:
+                if( !key ) return false;
+                cout<<"ok i have key"<<endl;
+                this->aes->modifyParam( key );
+                app = this->aes->decryptMessage( *message );
+                cout<<"len "<<app->getUserListLen()<<endl;
+                if( !app ) return false;
+                message->setUserList( app->getUserList(), app->getUserListLen() );
+                delete app;
+                break;
 
             case RANK_LIST_REQ:
+                if( !key ) return false;
+                cout<<"ok i have key"<<endl;
+                this->aes->modifyParam( key );
+                app = this->aes->decryptMessage( *message );
+                cout<<"ok finish"<<endl;
+                if( !app ) return false;
+                message->setUserList( app->getRankList(), app->getRankListLen() );
+                delete app;
+                break;
 
             case MATCH:
 
@@ -161,6 +204,17 @@ namespace cipher{
             case REJECT:
 
             case LOGOUT_REQ:
+                if( !key ) return false;
+                cout<<"ok i have key"<<endl;
+                this->aes->modifyParam( key );
+                app = this->aes->decryptMessage( *message );
+                cout<<"ok finish"<<endl;
+                if( !app ){
+                    cout<<"empty aes return"<<endl;
+                    return false;
+                }
+                delete app;
+                break;
 
             case DISCONNECT:
 

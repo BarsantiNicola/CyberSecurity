@@ -6,6 +6,7 @@ PowerClient::PowerClient( string ipAddr, int port ){
     this->cipher = new cipher::CipherRSA( "bob", "bobPassword", false );
     this->cipher2 = new cipher::CipherRSA( "alice" , "alicePassword", false );
     this->cipherDH = new cipher::CipherDH();
+    this->cipherAes = new cipher::CipherAES();
     this->manager = new ConnectionManager(false,ipAddr.c_str(),port);
 
     if(!this->manager->createConnectionWithServerTCP( ipAddr.c_str(), port )){
@@ -70,7 +71,6 @@ Message* PowerClient::createMessage( MessageType type, bool correctness ){
                 message->setMessageType( KEY_EXCHANGE );
                 message->setNonce(nonce);
                 param = this->cipherDH->generatePartialKey();
-                this->cipherDH->stash();
                 message->set_DH_key( param->getMessage(), param->length() );
                 this->cipher->sign( message );
                 this->nonce++;
@@ -79,21 +79,21 @@ Message* PowerClient::createMessage( MessageType type, bool correctness ){
             case utility::USER_LIST_REQ:
                 message->setMessageType( USER_LIST_REQ );
                 message->setNonce(nonce);
-                this->cipher->sign( message );
+                message = this->cipherAes->encryptMessage(*message);
                 this->nonce++;
                 break;
 
             case utility::RANK_LIST_REQ:
                 message->setMessageType( RANK_LIST_REQ );
                 message->setNonce(nonce );
-                this->cipher->sign( message );
+                message = this->cipherAes->encryptMessage(*message);
                 this->nonce++;
                 break;
 
             case utility::LOGOUT_REQ:
                 message->setMessageType( LOGOUT_REQ );
                 message->setNonce(nonce);
-                this->cipher->sign( message );
+                message = this->cipherAes->encryptMessage(*message);
                 this->nonce++;
                 break;
         }
@@ -177,11 +177,13 @@ void PowerClient::showMessage(Message* message){
             for( int a= 0; a<message->getDHkeyLength(); a++ )
                 cout<<result[a];
             cout<<endl<<endl;
+            this->cipherAes->modifyParam( this->cipherDH->generateSessionKey( result , message->getDHkeyLength()) );
             cout<<"-------------------"<<endl<<endl;
             break;
 
         case utility::USER_LIST:
             cout<<"------ USER_LIST ------"<<endl<<endl;
+            message = this->cipherAes->decryptMessage(*message);
             cout<<"\t- NONCE: "<<*(message->getNonce())<<endl<<endl;
             result = message->getUserList();
             for( int a= 0; a<message->getUserListLen(); a++ )
@@ -192,6 +194,7 @@ void PowerClient::showMessage(Message* message){
 
         case utility::RANK_LIST:
             cout<<"------ RANK_LIST ------"<<endl<<endl;
+            message = this->cipherAes->decryptMessage(*message);
             cout<<"\t- NONCE: "<<*(message->getNonce())<<endl<<endl;
             result = message->getRankList();
             for( int a= 0; a<message->getRankListLen(); a++ )
@@ -202,6 +205,7 @@ void PowerClient::showMessage(Message* message){
 
         case utility::LOGOUT_OK:
             cout<<"------ LOGOUT_OK ------"<<endl<<endl;
+            message = this->cipherAes->decryptMessage(*message);
             cout<<"\t- NONCE: "<<*(message->getNonce())<<endl<<endl;
             cout<<"-------------------"<<endl<<endl;
             break;
@@ -222,16 +226,17 @@ int main(){
 
     Logger::setThreshold(NO_VERBOSE);
     PowerClient* client = new PowerClient(string("127.0.0.1"),12345);
-    client->sendMessage(USER_LIST_REQ,true);
-    client->sendMessage(RANK_LIST_REQ,true);
-    client->sendMessage(KEY_EXCHANGE,true);
-    client->sendMessage(LOGOUT_REQ,true);
+    cout<<"--------------------start"<<endl;
+   // client->sendMessage(USER_LIST_REQ,true);
+   // client->sendMessage(RANK_LIST_REQ,true);
+   // client->sendMessage(KEY_EXCHANGE,true);
+   // client->sendMessage(LOGOUT_REQ,true);
     client->sendMessage(CERTIFICATE_REQ,true);
     client->sendMessage(LOGIN_REQ,true);
     client->sendMessage(KEY_EXCHANGE,true);
     client->sendMessage(USER_LIST_REQ,true);
     client->sendMessage(RANK_LIST_REQ,true);
     client->sendMessage(LOGOUT_REQ,true);
-    client->sendMessage(USER_LIST_REQ,true);
+  //  client->sendMessage(USER_LIST_REQ,true);
     delete client;
 }
