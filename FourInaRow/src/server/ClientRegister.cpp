@@ -70,6 +70,45 @@ namespace server{
 
     }
 
+    int* ClientRegister::getClientNonce( int socket ){
+
+        for( int a = 0; a<this->clientRegister.size(); a++ )
+            if( this->clientRegister[a].getSocket() == socket )
+                return new int(this->clientRegister[a].getNonce());
+
+        vverbose<<"--> [ClientRegister][getClientNetInformation] Client not present into the register"<<'\n';
+        return nullptr;
+
+    }
+
+    bool ClientRegister::setNonce( int socket , int nonce ){
+
+        for( int a = 0; a<this->clientRegister.size(); a++ )
+            if( this->clientRegister[a].getSocket() == socket ) {
+                this->clientRegister[a].setNonce(nonce);
+                return true;
+            }
+
+        vverbose<<"--> [ClientRegister][getClientNetInformation] Client not present into the register"<<'\n';
+        return false;
+
+    }
+
+    bool ClientRegister::updateClientNonce( int socket ){
+
+        for( int a = 0; a<this->clientRegister.size(); a++ )
+            if( this->clientRegister[a].getSocket() == socket ) {
+                this->clientRegister[a].updateNonce();
+                return true;
+            }
+
+        vverbose<<"--> [ClientRegister][getClientNetInformation] Client not present into the register"<<'\n';
+        return false;
+
+    }
+
+
+
     //  verify the presence of a client searched by its socket
     bool ClientRegister::has( int socket ) {
 

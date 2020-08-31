@@ -40,9 +40,8 @@ namespace server {
             cipher::CipherServer cipherServer;    //  GIVES ROUTINES TO APPLY SECURITY PROTOCOLS
 
             //  PROTOCOL HANDLERS
-            Message* certificateHandler( Message* message );                    //  MANAGES MESSAGE CERTIFICATE_REQ                        //////////////// DONE
+            Message* certificateHandler( Message* message , int socket );       //  MANAGES MESSAGE CERTIFICATE_REQ                        //////////////// DONE
             Message* loginHandler( Message* message,  int socket );             //  MANAGES MESSAGE LOGIN_REQ                              //////////////// DONE
-            Message* tokenHandler( Message* message );                          //  MANAGES MESSAGE TOKEN_REQ                              //////////////// TODO
             Message* keyExchangeHandler( Message* message , string username );  //  MANAGES MESSAGE KEY_EXCHANGE                           //////////////// DONE
             Message* gameParamHandler( string source , int match , bool step ); //  MANAGES MESSAGE GAME_PARAM                             //////////////// TODO
             Message* userListHandler( Message* message, string username );      //  MANAGES MESSAGE USER_LIST_REQ                          //////////////// DONE
@@ -62,6 +61,7 @@ namespace server {
             void logoutClient(int socket);                           //  SECURE DISCONNECTION OF A CLIENT FROM THE SERVER
             Message* sendError( string errorMessage , int* nonce );  //  GENERATES AN ERROR MESSAGE
             bool closeMatch( int matchID );                            //  CLOSES A MATCH AND ADVERTICE PARTICIPANTS
+            int generateRandomNonce();                        //  GENERATES A RANDOM NONCE TO BE USED BY CLIENTS
 
         public:
             MainServer( string ipAddr , int port );                  //  GENERATES THE SERVER

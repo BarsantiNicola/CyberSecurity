@@ -115,14 +115,14 @@ namespace server {
         if ( !this->clientRegister.has(socket) ) {
 
             verbose << "--> [MainServer][manageMessage] Error, unregistered socket tried to contact the server" << '\n';
-            return sendError(string( "UNREGISTERED_SOCK" ), message->getNonce());
+            return this->sendError(string( "UNREGISTERED_SOCK" ), message->getNonce());
 
         }
 
         if (!this->userRegister.has(socket) && message->getMessageType() != LOGIN_REQ && message->getMessageType() != CERTIFICATE_REQ ) {
 
             vverbose << "--> [MainServer][manageMessage] Warning, user not already logged. Invalid request" << '\n';
-            return sendError(string( "INVALID_REQUEST"), message->getNonce());
+            return this->sendError(string( "INVALID_REQUEST"), message->getNonce());
 
         }
 
@@ -130,11 +130,48 @@ namespace server {
         if (username.empty() && message->getMessageType() != CERTIFICATE_REQ && message->getMessageType() != LOGIN_REQ ) {
 
             vverbose << "--> [MainServer][manageMessage] Error, username not found" << '\n';
-            return sendError(string( "USER_NOT_FOUND" ), message->getNonce());
+            return this->sendError(string( "USER_NOT_FOUND" ), message->getNonce());
 
         }
 
-        return this->userManager( message, username, socket );
+        Message* response;
+        if( message->getMessageType() != CERTIFICATE_REQ ) {
+            //  verification of message consistency
+
+            int *nonce = message->getNonce();
+            if (!nonce) {
+                verbose << "--> [MainServer][certificateHandler] Error, invalid message. Missing Nonce" << '\n';
+                return this->sendError(string("MISSING_NONCE"), nonce);
+            }
+            int* userNonce = this->clientRegister.getClientNonce( socket );
+            if ( !userNonce ){
+
+                verbose << "--> [MainServer][keyExchangeHandler] Error, user nonce not present" << '\n';
+                response = this->sendError(string("SERVER_ERROR"), nonce );
+
+                delete nonce;
+                return response;
+
+            }
+
+            if( *nonce != *userNonce ){
+
+                verbose<<"--> [MainServer][keyExchangeHandler] Error invalid nonce"<<'\n';
+                response = this->sendError(string( "SECURITY_ERROR" ), nonce );
+
+                delete nonce;
+                delete userNonce;
+                return response;
+
+            }
+
+            delete userNonce;
+            delete nonce;
+        }
+
+        response = this->userManager( message, username, socket );
+        this->clientRegister.updateClientNonce( socket );
+        return response;
 
     }
 
@@ -146,7 +183,7 @@ namespace server {
         switch( message->getMessageType() ){
 
             case utility::CERTIFICATE_REQ:
-                ret = this->certificateHandler(message);
+                ret = this->certificateHandler(message, socket );
                 break;
             case utility::LOGIN_REQ:
                 ret = this->loginHandler(message, socket );
@@ -217,6 +254,37 @@ namespace server {
 
     }
 
+    int MainServer::generateRandomNonce(){
+
+        unsigned int seed;
+        FILE* randFile = fopen( "/dev/urandom","rb" );
+        struct timespec ts;
+
+        if( !randFile ){
+            verbose<<" [MainServer][generateRandomNonce] Error, unable to locate urandom file"<<'\n';
+            if( timespec_get( &ts, TIME_UTC )==0 ) {
+                verbose << "--> [MainServer][generateRandomNonce] Error, unable to use timespec" << '\n';
+                srand( time( nullptr ));
+            }else
+                srand( ts.tv_nsec^ts.tv_sec );
+            return rand();
+        }
+
+        if( fread( &seed, 1, sizeof( seed ),randFile ) != sizeof( seed )){
+            verbose<<" [MainServer][generateRandomNonce] Error, unable to load enough data to generate seed"<<'\n';
+            if( timespec_get( &ts, TIME_UTC ) == 0 ) {
+                verbose << "--> [MainServer][generateRandomNonce] Error, unable to use timespec" << '\n';
+                srand( time( NULL ));
+            }else
+                srand( ts.tv_nsec^ts.tv_sec );
+        }else
+            srand(seed);
+
+        fclose( randFile );
+        return rand();
+
+    }
+
     ///////////////////////////////////////////////////////////////////////////////////////////////
     //                                                                                           //
     //                                      PROTOCOL HANDLERS                                    //
@@ -225,22 +293,20 @@ namespace server {
 
 
     //  the handler manages the CERTIFICATE_REQ requests by generating a formatted message containing the server certificate
-    Message* MainServer::certificateHandler( Message* message ){
-
-        //  verification of message consistency
-        int* nonce = message->getNonce();
-        if( !nonce ){
-            verbose<<"--> [MainServer][certificateHandler] Error, invalid message. Missing Nonce"<<'\n';
-            return this->sendError( string("MISSING_NONCE"), nonce );
-        }
+    Message* MainServer::certificateHandler( Message* message , int socket ){
 
         //  preparation of response message
         NetMessage* param = this->cipherServer.getServerCertificate();
+        int* nonce = new int(this->generateRandomNonce());
 
         if(! param ){
             verbose<<"--> [MainServer][certificateHandler] Error, unable to load server certificate"<<'\n';
             return this->sendError( string("SERVER_ERROR"), nonce );
         }
+
+
+
+        this->clientRegister.setNonce( socket, *nonce );
 
         Message* result = new Message();
         result->setNonce( *nonce );
@@ -265,10 +331,6 @@ namespace server {
     Message* MainServer::loginHandler( Message* message , int socket ){
 
         int* nonce = message->getNonce();
-        if( !nonce ){
-            verbose<<"--> [MainServer][loginHandler] Error, invalid message. Missing Nonce"<<'\n';
-            return this->sendError( string("MISSING_NONCE"), nonce );
-        }
 
         if( message->getUsername().empty() ){
             verbose<<"--> [MainServer][loginHandler] Error, invalid message. Missing username"<<'\n';
@@ -347,39 +409,7 @@ namespace server {
     Message* MainServer::keyExchangeHandler( Message* message , string username ){
 
         int *nonce = message->getNonce();
-
-        if ( !nonce ){
-
-            verbose << "--> [MainServer][keyExchangeHandler] Error, invalid message. Missing Nonce" << '\n';
-            return this->sendError(string("MISSING_NONCE"), nonce );
-
-        }
-
         Message* response;
-        int *userNonce = this->userRegister.getNonce(username);
-
-        if ( !userNonce ){
-
-            verbose << "--> [MainServer][keyExchangeHandler] Error, user nonce not present" << '\n';
-            response = this->sendError(string("SERVER_ERROR"), nonce );
-
-            delete nonce;
-            return response;
-
-        }
-
-        if( *nonce != *userNonce ){
-
-            verbose<<"--> [MainServer][keyExchangeHandler] Error invalid nonce"<<'\n';
-            response = this->sendError(string( "SECURITY_ERROR" ), nonce );
-
-            delete nonce;
-            delete userNonce;
-            return response;
-
-        }
-
-        delete userNonce;
 
         if( !this->cipherServer.fromSecureForm( message, username )){
 
@@ -421,13 +451,6 @@ namespace server {
     Message* MainServer::userListHandler( Message* message  , string username ) {
 
         int* nonce = message->getNonce();
-        if( !nonce ){
-
-            verbose<<"--> [MainServer][userListHandler] Error, invalid message. Missing Nonce"<<'\n';
-            return this->sendError( string( "MISSING_NONCE" ), nonce );
-
-        }
-
         Message* response;
 
         if( !this->cipherServer.fromSecureForm( message, message->getUsername() )){
@@ -477,11 +500,6 @@ namespace server {
     Message* MainServer::rankListHandler( Message* message  , string username ){
 
         int* nonce = message->getNonce();
-        if( !nonce ){
-            verbose<<"--> [MainServer][rankListHandler] Error, invalid message. Missing Nonce"<<'\n';
-            return this->sendError( string( "MISSING_NONCE" ), nonce );
-        }
-
         Message* response;
 
         if( !this->cipherServer.fromSecureForm( message, message->getUsername() )){

@@ -28,6 +28,9 @@ namespace server {
             bool   removeClient( int socket );               // REMOVE A CLIENT
             bool   has( int socket );                        // SEARCH IF A SOCKET IS PRESENT
             string getClientNetInformation( int socket );    // RETURN THE CLIENT IP ADDRESS
+            int*   getClientNonce( int socket );
+            bool   updateClientNonce( int socket );
+            bool   setNonce( int socket , int nonce );
 
     };
 

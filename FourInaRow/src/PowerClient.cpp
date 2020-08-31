@@ -55,40 +55,46 @@ Message* PowerClient::createMessage( MessageType type, bool correctness ){
         switch( type ){
             case utility::CERTIFICATE_REQ:
                 message->setMessageType( CERTIFICATE_REQ );
-                message->setNonce(1);
+                message->setNonce(0);
                 break;
 
             case utility::LOGIN_REQ:
                 message->setMessageType( LOGIN_REQ );
-                message->setNonce(2);
+                message->setNonce(this->nonce);
                 message->setUsername("bob" );
                 this->cipher->sign( message );
+                this->nonce++;
                 break;
 
             case utility::KEY_EXCHANGE:
                 message->setMessageType( KEY_EXCHANGE );
-                message->setNonce(2);
+                message->setNonce(nonce);
                 param = this->cipherDH->generatePartialKey();
+                this->cipherDH->stash();
                 message->set_DH_key( param->getMessage(), param->length() );
                 this->cipher->sign( message );
+                this->nonce++;
                 break;
 
             case utility::USER_LIST_REQ:
                 message->setMessageType( USER_LIST_REQ );
-                message->setNonce(3);
+                message->setNonce(nonce);
                 this->cipher->sign( message );
+                this->nonce++;
                 break;
 
             case utility::RANK_LIST_REQ:
                 message->setMessageType( RANK_LIST_REQ );
-                message->setNonce(4);
+                message->setNonce(nonce );
                 this->cipher->sign( message );
+                this->nonce++;
                 break;
 
             case utility::LOGOUT_REQ:
                 message->setMessageType( LOGOUT_REQ );
-                message->setNonce(5);
+                message->setNonce(nonce);
                 this->cipher->sign( message );
+                this->nonce++;
                 break;
         }
     else
@@ -109,6 +115,7 @@ Message* PowerClient::createMessage( MessageType type, bool correctness ){
                 message->setMessageType( KEY_EXCHANGE );
                 message->setNonce(3);
                 param = this->cipherDH->generatePartialKey();
+                this->cipherDH->stash();
                 message->set_DH_key( param->getMessage(), param->length() );
                 this->cipher2->sign( message );
                 break;
@@ -137,11 +144,12 @@ Message* PowerClient::createMessage( MessageType type, bool correctness ){
 void PowerClient::showMessage(Message* message){
 
     unsigned char* result;
-    cipher::SessionKey* key;
+
     switch( message->getMessageType() ){
         case utility::CERTIFICATE:
             cout<<"------ CERTIFICATE ------"<<endl<<endl;
             cout<<"\t- NONCE: "<<*(message->getNonce())<<endl;
+            this->nonce = *(message->getNonce())+1;
             cout<<"\tCERTIFICATE:"<<endl;
             result = message->getServerCertificate();
             for( int a= 0; a<message->getServerCertificateLength(); a++ )
@@ -169,7 +177,6 @@ void PowerClient::showMessage(Message* message){
             for( int a= 0; a<message->getDHkeyLength(); a++ )
                 cout<<result[a];
             cout<<endl<<endl;
-            key = this->cipherDH->generateSessionKey( message->getDHkey(), message->getDHkeyLength());
             cout<<"-------------------"<<endl<<endl;
             break;
 
@@ -215,11 +222,16 @@ int main(){
 
     Logger::setThreshold(NO_VERBOSE);
     PowerClient* client = new PowerClient(string("127.0.0.1"),12345);
+    client->sendMessage(USER_LIST_REQ,true);
+    client->sendMessage(RANK_LIST_REQ,true);
+    client->sendMessage(KEY_EXCHANGE,true);
+    client->sendMessage(LOGOUT_REQ,true);
     client->sendMessage(CERTIFICATE_REQ,true);
     client->sendMessage(LOGIN_REQ,true);
     client->sendMessage(KEY_EXCHANGE,true);
     client->sendMessage(USER_LIST_REQ,true);
     client->sendMessage(RANK_LIST_REQ,true);
     client->sendMessage(LOGOUT_REQ,true);
+    client->sendMessage(USER_LIST_REQ,true);
     delete client;
 }

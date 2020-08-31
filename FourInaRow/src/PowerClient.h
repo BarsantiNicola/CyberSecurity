@@ -21,6 +21,7 @@ class PowerClient {
         cipher::CipherDH *cipherDH;
         ConnectionManager *manager;
         int server_socket;
+        int nonce;
 
         Message* createMessage( MessageType type, bool correctness );
         void showMessage( Message* message );
