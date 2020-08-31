@@ -3,7 +3,7 @@
 #define FOURINAROW_MATCHINFORMATION_H
 
 #include <iostream>
-
+#include <vector>
 using namespace std;
 
 namespace server {
@@ -23,7 +23,9 @@ namespace server {
         private:
             int matchID;
             string challenger;
+            vector<int> challengerMoves;
             string challenged;
+            vector<int> challengedMoves;
             MatchStatus status;
             int nonce;
 

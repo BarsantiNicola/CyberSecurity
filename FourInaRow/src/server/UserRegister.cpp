@@ -252,7 +252,7 @@ namespace server{
     NetMessage* UserRegister::getUserList( string username ){
         string user_list = "USER LIST:\n";
         for( int a = 0; a<this->userRegister.size(); a++ )
-            if( *(this->userRegister[a].getStatus()) != PLAY && this->userRegister[a].getUsername().compare(username) != 0 ) {
+            if( *(this->userRegister[a].getStatus()) != PLAY && *(this->userRegister[a].getStatus()) != CONNECTED && this->userRegister[a].getUsername().compare(username) != 0 ) {
                 user_list.append("\n\tusername: ");
                 user_list.append(this->userRegister[a].getUsername());
             }

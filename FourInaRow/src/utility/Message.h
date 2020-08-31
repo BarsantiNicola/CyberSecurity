@@ -32,6 +32,7 @@ namespace utility {
         LOGOUT_REQ,
         LOGOUT_OK,
         GAME_PARAM,
+        GAME,
         MOVE,
         CHAT,
         ACK,

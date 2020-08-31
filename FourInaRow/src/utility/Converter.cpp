@@ -600,6 +600,54 @@ namespace utility{
                 vverbose<<"--> [Converter][verifyMessage] Verification GAME_PARAM success"<<'\n';
                 break;
 
+            case GAME:
+                verbose<<"--> [Converter][verifyMessage] Check GAME"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Current Token\""<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                signature = message.getSignature();
+                if( !signature ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Signature"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                chosen_column = message.getChosenColumn();
+                if( !chosen_column ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Misssing Chosen Column"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    return false;
+                }
+
+                chat = message.getMessage();
+                if( !chat ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Message"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    return false;
+                }
+
+                if( checkField(chat,message.getMessageLength()) || checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length()) || checkField(chosen_column,message.getChosenColumnLength())) {
+                    verbose<<"--> [Converter][verifyMessage] Verification failure"<<'\n';
+                    delete nonce;
+                    delete[] chat;
+                    delete[] signature;
+                    delete[] chosen_column;
+                    return false;
+                }
+                vverbose<<"--> [Converter][verifyMessage] Verification MOVE success"<<'\n';
+                delete nonce;
+                delete[] chat;
+                delete[] signature;
+                delete[] chosen_column;
+                break;
+
             case MOVE:
                 vverbose<<"--> [Converter][verifyMessage] Check MOVE"<<'\n';
 
@@ -1213,6 +1261,43 @@ namespace utility{
                 delete[] key;
                 break;
 
+            case GAME:
+                verbose<<"--> [Converter][verifyMessage] Check GAME"<<'\n';
+
+                nonce = message.getNonce();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Current Token\""<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                chosen_column = message.getChosenColumn();
+                if( !chosen_column ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Misssing Chosen Column"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                chat = message.getMessage();
+                if( !chat ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Message"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+                if( checkField(chat,message.getMessageLength()) ||  checkField(nonceString,to_string(*nonce).length()) || checkField(chosen_column,message.getChosenColumnLength())) {
+                    verbose<<"--> [Converter][verifyMessage] Verification failure"<<'\n';
+                    delete nonce;
+                    delete[] chat;
+                    delete[] chosen_column;
+                    return false;
+                }
+                vverbose<<"--> [Converter][verifyMessage] Verification MOVE success"<<'\n';
+                delete nonce;
+                delete[] chat;
+                delete[] chosen_column;
+                break;
+
             case MOVE:
                 vverbose<<"--> [Converter][verifyCompact] Check MOVE"<<'\n';
 
@@ -1703,6 +1788,27 @@ namespace utility{
                 delete[] net;
                 break;
 
+            case GAME:
+                nonce = message.getNonce();
+                sign = message.getSignature();
+                len = 29+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen();
+                key = message.getChosenColumn();
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeField(value , 't', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeField(value , 'v', key,message.getChosenColumnLength(),pos,false  );
+                pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
+                delete[] sign;
+
+                delete[] key;
+                break;
+
             case MOVE:
                 nonce = message.getCurrent_Token();
                 sign = message.getSignature();
@@ -1717,6 +1823,7 @@ namespace utility{
                     value[a] = '\0';
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
                 pos = writeField(value , 't', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeField(value , 'h', message.getMessage(), message.getMessageLength(), pos,false  );
                 pos = writeField(value , 'v', key,message.getChosenColumnLength(),pos,false  );
                 pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
                 delete[] sign;
@@ -2786,6 +2893,24 @@ namespace utility{
                 delete[] net;
                 break;
 
+            case GAME:
+                nonce = message.getNonce();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength();
+                key = message.getChosenColumn();
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeCompactField(value , key,message.getChosenColumnLength(),pos,true  );
+
+                delete[] key;
+                break;
+
             case MOVE:
                 nonce = message.getCurrent_Token();
                 len = 1+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength();
@@ -2799,6 +2924,7 @@ namespace utility{
                     value[a] = '\0';
                 pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
                 pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos = writeCompactField(value , message.getMessage(), message.getMessageLength(), pos,false  );
                 pos = writeCompactField(value , key,message.getChosenColumnLength(),pos,true  );
 
                 delete[] key;
