@@ -3329,6 +3329,29 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 delete[] net;
                 break;
 
+
+            case GAME:
+                nonce = message.getNonce();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen();
+                key = message.getChosenColumn();
+                *lengthPlaintext=len-message.getChosenColumnLength();
+               
+                value = new unsigned char[len];
+                if( !value ){
+                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    return nullptr;
+                }
+                for( int a = 0; a<len;a++)
+                    value[a] = '\0';
+                pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                pos=writeCompactField(value,message.getSignature(),message.getSignatureLen(),pos,false);
+                pos = writeCompactField(value , key,message.getChosenColumnLength(),pos,false );
+
+                delete[] key;
+                break;
+
+
             case MOVE:
                 nonce = message.getCurrent_Token();
                 len = to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength();

@@ -264,7 +264,14 @@ This function encryptMessage with AES_256 gcm
       vverbose<<"-->[CipherAES][encryptMessage] cipher message created succesfully cipherLength: "<<lengthcipher<<'\n';
 
       Message *newMessage=new Message(message );
-      newMessage->setSignature( tag , 16 );
+      if(newMessage->getMessageType()==GAME)
+      {
+        newMessage->setSignatureAES( tag , 16 );
+      }
+      else
+      {
+        newMessage->setSignature( tag , 16 );
+      }
 
       bool result=insertField(newMessage->getMessageType(),newMessage,ciphertext,lengthcipher);
       if(result==false)
@@ -339,8 +346,16 @@ This function encryptMessage with AES_256 gcm
        delete[]tag;
        return nullptr;
       }      
-      Message *newMessage=new Message(message );
-      tag=newMessage->getSignature();
+      Message *newMessage=new Message(message );      
+    
+      if(newMessage->getMessageType()==GAME)
+      {
+        tag=newMessage->getSignatureAES();
+      }
+      else
+      {
+        tag=newMessage->getSignature();
+      }
       plaintext=new unsigned char[lengthToDecrypt];
       int lengthplain=gcmDecrypt(textToDecrypt,lengthToDecrypt,textInPlain,lengthCleareText,tag,plaintext);
       if(lengthplain==-2)
