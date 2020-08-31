@@ -302,6 +302,7 @@ This function encryptMessage with AES_256 gcm
       Message *newMessage=new Message(message );
       tag=newMessage->getSignature();
       unsigned char app[]="";
+      plaintext=new unsigned char[0];
       int res=gcmDecrypt(app,0,netMessage->getMessage(),lengthCleareText,tag,plaintext);
       if(res==-2)
       {
