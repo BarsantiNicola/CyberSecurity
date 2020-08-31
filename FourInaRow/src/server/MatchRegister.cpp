@@ -45,7 +45,7 @@ namespace server{
             return false;
 
         }
-        if( match->getStatus() != LOAD ){
+        if( match->getStatus() != LOADED ){
 
             verbose<<"-->[MatchRegister][setAccepted] Error the match'status is invalid to perform ACCEPT: "<<match->getStatus()<<'\n';
             return false;
@@ -55,7 +55,7 @@ namespace server{
 
         for( int a = 0; a<this->matchRegister.size(); a++ )
             if (this->matchRegister.at(a).getMatchID() == matchID) {
-                this->matchRegister[a].setStatus(ACCEPT );
+                this->matchRegister[a].setStatus(ACCEPTED );
                 return true;
             }
         return false;
@@ -72,7 +72,7 @@ namespace server{
             return false;
 
         }
-        if( match->getStatus() != OPEN ){
+        if( match->getStatus() != OPENED ){
 
             verbose<<"-->[MatchRegister][setLoaded] Error the match'status is invalid to perform LOAD: "<<match->getStatus()<<'\n';
             return false;
@@ -82,7 +82,7 @@ namespace server{
 
         for( int a = 0; a<this->matchRegister.size(); a++ )
             if (this->matchRegister.at(a).getMatchID() == matchID) {
-                this->matchRegister[a].setStatus(LOAD );
+                this->matchRegister[a].setStatus(LOADED );
                 return true;
             }
         return false;
@@ -99,7 +99,7 @@ namespace server{
             return false;
 
         }
-        if (match->getStatus() != ACCEPT) {
+        if (match->getStatus() != ACCEPTED ) {
 
             verbose << "-->[MatchRegister][setStarted] Error the match'status is invalid to perform START: "
                     << match->getStatus() << '\n';
@@ -111,7 +111,7 @@ namespace server{
 
         for( int a = 0; a<this->matchRegister.size(); a++ )
             if (this->matchRegister.at(a).getMatchID() == matchID) {
-                this->matchRegister[a].setStatus(START );
+                this->matchRegister[a].setStatus(STARTED );
                 return true;
             }
         return false;
@@ -122,7 +122,7 @@ namespace server{
 
         for( int a = 0; a<this->matchRegister.size(); a++ )
             if (this->matchRegister.at(a).getMatchID() == matchID) {
-                this->matchRegister[a].setStatus(REJECT);
+                this->matchRegister[a].setStatus(CLOSED);
                 return true;
             }
         return false;

@@ -26,6 +26,9 @@ namespace utility {
         signature = nullptr;
         signature_len = 0;
 
+        signature_2 = nullptr;
+        signature_2_len = 0;
+
         pub_Key = nullptr;
         pub_key_len = 0;
 
@@ -77,6 +80,9 @@ namespace utility {
         if( msg.signature )
             this->setSignature( msg.signature , msg.signature_len );
 
+        if( msg.signature_2 )
+            this->setSignature( msg.signature_2 , msg.signature_2_len );
+
         if( msg.pub_Key )
             this->setPubKey( msg.pub_Key, msg.pub_key_len );
 
@@ -119,6 +125,9 @@ namespace utility {
 
         if( this->signature )
             delete[] this->signature;
+
+        if( this->signature_2 )
+            delete[] this->signature_2;
 
         if( this->pub_Key )
             delete[] this->pub_Key;
@@ -335,6 +344,38 @@ namespace utility {
 
             verbose << "--> [Message][setSignature] Error during allocation of memory. Operation Aborted" << '\n';
             this->signature_len = 0;
+            return false;
+
+        }
+
+    }
+
+    bool Message::setSignatureAES( unsigned char* signature , unsigned int len ){
+
+        if( !signature || len == 0 ){
+
+            verbose<<"--> [Message][setSignature] Error invalid arguments. Operation Aborter"<<'\n';
+            return false;
+
+        }
+
+        if( this->signature_2 )
+            delete[] this->signature_2;
+
+        this->signature_2 = nullptr;
+        this->signature_2_len = len;
+
+        this->signature_2 = new unsigned char[ signature_2_len ];
+        if( this->signature_2 ) {
+
+            vverbose<<"--> [Message][setSignature] Set of Signature Completed"<<'\n';
+            myCopy( this->signature_2, signature, signature_2_len );
+            return true;
+
+        }else{
+
+            verbose << "--> [Message][setSignature] Error during allocation of memory. Operation Aborted" << '\n';
+            this->signature_2_len = 0;
             return false;
 
         }
@@ -756,6 +797,29 @@ namespace utility {
     unsigned int Message::getSignatureLen(){
 
         return this->signature_len;
+
+    }
+
+    unsigned char* Message::getSignatureAES(){
+
+        if( !this->signature_2 || !this->signature_2_len ) return nullptr;
+
+        unsigned char* ret = new unsigned char[signature_2_len];
+        if( !ret ){
+
+            verbose<<"--> [Message][getSignature] Error during allocation of memory. Operation Aborted"<<'\n';
+            return nullptr;
+
+        }
+        myCopy( ret, this->signature_2, this->signature_2_len );
+
+        return ret;
+
+    }
+
+    unsigned int Message::getSignatureAESLen(){
+
+        return this->signature_2_len;
 
     }
 

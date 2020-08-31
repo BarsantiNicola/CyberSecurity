@@ -9,7 +9,7 @@ namespace server{
         this->matchID = matchID;
         this->challenger = challenger;
         this->challenged = challenged;
-        this->status = OPEN;
+        this->status = OPENED;
         this->nonce = nonce;
     }
 

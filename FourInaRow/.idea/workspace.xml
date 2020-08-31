@@ -29,9 +29,11 @@
   <component name="ChangeListManager">
     <list default="true" id="4cbb8ddf-e807-44fa-ae33-bda27674b47b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/MatchInformation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MatchInformation.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/MatchInformation.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MatchInformation.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/UserRegister.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/UserRegister.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/MatchRegister.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MatchRegister.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/utility/Converter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/utility/Converter.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utility/Message.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/utility/Message.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/utility/Message.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/utility/Message.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -124,7 +126,8 @@
       <workItem from="1598810213201" duration="10000" />
       <workItem from="1598810388817" duration="14653000" />
       <workItem from="1598876728232" duration="10210000" />
-      <workItem from="1598893323552" duration="1323000" />
+      <workItem from="1598893323552" duration="3471000" />
+      <workItem from="1598906620131" duration="1088000" />
     </task>
     <servers />
   </component>

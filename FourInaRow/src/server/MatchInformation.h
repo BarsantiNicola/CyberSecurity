@@ -10,21 +10,31 @@ namespace server {
 
     enum MatchStatus{
 
-        OPEN,
-        ACCEPT,
-        LOAD,
-        START,
-        REJECT
+        OPENED,       //  match is allocated
+        ACCEPTED,     //  match is accepted by the challenged
+        READY,        //  challenger is advertised
+        LOADED,       //  challenged received parameter
+        STARTED,      //  challenger received parameter -> start user game protocol
+        CLOSED        //  match closed by one of the users
 
     };
+
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //                                                                                   //
+    //                                   MATCH INFORMATION                               //
+    //    The class maintains information about a match and provides methods to          //
+    //    modify and verify its status. The class maintains also the list of all the     //
+    //    chosen columns during the match and permits to verify the winner.              //
+    //                                                                                   //
+    ///////////////////////////////////////////////////////////////////////////////////////
 
     class MatchInformation{
 
         private:
             int matchID;
             string challenger;
-            vector<int> challengerMoves;
             string challenged;
+            vector<int> challengerMoves;
             vector<int> challengedMoves;
             MatchStatus status;
             int nonce;
@@ -32,11 +42,22 @@ namespace server {
         public:
             MatchInformation( int matchID , string challenger, string challenged, int nonce );
             int getMatchID();
-            int getNonce();
+
             string getChallenger();
             string getChallenged();
+
             MatchStatus getStatus();
             void setStatus( MatchStatus status );
+
+            int getNonce();
+            void updateNonce();
+
+            bool addChallengerMove( int chosen_col );
+            bool addChallengedMove( int chosen_col );
+            int  verifyMatch();                  //  verify the result of the match(-1 win challenger 1 win challenged 0 tie)
+            int  hasUser( string username );     //  verify the presence of a user(-1 challenger 1 challenged 0 no presence)
+
+
 
     };
 }

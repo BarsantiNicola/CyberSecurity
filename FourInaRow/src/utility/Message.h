@@ -73,6 +73,9 @@ namespace utility {
             unsigned char* signature = nullptr;
             unsigned int signature_len = 0;
 
+            unsigned char* signature_2 = nullptr;
+            unsigned int signature_2_len = 0;
+
             unsigned char* pub_Key = nullptr;
             unsigned int pub_key_len = 0;
 
@@ -113,6 +116,7 @@ namespace utility {
             bool setChosenColumn( unsigned char* chosen_column, unsigned int len );
             bool setMessage( unsigned char* message, unsigned int len );
             bool setSignature( unsigned char* signature , unsigned int len );
+            bool setSignatureAES( unsigned char* signature, unsigned int len );
             bool set_DH_key( unsigned char* key , unsigned int len );
 
             //  GETTERS
@@ -151,6 +155,9 @@ namespace utility {
 
             unsigned char* getSignature();
             unsigned int getSignatureLen();
+
+            unsigned char* getSignatureAES();
+            unsigned int getSignatureAESLen();
 
             void myCopy( unsigned char* dest, unsigned char* source, int len );
 

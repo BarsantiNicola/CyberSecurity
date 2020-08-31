@@ -625,15 +625,15 @@ namespace utility{
                     return false;
                 }
 
-                chat = message.getMessage();
+                chat = message.getSignatureAES();
                 if( !chat ){
-                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Message"<<'\n';
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing AES_Signature"<<'\n';
                     delete nonce;
                     delete[] signature;
                     return false;
                 }
 
-                if( checkField(chat,message.getMessageLength()) || checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length()) || checkField(chosen_column,message.getChosenColumnLength())) {
+                if( checkField(chat,message.getSignatureAESLen()) || checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length()) || checkField(chosen_column,message.getChosenColumnLength())) {
                     verbose<<"--> [Converter][verifyMessage] Verification failure"<<'\n';
                     delete nonce;
                     delete[] chat;
@@ -1278,14 +1278,7 @@ namespace utility{
                     return false;
                 }
 
-                chat = message.getMessage();
-                if( !chat ){
-                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Message"<<'\n';
-                    delete nonce;
-                    return false;
-                }
-
-                if( checkField(chat,message.getMessageLength()) ||  checkField(nonceString,to_string(*nonce).length()) || checkField(chosen_column,message.getChosenColumnLength())) {
+                if( checkField(nonceString,to_string(*nonce).length()) || checkField(chosen_column,message.getChosenColumnLength())) {
                     verbose<<"--> [Converter][verifyMessage] Verification failure"<<'\n';
                     delete nonce;
                     delete[] chat;
@@ -1791,7 +1784,7 @@ namespace utility{
             case GAME:
                 nonce = message.getNonce();
                 sign = message.getSignature();
-                len = 29+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen();
+                len = 29+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen()+message.getSignatureAESLen();
                 key = message.getChosenColumn();
                 value = new unsigned char[len];
                 if( !value ){
@@ -1803,7 +1796,8 @@ namespace utility{
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
                 pos = writeField(value , 't', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
                 pos = writeField(value , 'v', key,message.getChosenColumnLength(),pos,false  );
-                pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
+                pos = writeField(value , 's', sign, message.getSignatureLen(), pos,false );
+                pos = writeField(value, 'w' , message.getSignatureAES(), message.getSignatureAESLen(), pos , true );
                 delete[] sign;
 
                 delete[] key;
@@ -1812,7 +1806,7 @@ namespace utility{
             case MOVE:
                 nonce = message.getCurrent_Token();
                 sign = message.getSignature();
-                len = 29+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen();
+                len = 29+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen()+message.getSignatureAESLen();
                 key = message.getChosenColumn();
                 value = new unsigned char[len];
                 if( !value ){
@@ -1823,7 +1817,6 @@ namespace utility{
                     value[a] = '\0';
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
                 pos = writeField(value , 't', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
-                pos = writeField(value , 'h', message.getMessage(), message.getMessageLength(), pos,false  );
                 pos = writeField(value , 'v', key,message.getChosenColumnLength(),pos,false  );
                 pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
                 delete[] sign;
@@ -2062,6 +2055,10 @@ namespace utility{
             case 'y':
                 vverbose<<"--> [Converter][setField] Identified variable: MessageType"<<'\n';
                 msg->setMessageType((MessageType)stoi(string(reinterpret_cast<char*>(fieldValue))));
+                break;
+            case 'w':
+                vverbose<<"--> [Converter][setField] Identified variable: Signature AES"<<'\n';
+                msg->setSignatureAES( fieldValue, len );
                 break;
             default:
                 verbose<<"--> [Converter][setField] Error, undefined field name: "<<fieldName<<'\n';
