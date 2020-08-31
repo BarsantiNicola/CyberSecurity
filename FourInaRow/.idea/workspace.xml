@@ -29,11 +29,7 @@
   <component name="ChangeListManager">
     <list default="true" id="4cbb8ddf-e807-44fa-ae33-bda27674b47b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/launchTestClient.sh" beforeDir="false" afterPath="$PROJECT_DIR$/launchTestClient.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/PowerClient.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/PowerClient.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/PowerClient.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/PowerClient.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/cipher/CipherServer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/cipher/CipherServer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/cipher/CipherServer.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/cipher/CipherServer.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/MainServer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MainServer.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -132,7 +128,7 @@
       <workItem from="1598809998900" duration="206000" />
       <workItem from="1598810213201" duration="10000" />
       <workItem from="1598810388817" duration="14653000" />
-      <workItem from="1598876728232" duration="9315000" />
+      <workItem from="1598876728232" duration="9981000" />
     </task>
     <servers />
   </component>

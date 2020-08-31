@@ -62,12 +62,12 @@ namespace cipher{
 
             case RANK_LIST:
                 if( !key ) return false;
-                cout<<"RANK: "<<message->getUserListLen()<<endl;
+
                 this->aes->modifyParam( key );
                 app = this->aes->encryptMessage(*message);
                 if( app == nullptr )
                     return false;
-                cout<<"RANK: "<<app->getUserListLen()<<endl;
+
                 message->setSignature( app->getSignature(), app->getSignatureLen() );
                 message->setRankList( app->getRankList(), app->getRankListLen() );
                 delete app;
@@ -75,12 +75,12 @@ namespace cipher{
 
             case USER_LIST:
                 if( !key ) return false;
-                cout<<"USER: "<<message->getUserListLen()<<endl;
+
                 this->aes->modifyParam( key );
                 app = this->aes->encryptMessage(*message);
                 if( app == nullptr )
                     return false;
-                cout<<"USER: "<<app->getUserListLen()<<endl;
+
                 message->setSignature( app->getSignature(), app->getSignatureLen() );
                 message->setUserList( app->getUserList(), app->getUserListLen() );
                 delete app;
@@ -126,11 +126,9 @@ namespace cipher{
             case LOGOUT_OK:
 
                 if( !key ) return false;
-                cout<<"key present"<<endl;
                 this->aes->modifyParam( key );
                 app = this->aes->encryptMessage(*message);
                 if( app == nullptr ) {
-                    cout << "vuota" << endl;
                     return false;
                 }
                 message->setSignature( app->getSignature(), app->getSignatureLen() );
@@ -177,10 +175,10 @@ namespace cipher{
 
             case USER_LIST_REQ:
                 if( !key ) return false;
-                cout<<"ok i have key"<<endl;
+
                 this->aes->modifyParam( key );
                 app = this->aes->decryptMessage( *message );
-                cout<<"len "<<app->getUserListLen()<<endl;
+
                 if( !app ) return false;
                 message->setUserList( app->getUserList(), app->getUserListLen() );
                 delete app;
@@ -188,10 +186,10 @@ namespace cipher{
 
             case RANK_LIST_REQ:
                 if( !key ) return false;
-                cout<<"ok i have key"<<endl;
+
                 this->aes->modifyParam( key );
                 app = this->aes->decryptMessage( *message );
-                cout<<"ok finish"<<endl;
+
                 if( !app ) return false;
                 message->setUserList( app->getRankList(), app->getRankListLen() );
                 delete app;
@@ -205,12 +203,12 @@ namespace cipher{
 
             case LOGOUT_REQ:
                 if( !key ) return false;
-                cout<<"ok i have key"<<endl;
+
                 this->aes->modifyParam( key );
                 app = this->aes->decryptMessage( *message );
-                cout<<"ok finish"<<endl;
+
                 if( !app ){
-                    cout<<"empty aes return"<<endl;
+
                     return false;
                 }
                 delete app;

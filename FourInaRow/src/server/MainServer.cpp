@@ -547,12 +547,6 @@ namespace server {
     Message* MainServer::logoutHandler( Message* message , string username ){
 
         int *nonce = message->getNonce();
-        if (!nonce) {
-
-            verbose << "--> [MainServer][logoutHandler] Error, invalid message. Missing Nonce" << '\n';
-            return this->sendError(string( "MISSING_NONCE" ), nonce );
-
-        }
 
         Message* response;
 
@@ -588,6 +582,15 @@ namespace server {
         this->closeMatch(i);
         }*/
 
+        if( !this->cipherServer.toSecureForm( response, this->userRegister.getSessionKey(username) )){
+
+            verbose << "-->[MainServer][logoutHandler] Error. Unable to encrypt message"<< '\n';
+
+            delete response;
+            response = this->sendError(string( "SERVER_ERROR" ), nonce );
+
+        }
+
         if( !this->userRegister.removeUser(username)){
 
             verbose << "-->[MainServer][logoutHandler] Error. User not found"<< '\n';
@@ -597,15 +600,6 @@ namespace server {
 
             delete nonce;
             return response;
-        }
-
-        if( !this->cipherServer.toSecureForm( response, this->userRegister.getSessionKey(username) )){
-
-            verbose << "-->[MainServer][logoutHandler] Error. User not found"<< '\n';
-
-            delete response;
-            response = this->sendError(string( "SERVER_ERROR" ), nonce );
-
         }
 
         delete nonce;
