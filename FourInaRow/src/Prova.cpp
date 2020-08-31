@@ -26,10 +26,10 @@ int main()
   sk.iv=iv;
   sk.ivLen=ivLength;
   CipherAES cAES(&sk);
-  mess.setMessageType(LOGOUT_OK);
+  mess.setMessageType(RANK_LIST);
   mess.setNonce(12);
   std::cout<<"valore nonce:"<<mess.getNonce()<<endl;
-  //mess.setRankList( rl, sizeof(rl) );
+  mess.setRankList( rl, sizeof(rl) );
   messCiph=cAES.encryptMessage(mess);
   /*DEBUG ELIMINARE PIÙ TARDI*/
   //vverbose<<"-->[Prova][main] the value of ciphertxt"<<'\n';
