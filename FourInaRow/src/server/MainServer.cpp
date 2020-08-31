@@ -86,7 +86,7 @@ namespace server {
 
                             vverbose << "--> [MainServer][server] Error, unable to send message, client " << socket << " disconnected" << '\n';
 
-                            vector<int> matches = this->matchRegister.getAllMatchID( this->userRegister.getUsername(sock));
+                            vector<int> matches = this->matchRegister.getMatchIds( this->userRegister.getUsername(sock));
                             for( int matchID: matches )
                                 this->closeMatch( matchID );
 

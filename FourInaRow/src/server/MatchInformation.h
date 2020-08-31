@@ -4,6 +4,8 @@
 
 #include <iostream>
 #include <vector>
+#include "../Logger.h"
+
 using namespace std;
 
 namespace server {
@@ -31,33 +33,26 @@ namespace server {
     class MatchInformation{
 
         private:
-            int matchID;
             string challenger;
             string challenged;
             vector<int> challengerMoves;
             vector<int> challengedMoves;
             MatchStatus status;
-            int nonce;
 
         public:
-            MatchInformation( int matchID , string challenger, string challenged, int nonce );
-            int getMatchID();
+            MatchInformation( string challenger, string challenged );
 
             string getChallenger();
             string getChallenged();
-
             MatchStatus getStatus();
-            void setStatus( MatchStatus status );
 
-            int getNonce();
-            void updateNonce();
+            bool setStatus( MatchStatus status );
 
             bool addChallengerMove( int chosen_col );
             bool addChallengedMove( int chosen_col );
-            int  verifyMatch();                  //  verify the result of the match(-1 win challenger 1 win challenged 0 tie)
-            int  hasUser( string username );     //  verify the presence of a user(-1 challenger 1 challenged 0 no presence)
-
-
+            int  verifyMatch();                             //  verify the result of the match(-1 win challenger 1 win challenged 0 tie)
+            bool hasUser( string username );               //  verify the presence of a user(-1 challenger 1 challenged 0 no presence)
+            bool isChallenger( string username );
 
     };
 }

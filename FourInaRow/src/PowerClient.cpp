@@ -183,6 +183,7 @@ void PowerClient::showMessage(Message* message){
 
         case utility::USER_LIST:
             cout<<"------ USER_LIST ------"<<endl<<endl;
+
             message = this->cipherAes->decryptMessage(*message);
             cout<<"\t- NONCE: "<<*(message->getNonce())<<endl<<endl;
             result = message->getUserList();
