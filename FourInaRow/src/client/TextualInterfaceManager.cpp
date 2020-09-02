@@ -64,15 +64,18 @@ namespace client{
 
 	}
 
-	bool TextualInterfaceManager::printGameInterface(bool myMove, string message ){
+	void TextualInterfaceManager::printGameInterface(bool myMove, string timer,string chat,int row,int column){
 	
 		string command;
-		system("tput clear");
-		cout<<game_page<<endl;
+                string value;
+                value=inserElement(InterfacePage::MATCH_PAGE_0,InputType::TIMER,timer,game_page,0,0);
+		value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::CHAT,value,0,0);
+                value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::GAMEBOARD,value,row,column);
+		cout<<value<<endl;
 		cout<<"\t# Insert a command:";
 		cout.flush();
 		cin>>command;
-		return false;
+		//return false;
 	}
 
 	string TextualInterfaceManager::insertElement( InterfacePage page , InputType input , string elem , string base,int row,int column){
@@ -130,11 +133,6 @@ namespace client{
 			}
 		}
 		return base;
-	}
-     	void TextualInterfaceManager::addMessageChat(string message)
-	{
-   		chat+=message;
-                chat+="\n";
 	}
 	void TextualInterfaceManager::printRankOrUserList(string message)
         {

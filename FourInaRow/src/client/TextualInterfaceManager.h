@@ -43,7 +43,6 @@ namespace client{
 		string main_page;
 		string game_page;
                 string username;
-                string chat;
 		void* game;
 	
 	public:
@@ -51,10 +50,9 @@ namespace client{
                 string* getUsername();
 		void printLoginInterface(string message);
 		void printMainInterface(string username,string activeUser,string serverStatus,string matchStatus,string pendingStatus);
-		bool printGameInterface(bool myMove,string message);
+		void printGameInterface(bool myMove, string timer,string chat,int row,int column);
 		void setGame(void* game);
 		void setUsername(string username);
-                void addMessageChat(string message);
 		void printRankOrUserList(string message);
 
 	private:
