@@ -9,19 +9,19 @@ namespace client{
 		login_page = "";
 		main_page = "";
 
-		myfile.open ("src/client/data/login-art.txt", ios::in );
+		myfile.open ("data/login-art.txt", ios::in );
 		if (myfile.is_open())
 			while ( getline (myfile,line) )
 				login_page= login_page+line+"\n";
 		myfile.close();
 	
-		myfile.open ("src/client/data/main_art.txt", ios::in );
+		myfile.open ("data/main_art.txt", ios::in );
 		if (myfile.is_open())
 			while ( getline (myfile,line) )
 				main_page= main_page+line+"\n";
 		myfile.close();
 	
-		myfile.open ("src/client/data/game_art.txt", ios::in );
+		myfile.open ("data/game_art.txt", ios::in );
 		if (myfile.is_open())
 			while ( getline (myfile,line) )
 				game_page= game_page+line+"\n";
