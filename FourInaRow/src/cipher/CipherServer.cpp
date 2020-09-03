@@ -196,11 +196,34 @@ namespace cipher{
                 break;
 
             case MATCH:
+                if( !key ) return false;
 
+                this->aes->modifyParam( key );
+                app = this->aes->decryptMessage( *message );
+
+                if( !app ) return false;
+                delete app;
+                break;
             case ACCEPT:
+                if( !key ) return false;
 
+                this->aes->modifyParam( key );
+                app = this->aes->decryptMessage( *message );
+
+                if( !app ) return false;
+
+                delete app;
+                break;
             case REJECT:
+                if( !key ) return false;
 
+                this->aes->modifyParam( key );
+                app = this->aes->decryptMessage( *message );
+
+                if( !app ) return false;
+
+                delete app;
+                break;
             case LOGOUT_REQ:
                 if( !key ) return false;
 
@@ -242,6 +265,39 @@ namespace cipher{
 
         return this->dh->generatePartialKey();
 
+    }
+
+    NetMessage* CipherServer::getPubKey( string username ){
+
+        EVP_PKEY* key = this->rsa->getUserKey( username );
+        string path = "data/temp/";
+        path.append(username);
+        path.append(".pem");
+        FILE* f = fopen(path.c_str() , "w");
+        PEM_write_PUBKEY(f, key );
+        NetMessage* param;
+        std::ifstream certRead;
+        certRead.open(path.c_str() );
+        if( !certRead ){
+            verbose<<"--> [CipherServer][getPubKey] Fatal Error. Unable to find: "<<path<<'\n';
+            return nullptr;
+        }
+
+        certRead.seekg( 0, std::ios::end );
+        int len = certRead.tellg();
+        unsigned char* pubKey;
+        certRead.seekg( 0, std::ios::beg );
+        pubKey = new unsigned char[ len ];
+        if( !pubKey ){
+            verbose<<"--> [CipherServer][getPubKey] Fatal error. Unable to allocate memory"<<'\n';
+            certRead.close();
+            return nullptr;
+        }
+        certRead.read( (char*)pubKey, len);
+        certRead.close();
+        remove( path.c_str() );
+
+        return new NetMessage( pubKey, len);
     }
 
 }

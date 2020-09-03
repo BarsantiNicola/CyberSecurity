@@ -31,11 +31,17 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/program" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/PowerClient.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/PowerClient.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/PowerClient.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/PowerClient.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/cipher/CipherServer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/cipher/CipherServer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/cipher/CipherServer.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/cipher/CipherServer.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/MainServer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MainServer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/MatchInformation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MatchInformation.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/MatchInformation.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MatchInformation.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/MainServer.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MainServer.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/MatchRegister.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MatchRegister.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/MatchRegister.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MatchRegister.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/UserInformation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/UserInformation.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/UserRegister.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/UserRegister.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/UserRegister.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/UserRegister.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utility/Message.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/utility/Message.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -135,7 +141,12 @@
       <workItem from="1598810388817" duration="14653000" />
       <workItem from="1598876728232" duration="10210000" />
       <workItem from="1598893323552" duration="3471000" />
-      <workItem from="1598906620131" duration="5947000" />
+      <workItem from="1598906620131" duration="6180000" />
+      <workItem from="1599025245431" duration="3000" />
+      <workItem from="1599025314217" duration="7182000" />
+      <workItem from="1599035628903" duration="19000" />
+      <workItem from="1599046585178" duration="11812000" />
+      <workItem from="1599114822694" duration="8445000" />
     </task>
     <servers />
   </component>

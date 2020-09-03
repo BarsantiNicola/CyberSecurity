@@ -31,6 +31,7 @@ class PowerClient {
     public:
         PowerClient( string ipAddr, int port );
         void sendMessage( MessageType type, bool correctness );
+        void waitMessage();
 
 
 };

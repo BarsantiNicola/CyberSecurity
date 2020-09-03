@@ -158,10 +158,36 @@ namespace server{
         return nullptr;
 
     }
+    unsigned char* sessionKey;
+    unsigned int sessionKeyLen;
+    unsigned char* iv;
+    unsigned int ivLen;
+    unsigned char* seed;
+    unsigned int seedLen;
 
     cipher::SessionKey* UserInformation::getSessionKey(){
+        cipher::SessionKey* key = new cipher::SessionKey();
 
-        return this->sessionKey;
+        unsigned char* sKey= new unsigned char[this->sessionKey->sessionKeyLen];
+        for( int a = 0; a<this->sessionKey->sessionKeyLen; a++ )
+            sKey[a] = this->sessionKey->sessionKey[a];
+
+        unsigned char* iv= new unsigned char[this->sessionKey->ivLen];
+        for( int a = 0; a<this->sessionKey->ivLen; a++ )
+            iv[a] = this->sessionKey->iv[a];
+
+        unsigned char* seed= new unsigned char[this->sessionKey->seedLen];
+        for( int a = 0; a<this->sessionKey->seedLen; a++ )
+            seed[a] = this->sessionKey->seed[a];
+
+        key->sessionKey = sKey;
+        key->sessionKeyLen = this->sessionKey->sessionKeyLen;
+        key->iv = iv;
+        key->ivLen = this->sessionKey->ivLen;
+        key->seed = seed;
+        key->seedLen = this->sessionKey->seedLen;
+
+        return key;
 
     }
 

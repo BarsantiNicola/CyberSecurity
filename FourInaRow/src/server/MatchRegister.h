@@ -37,7 +37,7 @@ namespace server {
 
             MatchStatus* getMatchStatus( int matchID );       //  RETURN THE STATUS OF A MATCH. NULL IF THE MATCH DOESN'T EXIST
             int* verifyMatch( int matchID );                  //  RETURN THE STATUS OF THE MATCH BY THE CHALLENGER POINT OF VIEW(1 WIN, -1 LOSE, 0 TIE)
-
+            string getChallenged( int matchID );
     };
 
 }

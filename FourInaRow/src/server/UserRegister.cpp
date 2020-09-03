@@ -260,5 +260,15 @@ namespace server{
 
     }
 
+    int* UserRegister::getSocket( string username ){
+
+        for( int a = 0; a<this->userRegister.size(); a++ )
+            if( !this->userRegister[a].getUsername().compare( username ))
+                return new int(this->userRegister[a].getSocket());
+
+        return nullptr;
+
+    }
+
 
 }

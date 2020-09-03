@@ -168,7 +168,7 @@ namespace utility {
 
     }
 
-    void Message::setAdversary_1(string username ){
+    void Message::setAdversary_1( string username ){
 
         this->adv_username_1 = username;
         vverbose<<"--> [Message][setAdversary_1] Set of Adversary_1 Completed"<<'\n';

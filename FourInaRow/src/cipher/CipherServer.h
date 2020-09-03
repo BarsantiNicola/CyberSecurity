@@ -27,6 +27,7 @@ namespace cipher {
             NetMessage* getServerCertificate();
             SessionKey* getSessionKey( unsigned char* param, unsigned int len );
             NetMessage* getPartialKey();
+            NetMessage* getPubKey( string username );
     };
 }
 

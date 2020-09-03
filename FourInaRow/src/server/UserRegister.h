@@ -48,6 +48,7 @@ namespace server {
             int *getNonce(string username);                        //  GIVES THE NONCE OF A USER
             UserStatus *getStatus(string username);                       //  GIVES THE STATUS OF A USER
             string getUsername(int socket);                          //  GIVES THE USERNAME OF A USER
+            int*   getSocket( string username );
             NetMessage *getUserList(string username);                     //  GIVES A FORMATTED STRING OF AVAILABLE USERS
 
     };

@@ -9,7 +9,7 @@ PowerClient::PowerClient( string ipAddr, int port ){
     this->cipherAes = new cipher::CipherAES();
     this->manager = new ConnectionManager(false,ipAddr.c_str(),port);
 
-    if(!this->manager->createConnectionWithServerTCP( ipAddr.c_str(), port )){
+    if(!this->manager->createConnectionWithServerTCP( ipAddr.c_str(), 12345 )){
 
         std::cout<<"connection not created"<<endl;
         exit(1);
@@ -33,6 +33,26 @@ void PowerClient::sendMessage( MessageType type, bool correctness ){
 
 
     vect = this->manager->waitForMessage( &idSock ,s );
+
+    if( vect.size()){
+        for( int sock: vect ) {
+            message = this->manager->getMessage(sock);
+            if( message ) {
+                this->showMessage(message);
+            }else
+                cout<<"no message received"<<endl;
+
+        }
+    }
+    vect.clear();
+
+}
+
+void PowerClient::waitMessage(){
+    int idSock;
+    string *s;
+    vector<int> vect = this->manager->waitForMessage( &idSock ,s );
+    Message* message;
 
     if( vect.size()){
         for( int sock: vect ) {
@@ -96,46 +116,75 @@ Message* PowerClient::createMessage( MessageType type, bool correctness ){
                 message = this->cipherAes->encryptMessage(*message);
                 this->nonce++;
                 break;
+            case utility::ACCEPT:
+                message->setMessageType( ACCEPT );
+                message->setNonce(nonce);
+                message->setAdversary_1("alice");
+                message->setAdversary_2("bob");
+                message = this->cipherAes->encryptMessage(*message);
+                this->nonce++;
+                break;
+            case utility::REJECT:
+                message->setMessageType( REJECT );
+                message->setNonce(nonce);
+                message->setAdversary_1("alice");
+                message->setAdversary_2("bob");
+                message = this->cipherAes->encryptMessage(*message);
+                this->nonce++;
+                break;
         }
     else
         switch( type ){
             case utility::CERTIFICATE_REQ:
                 message->setMessageType( CERTIFICATE_REQ );
-                message->setNonce(1);
+                message->setNonce(0);
                 break;
 
             case utility::LOGIN_REQ:
                 message->setMessageType( LOGIN_REQ );
-                message->setNonce(2);
-                message->setUsername("bob" );
+                message->setNonce(this->nonce);
+                message->setUsername("alice" );
                 this->cipher2->sign( message );
+                this->nonce++;
                 break;
 
             case utility::KEY_EXCHANGE:
                 message->setMessageType( KEY_EXCHANGE );
-                message->setNonce(3);
+                message->setNonce(nonce);
                 param = this->cipherDH->generatePartialKey();
-                this->cipherDH->stash();
                 message->set_DH_key( param->getMessage(), param->length() );
                 this->cipher2->sign( message );
+                this->nonce++;
                 break;
 
             case utility::USER_LIST_REQ:
                 message->setMessageType( USER_LIST_REQ );
-                message->setNonce(4);
-                this->cipher2->sign( message );
+                message->setNonce(nonce);
+                message = this->cipherAes->encryptMessage(*message);
+                this->nonce++;
                 break;
 
             case utility::RANK_LIST_REQ:
                 message->setMessageType( RANK_LIST_REQ );
-                message->setNonce(5);
-                this->cipher2->sign( message );
+                message->setNonce(nonce );
+                message = this->cipherAes->encryptMessage(*message);
+                this->nonce++;
                 break;
 
             case utility::LOGOUT_REQ:
                 message->setMessageType( LOGOUT_REQ );
-                message->setNonce(6);
-                this->cipher2->sign( message );
+                message->setNonce(nonce);
+                message = this->cipherAes->encryptMessage(*message);
+                this->nonce++;
+                break;
+            case utility::MATCH:
+                message->setMessageType( MATCH );
+                message->setNonce(nonce);
+                message->setUsername(string("bob") );
+                message = this->cipherAes->encryptMessage(*message);
+                NetMessage* net = Converter::encodeMessage(MATCH, *message );
+                message = this->cipherAes->encryptMessage(*message);
+                this->nonce++;
                 break;
         }
 
@@ -220,24 +269,72 @@ void PowerClient::showMessage(Message* message){
             cout<<endl<<endl;
             cout<<"-------------------"<<endl<<endl;
             break;
+        case utility::MATCH:
+            cout<<"------ MATCH ------"<<endl<<endl;
+            cout<<"\t- NONCE: "<<*(message->getNonce())<<endl<<endl;
+            cout<<"\t- USER: "<<message->getUsername()<<endl<<endl;
+            cout<<"-------------------"<<endl<<endl;
+            break;
+        case utility::ACCEPT:
+            cout<<"------ ACCEPT ------"<<endl<<endl;
+            cout<<"\t- NONCE: "<<*(message->getNonce())<<endl<<endl;
+            cout<<"\t- CHALLENGER: "<<message->getAdversary_1()<<endl<<endl;
+            cout<<"\t- CHALLENGED: "<<message->getAdversary_2()<<endl<<endl;
+            cout<<"-------------------"<<endl<<endl;
+            break;
+        case utility::REJECT:
+            cout<<"------ REJECT ------"<<endl<<endl;
+            cout<<"\t- NONCE: "<<*(message->getNonce())<<endl<<endl;
+            cout<<"\t- CHALLENGER: "<<message->getAdversary_1()<<endl<<endl;
+            cout<<"\t- CHALLENGED: "<<message->getAdversary_2()<<endl<<endl;
+            cout<<"-------------------"<<endl<<endl;
+            break;
+        case utility::DISCONNECT:
+            cout<<"------ DISCONNECT ------"<<endl<<endl;
+            cout<<"\t- NONCE: "<<*(message->getNonce())<<endl<<endl;
+            cout<<"-------------------"<<endl<<endl;
+            break;
+        case utility::WITHDRAW_REQ:
+            cout<<"------ ACCEPT ------"<<endl<<endl;
+            cout<<"\t- NONCE: "<<*(message->getNonce())<<endl<<endl;
+            cout<<"\t- CHALLENGER: "<<message->getUsername()<<endl<<endl;
+            cout<<"-------------------"<<endl<<endl;
+            break;
     }
 }
 
 int main(){
 
     Logger::setThreshold(NO_VERBOSE);
-    PowerClient* client = new PowerClient(string("127.0.0.1"),12345);
+    PowerClient* client;
+    bool value = false;
+    if( value )
+        client = new PowerClient(string("127.0.0.1"),123456);
+    else
+        client = new PowerClient( string("127.0.0.1"), 12345 );
     cout<<"--------------------start"<<endl;
+
+
+    vector<int> vect;
    // client->sendMessage(USER_LIST_REQ,true);
    // client->sendMessage(RANK_LIST_REQ,true);
    // client->sendMessage(KEY_EXCHANGE,true);
    // client->sendMessage(LOGOUT_REQ,true);
-    client->sendMessage(CERTIFICATE_REQ,true);
-    client->sendMessage(LOGIN_REQ,true);
-    client->sendMessage(KEY_EXCHANGE,true);
-    client->sendMessage(USER_LIST_REQ,true);
-    client->sendMessage(RANK_LIST_REQ,true);
-    client->sendMessage(LOGOUT_REQ,true);
+    client->sendMessage(CERTIFICATE_REQ,value);
+    client->sendMessage(LOGIN_REQ,value);
+    client->sendMessage(KEY_EXCHANGE,value);
+    client->sendMessage(USER_LIST_REQ,value);
+    client->sendMessage(RANK_LIST_REQ,value);
+
+    if( !value )
+        client->sendMessage( MATCH, value );
+    else {
+        client->waitMessage();
+        client->sendMessage(REJECT, value);
+    }
+
+
+    //client->sendMessage(LOGOUT_REQ,value);
   //  client->sendMessage(USER_LIST_REQ,true);
     delete client;
 }

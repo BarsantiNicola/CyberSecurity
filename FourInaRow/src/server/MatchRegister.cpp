@@ -184,5 +184,10 @@ namespace server{
         }
 
     }
+    string MatchRegister::getChallenged( int matchID ){
+
+        return this->matchRegister[matchID].getChallenged();
+
+    }
 
 }
