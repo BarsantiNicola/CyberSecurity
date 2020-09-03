@@ -193,7 +193,7 @@ namespace server {
     //  if the function has not the authority to manage the message it passes it to the matchManager to manage it
     Message* MainServer::userManager(Message* message, string username , int socket ) {
 
-        if( !message || username.empty() || socket<0 ){
+        if( !message || socket<0 ){
 
             verbose<<"--> [MainServer][userManager] Error, missing parameters. Operation Aborted"<<'\n';
             return nullptr;

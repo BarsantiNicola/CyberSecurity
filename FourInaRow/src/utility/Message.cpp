@@ -224,12 +224,10 @@ namespace utility {
 
     bool Message::setUserList( unsigned char* user_list , unsigned int len ){
 
-        if( !user_list || len == 0 ){
-
-            verbose<<"--> [Message][setUserList] Error invalid arguments. Operation Aborter"<<'\n';
+        if( !user_list || len == 0 )
             return false;
 
-        }
+
 
         if( this->user_list )
             delete[] this->user_list;
