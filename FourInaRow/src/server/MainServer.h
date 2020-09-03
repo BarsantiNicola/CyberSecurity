@@ -52,6 +52,7 @@ namespace server {
             Message* rejectHandler( Message* message , string username );                         //  MANAGES MESSAGE REJECT                                 //////////////// TODO
             Message* withdrawHandler( Message* message, string username );                       //  MANAGES MESSAGE WITHDRAW_REQ                           //////////////// TODO
             Message* disconnectHandler( Message* message, string username );         //  MANAGES MESSAGE DISCONNECT                             //////////////// TODO
+            Message* gameHandler( Message* message, string username );
 
             //  MESSAGE HANDLERS
             Message* manageMessage( Message* message, int socket );                 //  HANDLES MESSAGES AND SENT THEM TO THE CORRECT PROTOCOL
@@ -61,13 +62,13 @@ namespace server {
             //  EVENT HANDLERS
             void logoutClient(int socket);                           //  SECURE DISCONNECTION OF A CLIENT FROM THE SERVER
             Message* sendError( string errorMessage , int* nonce );  //  GENERATES AN ERROR MESSAGE
-            bool closeMatch( int matchID );                            //  CLOSES A MATCH AND ADVERTICE PARTICIPANTS
-            int generateRandomNonce();                        //  GENERATES A RANDOM NONCE TO BE USED BY CLIENTS
+            void closeMatch( string username, int matchID );                            //  CLOSES A MATCH AND ADVERTICE PARTICIPANTS
+            int  generateRandomNonce();                        //  GENERATES A RANDOM NONCE TO BE USED BY CLIENTS
             bool sendMessage( Message* message, int socket );
             bool sendAcceptMessage( string challenger, string challenged, int* socket );
             bool sendRejectMessage( string challenger, string challenged, int* socket );
             bool sendDisconnectMessage( string username );
-            bool sendGameParam( string username , string source ); //  MANAGES MESSAGE GAME_PARAM                             //////////////// TODO
+            bool sendGameParam( string username , string source );   //  MANAGES MESSAGE GAME_PARAM
 
         public:
             MainServer( string ipAddr , int port );                  //  GENERATES THE SERVER

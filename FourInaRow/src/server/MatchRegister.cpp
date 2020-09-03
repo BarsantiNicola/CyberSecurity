@@ -171,6 +171,15 @@ namespace server{
 
     }
 
+    int MatchRegister::getMatchPlay( string username ){
+
+        for( int a = 0; a<this->matchRegister.size(); a++ )
+            if( this->matchRegister[a].getStatus() == STARTED )
+                if( !this->matchRegister[a].getChallenger().compare(username) || !this->matchRegister[a].getChallenged().compare(username))
+                    return a;
+        return -1;
+    }
+
     MatchStatus* MatchRegister::getMatchStatus( int matchID ){
 
         try{
@@ -184,9 +193,36 @@ namespace server{
         }
 
     }
+
     string MatchRegister::getChallenged( int matchID ){
 
         return this->matchRegister[matchID].getChallenged();
+
+    }
+
+    string MatchRegister::getChallenger( int matchID ){
+
+        return this->matchRegister[matchID].getChallenger();
+
+    }
+
+    bool MatchRegister::addChallengerMove( int matchID, int chosen_col ){
+
+        if( matchID != -1 ) {
+            this->matchRegister[matchID].addChallengerMove(chosen_col);
+            return true;
+        }
+        return false;
+
+    }
+
+    bool MatchRegister::addChallengedMove( int matchID, int chosen_col ){
+
+        if( matchID != -1 ) {
+            this->matchRegister[matchID].addChallengedMove(chosen_col);
+            return true;
+        }
+        return false;
 
     }
 

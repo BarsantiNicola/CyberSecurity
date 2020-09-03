@@ -33,11 +33,15 @@ namespace server {
             bool setClosed( int matchID );
 
             int getMatchID( string challenger );              //  GET THE MATCH ID OF A MATCH OF A USER, -1 IF NO MATCH FOUND
+            int getMatchPlay( string username );
             vector<int> getMatchIds( string username );       //  RETURN A LIST OF MATCH IDS OF MATCH WHERE THE USER IS PRESENT
 
             MatchStatus* getMatchStatus( int matchID );       //  RETURN THE STATUS OF A MATCH. NULL IF THE MATCH DOESN'T EXIST
             int* verifyMatch( int matchID );                  //  RETURN THE STATUS OF THE MATCH BY THE CHALLENGER POINT OF VIEW(1 WIN, -1 LOSE, 0 TIE)
             string getChallenged( int matchID );
+            string getChallenger( int matchID );
+            bool addChallengerMove( int matchID, int chosen_col );
+            bool addChallengedMove( int matchID, int chosen_col );
     };
 
 }
