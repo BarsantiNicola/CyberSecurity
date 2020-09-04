@@ -68,9 +68,18 @@ namespace client{
 	
 		string command;
                 string value;
+                string tok;
+                if(myMove==TRUE)
+                {
+                  tok="0";
+                }
+                else
+                {
+                  tok="X";
+                }
                 value=inserElement(InterfacePage::MATCH_PAGE_0,InputType::TIMER,timer,game_page,0,0);
-		value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::CHAT,value,0,0);
-                value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::GAMEBOARD,value,row,column);
+		value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::CHAT,chat,value,0,0);
+                value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::GAMEBOARD,tok,value,row,column);
 		cout<<value<<endl;
 		cout<<"\t# Insert a command:";
 		cout.flush();
