@@ -7,7 +7,7 @@ namespace server{
 
         this->IPaddress = IPaddress;
         this->socket = socket;
-        this->nonce = 0;
+        this->nonce = nullptr;
 
     }
 
@@ -29,21 +29,24 @@ namespace server{
 
     }
 
-    int ClientInformation::getNonce(){
+    int* ClientInformation::getNonce(){
 
-        return this->nonce;
+        if( !this->nonce )
+            return nullptr;
+
+        return new int(*(this->nonce));
 
     }
 
     void ClientInformation::updateNonce(){
 
-        this->nonce++;
+        *(this->nonce) += 1;
 
     }
 
     void ClientInformation::setNonce( int nonce ){
 
-        this->nonce = nonce;
+        this->nonce = new int(nonce);
 
     }
 

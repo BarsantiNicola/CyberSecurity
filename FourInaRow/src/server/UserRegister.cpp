@@ -142,13 +142,7 @@ namespace server{
                 if( !this->userRegister[a].setStatus(LOGGED ))
                     return false;
 
-                if( !this->userRegister[a].setSessionKey( key )){
-
-                    this->userRegister[a].setStatus( CONNECTED );
-                    return false;
-
-                }
-
+                this->userRegister[a].setSessionKey( key );
                 return true;
 
             }

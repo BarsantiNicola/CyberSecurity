@@ -171,7 +171,8 @@ namespace server {
                 response = this->sendError(string( "SECURITY_ERROR" ), nonce );
 
                 delete nonce;
-                delete userNonce;
+             //   delete userNonce;
+
                 return response;
 
             }
@@ -235,7 +236,7 @@ namespace server {
 
             default:
                 ret = this->matchManager( message , username );
-
+                break;
         }
 
         return ret;
@@ -1204,6 +1205,7 @@ namespace server {
 
         }
 
+
         int* nonce = message->getNonce();
         Message* response;
 
@@ -1256,6 +1258,7 @@ namespace server {
             return response;
 
         }
+
 
         if( this->sendAcceptMessage( message->getAdversary_1(), message->getAdversary_2(), this->userRegister.getSocket( message->getAdversary_1()))){
 
@@ -1334,6 +1337,7 @@ namespace server {
             return response;
 
         }
+        this->matchRegister.setReady(matchID);
 
         if( !this->sendGameParam( message->getAdversary_2(), message->getAdversary_1())){
 
@@ -1362,7 +1366,7 @@ namespace server {
             }
 
         }
-
+        this->matchRegister.setStarted(matchID);
         delete nonce;
         return nullptr;
 
@@ -1514,6 +1518,7 @@ namespace server {
             return nullptr;
 
         }
+
         string opposite;
         int matchID = this->matchRegister.getMatchID(username);
         int* nonce = message->getNonce();
@@ -1528,7 +1533,6 @@ namespace server {
             else{
 
                 verbose << "--> [MainServer][disconnectHandler] Error, unable to identify match" << '\n';
-                delete response;
                 response = this->sendError(string( "SERVER_ERROR" ), nonce );
 
                 delete nonce;

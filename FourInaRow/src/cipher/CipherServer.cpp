@@ -204,6 +204,7 @@ namespace cipher{
                 if( !app ) return false;
                 delete app;
                 break;
+
             case ACCEPT:
                 if( !key ) return false;
 
@@ -214,6 +215,7 @@ namespace cipher{
 
                 delete app;
                 break;
+
             case REJECT:
                 if( !key ) return false;
 
@@ -224,6 +226,7 @@ namespace cipher{
 
                 delete app;
                 break;
+
             case LOGOUT_REQ:
                 if( !key ) return false;
 
@@ -238,9 +241,20 @@ namespace cipher{
                 break;
 
             case DISCONNECT:
+                if( !key ) return false;
+
+                this->aes->modifyParam( key );
+                app = this->aes->decryptMessage( *message );
+
+                if( !app ){
+
+                    return false;
+                }
+                delete app;
+                break;
 
             default:
-                vverbose<<"--> [CipherServer][fromSecureForm] Error, MessageType not supported:"<<message->getMessageType()<<'\n';
+                verbose<<"--> [CipherServer][fromSecureForm] Error, MessageType not supported:"<<message->getMessageType()<<'\n';
 
 
         }
@@ -270,31 +284,42 @@ namespace cipher{
     NetMessage* CipherServer::getPubKey( string username ){
 
         EVP_PKEY* key = this->rsa->getUserKey( username );
+
         string path = "data/temp/";
         path.append(username);
         path.append(".pem");
+
         FILE* f = fopen(path.c_str() , "w");
+        if( !f ){
+
+            verbose<<"-->[CipherServer][getPubKey] Error, unable to find temp file"<<'\n';
+            return nullptr;
+
+        }
+
         PEM_write_PUBKEY(f, key );
-        NetMessage* param;
-        std::ifstream certRead;
-        certRead.open(path.c_str() );
-        if( !certRead ){
+        fclose(f);
+
+        std::ifstream pubKeyRead;
+        pubKeyRead.open(path.c_str() );
+        if( !pubKeyRead ){
             verbose<<"--> [CipherServer][getPubKey] Fatal Error. Unable to find: "<<path<<'\n';
             return nullptr;
         }
 
-        certRead.seekg( 0, std::ios::end );
-        int len = certRead.tellg();
+        pubKeyRead.seekg( 0, std::ios::end );
+        int len = pubKeyRead.tellg();
+
         unsigned char* pubKey;
-        certRead.seekg( 0, std::ios::beg );
+        pubKeyRead.seekg( 0, std::ios::beg );
         pubKey = new unsigned char[ len ];
         if( !pubKey ){
             verbose<<"--> [CipherServer][getPubKey] Fatal error. Unable to allocate memory"<<'\n';
-            certRead.close();
+            pubKeyRead.close();
             return nullptr;
         }
-        certRead.read( (char*)pubKey, len);
-        certRead.close();
+        pubKeyRead.read( (char*)pubKey, len);
+        pubKeyRead.close();
         remove( path.c_str() );
 
         return new NetMessage( pubKey, len);

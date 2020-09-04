@@ -88,10 +88,6 @@ namespace server{
                 break;
 
             case LOGGED:
-                if( status == PLAY ){
-                    verbose<<"--> [UserInformation][setStatus] Error, trying to perform an invalid status change"<<'\n';
-                    return false;
-                }
                 break;
 
             case WAIT_MATCH:
@@ -102,7 +98,7 @@ namespace server{
                 break;
 
             case PLAY:
-                if( status != WAIT_MATCH ){
+                if( status == CONNECTED || status == WAIT_MATCH ){
                     verbose<<"--> [UserInformation][setStatus] Error, trying to perform an invalid status change"<<'\n';
                     return false;
                 }

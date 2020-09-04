@@ -24,14 +24,16 @@ class PowerClient {
         ConnectionManager *manager;
         int server_socket;
         int nonce;
+        string username;
 
-        Message* createMessage( MessageType type, bool correctness );
+        Message* createMessage( MessageType type, const char* param );
         void showMessage( Message* message );
-
+        void sendMessage( MessageType type, const char* param );
+        void waitMessage();
     public:
         PowerClient( string ipAddr, int port );
-        void sendMessage( MessageType type, bool correctness );
-        void waitMessage();
+
+        void startClient();
 
 
 };

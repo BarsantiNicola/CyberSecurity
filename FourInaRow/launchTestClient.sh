@@ -8,8 +8,11 @@ MAIN_PACKAGE="src/Logger.cpp src/PowerClient.cpp"
 SERVER_PACKAGE="src/server/SQLConnector.cpp src/server/ClientInformation.cpp src/server/UserInformation.cpp src/server/MatchInformation.cpp src/server/ClientRegister.cpp src/server/MatchRegister.cpp src/server/UserRegister.cpp"
 CLIENT_PACKAGE=""
 
+
 g++ $UTILITY_PACKAGE $CIPHER_PACKAGE $MAIN_PACKAGE $SERVER_PACKAGE $CLIENT_PACKAGE -o program -lssl -lcrypto -lmysqlcppconn
 
-./program
+echo "Insert socket"
+read SOCKET
+./program $SOCKET
 rm program
 

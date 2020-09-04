@@ -74,7 +74,7 @@ namespace server{
 
         for( int a = 0; a<this->clientRegister.size(); a++ )
             if( this->clientRegister[a].getSocket() == socket )
-                return new int(this->clientRegister[a].getNonce());
+                return this->clientRegister[a].getNonce();
 
         vverbose<<"--> [ClientRegister][getClientNetInformation] Client not present into the register"<<'\n';
         return nullptr;

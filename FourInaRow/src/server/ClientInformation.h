@@ -21,13 +21,13 @@ class ClientInformation{
         private:
             string IPaddress;
             int socket;
-            int nonce;
+            int* nonce;
 
         public:
             ClientInformation( string IPaddress, int socket );
             string getIPaddress();
             int getSocket();
-            int getNonce();
+            int* getNonce();
             void updateNonce();
             void setNonce( int nonce );
 

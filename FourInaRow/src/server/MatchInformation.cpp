@@ -46,8 +46,7 @@ namespace server{
 
         if( status == ACCEPTED && this->status != OPENED ) return false;
         if( status == READY && this->status != ACCEPTED ) return false;
-        if( status == LOADED && this->status != READY ) return false;
-        if( status == STARTED && this->status != LOADED ) return false;
+        if( status == STARTED && this->status != READY ) return false;
 
         this->status = status;
         return true;

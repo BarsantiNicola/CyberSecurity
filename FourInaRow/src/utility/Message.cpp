@@ -185,7 +185,7 @@ namespace utility {
     bool Message::setNonce( int nonce ){
 
         if( this->nonce == nullptr )
-            this->nonce = new int();
+            this->nonce = new int(0);
 
         if( this->nonce ) {
 

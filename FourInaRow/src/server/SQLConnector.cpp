@@ -11,7 +11,7 @@ namespace server {
 
     //  the function contact a remote sql database to generate and return a formatted string containing of the users rank
     string SQLConnector::getRankList() {
-
+        string ret = "RANK LIST\n";
         try {
 
             vverbose<<"--> [SQLConnector][getRankList] Starting to get user rank list"<<'\n';
@@ -36,7 +36,7 @@ namespace server {
             stmt = con->createStatement();
             res = stmt->executeQuery("SELECT * FROM `Rank`;");
 
-            string ret = "RANK LIST\n";
+
             string value;
             vverbose<<"--> [SQLConnector][getRankList] Request completed, formatting the results"<<'\n';
             while (res->next()) {
@@ -64,10 +64,10 @@ namespace server {
 
             return ret;
 
-        } catch (sql::SQLException &e) {
+        } catch (sql::SQLException &e ) {
 
             verbose<<"--> [SQLConnector][getRankList] Error, mySQL error: "<<e.getErrorCode()<<'\n';
-            return nullptr;
+            return ret;
 
         }
 
