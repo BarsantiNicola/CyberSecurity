@@ -8,7 +8,6 @@ namespace client{
 		string line;
 		login_page = "";
 		main_page = "";
-                chat="";
 		myfile.open ("data/login-art.txt", ios::in );
 		if (myfile.is_open())
 			while ( getline (myfile,line) )
@@ -69,7 +68,7 @@ namespace client{
 		string command;
                 string value;
                 string tok;
-                if(myMove==TRUE)
+                if(myMove==true)
                 {
                   tok="0";
                 }
@@ -77,7 +76,7 @@ namespace client{
                 {
                   tok="X";
                 }
-                value=inserElement(InterfacePage::MATCH_PAGE_0,InputType::TIMER,timer,game_page,0,0);
+                value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::TIMER,timer,game_page,0,0);
 		value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::CHAT,chat,value,0,0);
                 value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::GAMEBOARD,tok,value,row,column);
 		cout<<value<<endl;

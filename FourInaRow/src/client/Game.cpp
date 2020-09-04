@@ -226,11 +226,11 @@ namespace client
   
   bool Game::gameFinish(int row,int column,bool* iWon,bool* adversaryWon,bool* tie,bool myMove)
   {
-    if(iWon==nullptr||adversaryWon==nullptr||tie==nullptr)
+    /*if(iWon==nullptr||adversaryWon==nullptr||tie==nullptr)
      {
        verbose<<"--> [Game][GameFinish] error nullptr in the parameter!!"<<'\n';
        throw invalid_argument("recived nullptr argument");
-     }
+     }*/
     *tie=false;
     *adversaryWon=false;
     *iWon=false; 
@@ -265,7 +265,71 @@ namespace client
         return true;
       }
     }      
-
     
+  }
+/*
+the function makeMove permit to add a token in the matrix if the column is available
+return false in case of non autorizate move
+*/
+  StatGame Game::makeMove(int column,bool* iWon,bool* adversaryWon,bool* tie,bool myMove,int currentToken)
+  {
+    int row=0;
+    if(iWon==nullptr||adversaryWon==nullptr||tie==nullptr)
+     {
+       return StatGame::NULL_POINTER;
+     }
+    if(this->currentToken!=currentToken)
+    {
+      return StatGame::BAD_TOKEN;
+    }
+    if(myMove!=gameControl)
+    {
+      return StatGame::BAD_TURN;
+    }
+    if(column<0||column>=NUMBER_COLUMN||row<0||row>=NUMBER_ROW )
+    {
+      return StatGame::OUT_OF_BOUND;
+    }
+    if(availableColumn(column)==false)
+    {
+       return StatGame::BAD_MOVE;
+    }
+    for(int i=NUMBER_ROW-1;i>=0;--i)
+    {
+      if(gameBoard[i][NUMBER_COLUMN]==0)
+      {
+        if(myMove)
+          gameBoard[i][NUMBER_COLUMN]=1;
+        else
+          gameBoard[i][NUMBER_COLUMN]=2;
+        row=i;
+        break;
+      }
+        
+    }
+    
+    bool result=gameFinish(row,column,iWon,adversaryWon,tie,myMove);
+    //changeControl and upload currrentToken
+    changeControl();
+    ++currentToken;
+    if(result)
+      return StatGame::GAME_FINISH;
+    else
+      return StatGame::MOVE_OK;
+    
+  }
+
+  vector<int> Game::availableColumns()
+  {
+    vector<int> columnsFree;
+    for(int i=0;i<NUMBER_COLUMN;i++)
+    {
+      
+      if(availableColumn(i))
+      {
+        columnsFree.push_back(i);
+      }
+    }
+    return columnsFree;
   }
 }
