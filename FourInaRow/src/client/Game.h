@@ -14,7 +14,6 @@ namespace client
     BAD_MOVE,
     GAME_FINISH,
     OUT_OF_BOUND,
-    BAD_TOKEN,
     BAD_TURN,
     NULL_POINTER
   };
@@ -22,15 +21,13 @@ namespace client
   {
     private:
       long timer;
-      int currentToken=0;
-      //int nextToken;
       string chat="";
       int gameBoard[NUMBER_ROW][NUMBER_COLUMN];
       bool gameControl;
       int chatLen;
    public:
       Game(int chatLen,bool gameControl);
-      StatGame makeMove(int column,bool* iWon,bool* adversaryWon,bool* tie,bool myMove,int currentToken);//da fare
+      StatGame makeMove(int column,bool* iWon,bool* adversaryWon,bool* tie,bool myMove);//da fare
       
       void updateTimer();//da revisionare
       bool availableColumn(int column);

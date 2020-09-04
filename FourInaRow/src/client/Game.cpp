@@ -271,17 +271,13 @@ namespace client
 the function makeMove permit to add a token in the matrix if the column is available
 return false in case of non autorizate move
 */
-  StatGame Game::makeMove(int column,bool* iWon,bool* adversaryWon,bool* tie,bool myMove,int currentToken)
+  StatGame Game::makeMove(int column,bool* iWon,bool* adversaryWon,bool* tie,bool myMove)
   {
     int row=0;
     if(iWon==nullptr||adversaryWon==nullptr||tie==nullptr)
      {
        return StatGame::NULL_POINTER;
      }
-    if(this->currentToken!=currentToken)
-    {
-      return StatGame::BAD_TOKEN;
-    }
     if(myMove!=gameControl)
     {
       return StatGame::BAD_TURN;
@@ -311,7 +307,6 @@ return false in case of non autorizate move
     bool result=gameFinish(row,column,iWon,adversaryWon,tie,myMove);
     //changeControl and upload currrentToken
     changeControl();
-    ++currentToken;
     if(result)
       return StatGame::GAME_FINISH;
     else
