@@ -1514,6 +1514,38 @@ namespace server {
             return nullptr;
 
         }
+        string opposite;
+        int matchID = this->matchRegister.getMatchID(username);
+        int* nonce = message->getNonce();
+        Message* response;
+
+        if( matchID != -1 ){
+            opposite = this->matchRegister.getChallenged(matchID);
+        }else{
+            matchID = this->matchRegister.getMatchPlay(username);
+            if( matchID != -1 )
+                opposite = this->matchRegister.getChallenger(matchID);
+            else{
+
+                verbose << "--> [MainServer][disconnectHandler] Error, unable to identify match" << '\n';
+                delete response;
+                response = this->sendError(string( "SERVER_ERROR" ), nonce );
+
+                delete nonce;
+                return response;
+
+            }
+        }
+
+        delete nonce;
+        
+        this->sendDisconnectMessage(opposite);
+        this->userRegister.setLogged( username, this->userRegister.getSessionKey(username));
+        this->userRegister.setLogged( opposite, this->userRegister.getSessionKey(opposite));
+        this->matchRegister.removeMatch(matchID);
+        SQLConnector::incrementUserGame(opposite, WIN );
+        SQLConnector::incrementUserGame(username,LOOSE);
+
         return nullptr;
     }
 
