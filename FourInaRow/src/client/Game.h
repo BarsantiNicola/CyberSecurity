@@ -2,7 +2,8 @@
 #include<string>
 #include<vector>
 #include<stdexcept>
-#define NUBER_ROW 6
+#include<thread>
+#define NUMBER_ROW 6
 #define NUMBER_COLUMN 7
 using namespace std;
 namespace client
@@ -11,7 +12,7 @@ namespace client
   {
     private:
       long timer
-      int currentToken;
+      int currentToken=0;
       int nextToken;
       string chat="";
       int gameBoard[NUMBER_ROW][NUMBER_COLLUMN];
@@ -19,29 +20,19 @@ namespace client
       int chatLen;
    public:
       Game(int chatLen,bool gameControl);
-      bool makeMove(int column,bool mymove);
+      bool makeMove(int column,bool* gameFinish,bool* iWon,bool* adversaryWon,bool* tie,bool myMove);//da fare
       bool gameBoardIsFull();
-      bool updateTimer();//da revisionare
+      void updateTimer();//da revisionare
       bool availableColumn(int column);
       bool myControl();
       vector<int> availableColumns();
       void addMessageToChat(string message);
-      bool gameFinish(bool* iWon,bool* adversaryWon,bool* tie);
+
+
    private:
-      bool controlAlineation(int row,int column);
+      bool controlAlignment(int row,int column,bool myMove);
+      bool gameFinish(int row,int column,bool* iWon,bool* adversaryWon,bool* tie,bool myMove);//da fare
       void changeControl();
-
-
-
-
-
-
-
-
-
-
-
-
   };
 
 }
