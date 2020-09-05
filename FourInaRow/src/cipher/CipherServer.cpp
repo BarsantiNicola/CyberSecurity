@@ -253,6 +253,31 @@ namespace cipher{
                 delete app;
                 break;
 
+            case WITHDRAW_REQ:
+                if( !key ) return false;
+
+                this->aes->modifyParam( key );
+                app = this->aes->decryptMessage( *message );
+
+                if( !app ){
+
+                    return false;
+                }
+                delete app;
+                break;
+            case GAME:
+                if( !key ) return false;
+
+                this->aes->modifyParam( key );
+                app = this->aes->decryptMessage( *message );
+
+                if( !app ){
+                    return false;
+                }
+                message->setChosenColumn( app->getChosenColumn(), app->getChosenColumnLength());
+                delete app;
+                return this->rsa->serverVerifySignature(*message, username );
+                
             default:
                 verbose<<"--> [CipherServer][fromSecureForm] Error, MessageType not supported:"<<message->getMessageType()<<'\n';
 

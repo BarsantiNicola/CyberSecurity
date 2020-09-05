@@ -67,8 +67,10 @@ namespace server {
             bool sendMessage( Message* message, int socket );
             bool sendAcceptMessage( string challenger, string challenged, int* socket );
             bool sendRejectMessage( string challenger, string challenged, int* socket );
+            bool sendWithdrawMessage( string username, int* socket );
             bool sendDisconnectMessage( string username );
             bool sendGameParam( string username , string source );   //  MANAGES MESSAGE GAME_PARAM
+
 
         public:
             MainServer( string ipAddr , int port );                  //  GENERATES THE SERVER

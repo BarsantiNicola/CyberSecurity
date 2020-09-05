@@ -280,6 +280,13 @@ namespace server {
                 base<<"--> [MainServer][matchManager] Message received: DISCONNECT"<<'\n';
                 ret = this->disconnectHandler( message, username );
                 break;
+            case utility::GAME:
+                base<<"--> [MainServer][matchManager] Message received: GAME"<<'\n';
+                ret = this->gameHandler( message, username );
+                break;
+            default:
+                base<<"--> [MainServer][matchManager] Unknown message type"<<'\n';
+                break;
 
         }
 
@@ -523,6 +530,42 @@ namespace server {
 
     }
 
+    // sends directly a WITHDRAW_REQ message to the challenged client
+    bool MainServer::sendWithdrawMessage( string username, int* socket ){
+
+        if( username.empty() ||  !socket ){
+
+            verbose<<"--> [MainServer][sendWithdrawMessage] Error invalid arguments. Abort operation"<<'\n';
+            return false;
+
+        }
+
+        int* nonce = this->userRegister.getNonce(username);
+        if( !nonce ){
+
+            verbose<<"--> [MainServer][sendRejectMessage] Error unable to found user nonce. Operation aborted"<<'\n';
+            return false;
+
+        }
+
+        Message* message = new Message();
+        message->setMessageType( WITHDRAW_REQ );
+        message->setUsername(username);
+        message->setNonce(*nonce);
+
+        delete nonce;
+
+        if( !this->cipherServer.toSecureForm( message , this->userRegister.getSessionKey(username))){
+
+            verbose<<"--> [MainServer][sendRejectMessage] Error unable to secure the message. Operation aborted"<<'\n';
+            return false;
+
+        }
+
+        return this->sendMessage( message, *socket );
+
+    }
+
     // sends directly a DISCONNECT message to a client identified by a username
     bool MainServer::sendDisconnectMessage( string username ){
 
@@ -656,19 +699,31 @@ namespace server {
 
         //  preparation of response message
         NetMessage* param = this->cipherServer.getServerCertificate();
-        int nonce = this->generateRandomNonce();
+
+        int *nonce = this->clientRegister.getClientNonce(socket);
+        if( !nonce ) {
+
+            nonce = new int(this->generateRandomNonce());
+            this->clientRegister.setNonce(socket, *nonce);
+
+        }
 
         if(! param ){
 
             verbose<<"--> [MainServer][certificateHandler] Error, unable to load server certificate"<<'\n';
-            return this->sendError( string("SERVER_ERROR"), new int(nonce) );
+            return this->sendError( string("SERVER_ERROR"), nonce );
 
         }
 
-        this->clientRegister.setNonce( socket, nonce );
+        if( this->userRegister.has(socket)){
+
+            verbose<<"--> [MainServer][certificateHandler] Error, user already registered"<<'\n';
+            return this->sendError( string("USER_ALREADY_LOGGED"), nonce );
+
+        }
 
         Message* result = new Message();
-        result->setNonce( nonce );
+        result->setNonce( *nonce );
         result->setMessageType(CERTIFICATE );
         result->setServer_Certificate( param->getMessage(), param->length());
 
@@ -678,11 +733,12 @@ namespace server {
 
             verbose << "--> [MainServer][certificateHandler] Error, message didn't pass security verification" << '\n';
             delete result;
-            result = this->sendError(string("SECURITY_ERROR"), new int(nonce) );
+            result = this->sendError(string("SECURITY_ERROR"), nonce );
 
         }else
             vverbose<<"--> [MainServer][certificateHandler] CERTIFICATE message correctly generated"<<'\n';
 
+        delete nonce;
         return result;
 
     }
@@ -784,6 +840,25 @@ namespace server {
 
         Message* response;
         int *nonce = message->getNonce();
+        if( !this->userRegister.has(username)){
+
+            verbose << "--> [MainServer][keyExchangeHandler] Error, user not logged" << '\n';
+            response = this->sendError(string( "NOT_LOGGED" ), nonce );
+
+            delete nonce;
+            return response;
+
+        }
+
+        if( *(this->userRegister.getStatus(username)) != CONNECTED ){
+
+            verbose << "--> [MainServer][keyExchangeHandler] Error, key already exchanged" << '\n';
+            response = this->sendError(string( "KEY_PRESENT" ), nonce );
+
+            delete nonce;
+            return response;
+
+        }
 
         if( !this->cipherServer.fromSecureForm( message, username, nullptr )){
 
@@ -1427,6 +1502,7 @@ namespace server {
 
     }
 
+    //  manages the WITHDRAW_REQ requests. It verifies that a match is present and handles it depending on its state
     Message* MainServer::withdrawHandler( Message* message , string username ){
 
         if( !message || username.empty() ){
@@ -1461,43 +1537,40 @@ namespace server {
 
         }
 
+        if( *(this->matchRegister.getMatchStatus(matchID)) == STARTED ){
+
+            verbose << "--> [MainServer][withdrawReqHandler] Match already started" << '\n';
+            response = this->sendError(string( "MATCH STARTED" ), nonce );
+
+            delete nonce;
+            return response;
+        }
+
+        this->userRegister.setLogged( username, this->userRegister.getSessionKey(username));
         string selUsername = this->matchRegister.getChallenged( matchID );
-        if( selUsername.empty() )
-            return nullptr;
+        if( !selUsername.empty() ) {
 
-        if( !this->sendDisconnectMessage( selUsername )){
+            if (!this->sendWithdrawMessage(selUsername, this->userRegister.getSocket(selUsername))) {
 
-            int* socket = this->userRegister.getSocket(selUsername);
-            if( socket ){
-
-                this->logoutClient( *socket );
-                delete socket;
+                int *socket = this->userRegister.getSocket(selUsername);
+                if (socket) {
+                    this->logoutClient(*socket);
+                    delete socket;
+                }
+                delete nonce;
+                return nullptr;
 
             }
-            delete nonce;
-            return nullptr;
-
         }
 
         this->matchRegister.removeMatch( matchID );
         this->userRegister.setLogged( username , this->userRegister.getSessionKey(username));
 
-        if( !this->cipherServer.toSecureForm( response , this->userRegister.getSessionKey( selUsername ))){
-
-            verbose << "--> [MainServer][acceptHandler] Error, Verification failure" << '\n';
-            delete response;
-            response = this->sendError(string( "SERVER_ERROR" ), nonce );
-
-            delete nonce;
-            return response;
-
-        }
-
         response = new Message();
-        response->setMessageType( WITHDRAW_OK );
-        response->setUsername( selUsername );
-        response->setNonce( *nonce );
-        if( this->cipherServer.toSecureForm( response , this->userRegister.getSessionKey( username ))){
+        message->setMessageType( WITHDRAW_OK );
+        message->setNonce(*nonce);
+
+        if( !this->cipherServer.toSecureForm( response , this->userRegister.getSessionKey( username ))){
 
             verbose << "--> [MainServer][acceptHandler] Error, Verification failure" << '\n';
             delete response;
@@ -1510,6 +1583,7 @@ namespace server {
 
     }
 
+    //  manages the DISCONNECT requests. It verifies that a match is present and in the correct state
     Message* MainServer::disconnectHandler( Message* message, string username ){
 
         if( !message || username.empty() ){
@@ -1519,10 +1593,22 @@ namespace server {
 
         }
 
-        string opposite;
-        int matchID = this->matchRegister.getMatchID(username);
         int* nonce = message->getNonce();
         Message* response;
+
+        if( !this->cipherServer.fromSecureForm( message , username, this->userRegister.getSessionKey(username) ) ){
+
+            verbose << "--> [MainServer][acceptHandler] Error, Verification failure" << '\n';
+            response = this->sendError(string( "SECURITY_ERROR" ), nonce );
+
+            delete nonce;
+            return response;
+
+        }
+
+        string opposite;
+        int matchID = this->matchRegister.getMatchID(username);
+
 
         if( matchID != -1 ){
             opposite = this->matchRegister.getChallenged(matchID);
@@ -1561,11 +1647,20 @@ namespace server {
             return nullptr;
 
         }
-        /*
-        int matchID = this->matchRegister.getMatchPlay( username );
-        int *nonce = message->getNonce();
-        int* col = message->getC
         Message* response;
+        int *nonce = message->getNonce();
+
+        if( !this->cipherServer.fromSecureForm( message , username, this->userRegister.getSessionKey(username) ) ){
+
+            verbose << "--> [MainServer][acceptHandler] Error, Verification failure" << '\n';
+            response = this->sendError(string( "SECURITY_ERROR" ), nonce );
+
+            delete nonce;
+            return response;
+
+        }
+
+        int matchID = this->matchRegister.getMatchPlay( username );
 
         if( matchID == -1 ){
 
@@ -1576,8 +1671,21 @@ namespace server {
 
         }
 
+        int col = atoi( (const char*)message->getChosenColumn());
+
+        if( col<0 ){
+            verbose<<"--> [MainServer][gameHanlder] Error unable to find match"<<'\n';
+            response = this->sendError( "INVALID_COLUMN", nonce );
+            delete nonce;
+            return response;
+        }
+
         if( !this->matchRegister.getChallenger(matchID).compare(username))
-            this->matchRegister.addChallengerMove( matchID, message->getC)*/
+            this->matchRegister.addChallengerMove( matchID, col);
+        else
+            this->matchRegister.addChallengedMove( matchID, col );
+
+        delete nonce;
         return nullptr;
     }
 

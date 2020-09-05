@@ -129,6 +129,13 @@ Message* PowerClient::createMessage( MessageType type, const char* param ){
                 message = this->cipherAes->encryptMessage(*message);
                 this->nonce++;
                 break;
+            case utility::WITHDRAW_REQ:
+                message->setMessageType( WITHDRAW_REQ );
+                message->setNonce(this->nonce);
+                message->setUsername(this->username);
+                message = this->cipherAes->encryptMessage(*message);
+                this->nonce++;
+                break;
             case utility::MATCH:
                 message->setMessageType( MATCH );
                 message->setNonce(this->nonce);
@@ -256,7 +263,7 @@ void PowerClient::showMessage(Message* message){
             cout<<"\t- NONCE: "<<*(message->getNonce())<<endl<<endl;
             cout<<"-------------------"<<endl<<endl;
             break;
-        case utility::WITHDRAW_REQ:
+        case utility::WITHDRAW_OK:
             cout<<"------ ACCEPT ------"<<endl<<endl;
             cout<<"\t- NONCE: "<<*(message->getNonce())<<endl<<endl;
             cout<<"\t- CHALLENGER: "<<message->getUsername()<<endl<<endl;
@@ -282,7 +289,7 @@ void PowerClient::startClient() {
     int choose;
     string param;
     while(true){
-        cout<<"0) WAIT"<<'\n'<<"1) CERTIFICATE_REQ"<<'\n'<<"2) LOGIN_REQ"<<'\n'<<"3) KEY_EXCHANGE"<<'\n'<<"4) USER_REQ"<<'\n'<<"5) RANK_REQ"<<'\n'<<"6)MATCH"<<'\n'<<"7)ACCEPT"<<'\n'<<"8) REJECT"<<'\n'<<"9)WITHDRAW"<<'\n'<<"10)DISCONNECT"<<'\n'<<endl;
+        cout<<"0) WAIT"<<'\n'<<"1) CERTIFICATE_REQ"<<'\n'<<"2) LOGIN_REQ"<<'\n'<<"3) KEY_EXCHANGE"<<'\n'<<"4) USER_REQ"<<'\n'<<"5) RANK_REQ"<<'\n'<<"6)MATCH"<<'\n'<<"7)ACCEPT"<<'\n'<<"8) REJECT"<<'\n'<<"9)WITHDRAW"<<'\n'<<"10)DISCONNECT"<<'\n'<<"11)LOGOUT"<<'\n'<<endl;
         cout<<"Choose the message to send: "<<'\n';
         cin>>choose;
         cout<<"fava"<<endl;
@@ -318,9 +325,11 @@ void PowerClient::startClient() {
                     cin>>param;
                     this->sendMessage( REJECT, param.c_str());
                     break;
-            case 9: this->sendMessage( DISCONNECT, "" );
+            case 9: this->sendMessage( WITHDRAW_REQ, "" );
                     break;
-            case 10: this->sendMessage( LOGOUT_REQ, "" );
+            case 10: this->sendMessage( DISCONNECT, "" );
+                    break;
+            case 11: this->sendMessage( LOGOUT_REQ, "" );
                     break;
 
         }
