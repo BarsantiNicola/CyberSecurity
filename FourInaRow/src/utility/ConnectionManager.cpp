@@ -437,4 +437,9 @@ send a message and return true in case of success and false in case of failure
   {
     return serverSocket;
   }
+
+  int ConnectionManager::getstdinDescriptor()
+  {
+    return fileno(stdin);
+  }
 }

@@ -41,6 +41,7 @@ namespace utility
       vector<int> waitForMessage(int*,string*);
       int getsocketUDP();
       int getserverSocket();
+      int getstdinDescriptor();
     private:
       void copyBuffer(unsigned char*,unsigned char*,int,int);
       void initArray(unsigned char*,unsigned char,int);
