@@ -13,10 +13,10 @@ namespace client
   }
 
   /*
-  Coopy costructor
+  Copy costructor
  */
 
-  ChallengeInformation::ChallengeInformation(ChallengeInformation& challengeInfo)
+  ChallengeInformation::ChallengeInformation(const ChallengeInformation& challengeInfo)
   {
     if(!challengeInfo.username.empty())
       this->username=challengeInfo.username;

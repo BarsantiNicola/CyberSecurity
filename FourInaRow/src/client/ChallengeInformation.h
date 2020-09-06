@@ -10,7 +10,7 @@ namespace client
       double wonPercent;
     public:
       ChallengeInformation(string userName,int totalMatch,double wonPercent);
-      ChallengeInformation(ChallengeInformation& challengeInfo);
+      ChallengeInformation(const ChallengeInformation& challengeInfo);
       string getUserName();
       int getTotalMatch();
       double getWonPercent();
