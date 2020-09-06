@@ -49,4 +49,10 @@ namespace client
    }
    return res;
  }
+
+
+ ChallengeRegister::~ChallengeRegister()
+ {
+   challengeInformationList.clear();
+ }
 }
