@@ -461,6 +461,36 @@ namespace cipher{
 
     }
 
+    //  CLIENT
+    //  Extract the public key from what its textual form given with message
+    bool CipherRSA::extractAdversaryKey( unsigned char* pubKey , int len ){
+
+        if( !pubKey || !len ){
+
+            verbose<<"-->[CipherRSA][extractAdversaryKey] Error, invalid arguments"<<'\n';
+            return false;
+
+        }
+
+        std::ofstream pemWrite("data/temp/advKey.pem");
+        pemWrite.write((char*)pubKey,len);
+        pemWrite.close();
+
+        FILE* f = fopen("data/temp/advKey.pem" , "r");
+        EVP_PKEY* k = PEM_read_PUBKEY( f, nullptr, nullptr, nullptr );
+        fclose(f);
+        remove("data/temp/advKey.pem");
+
+        if( !k ){
+            verbose<<"-->[CipherRSA][extractAdversaryKey] Error, unable to extract adversary public key"<<'\n';
+            return false;
+        }
+
+        this->advPubKey = k;
+        return true;
+    }
+
+
     //  COMMON
     //  Generate a compact form of the message to generate a signature of validity. Then it insert it into the given message
     bool CipherRSA::sign( Message* message ){
