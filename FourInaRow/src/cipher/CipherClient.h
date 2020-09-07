@@ -19,7 +19,7 @@ namespace cipher
       ~CipherClient();
       bool toSecureForm( Message* message, SessionKey* aesKey );
       bool fromSecureForm( Message* message , string username , SessionKey* aesKey );
-      NetMessage* getServerCertificate();
+      //NetMessage* getServerCertificate();//da verificare utilita
       SessionKey* getSessionKey( unsigned char* param, unsigned int len );
       NetMessage* getPartialKey();
   };

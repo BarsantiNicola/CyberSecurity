@@ -421,5 +421,19 @@ namespace cipher
     }
     return true;
   }
+/*
+-------------------------------function getSessionKey------------------------------
+*/
 
+  SessionKey* CipherClient::getSessionKey( unsigned char* param , unsigned int len )
+  {
+    return this->dh->generateSessionKey( param,len );
+  }
+/*
+--------------------------function getPartialKey
+*/ 
+   NetMessage* CipherClient::getPartialKey()
+   {
+     return this->dh->generatePartialKey();
+   }
 }
