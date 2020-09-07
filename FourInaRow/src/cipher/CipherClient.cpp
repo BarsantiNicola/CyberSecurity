@@ -155,7 +155,7 @@ namespace cipher
          message->setSignature(app->getSignature(),app->getSignatureLen());
          delete app;
          break; 
-
+/*
       case ERROR:
          if(!aesKey)
            return false;
@@ -168,7 +168,7 @@ namespace cipher
          message->setSignature(app->getSignature(),app->getSignatureLen());
          delete app;
          break; 
-   
+ */  
       case CHAT:
          if(!aesKey)
            return false;
@@ -242,6 +242,9 @@ namespace cipher
        case LOGIN_OK:
          return rsa->clientVerifySignature( *message ,true);
 
+       case ERROR:
+         return rsa->clientVerifySignature( *message ,true);
+
        case LOGIN_FAIL:
          return rsa->clientVerifySignature( *message ,true); 
       
@@ -306,7 +309,7 @@ namespace cipher
          }
          message->setNetInformations(app->getNetInformations(),app->getNetInformationsLength());
          delete app;
-         if(!rsa->bool extractAdversaryKey(message->getNetInformations(),message->getNetInformationsLength()))
+         if(!rsa->extractAdversaryKey(message->getNetInformations(),message->getNetInformationsLength()))
          {
            return false;
          } 
@@ -385,7 +388,7 @@ namespace cipher
          }
          delete app;
          break;   
-
+/*
        case ERROR:
          if(!aesKey)
            return false;
@@ -397,8 +400,8 @@ namespace cipher
          }
          delete app;
          break;
-
-       case MOVE:
+*/
+       case GAME:
          if(!aesKey)
            return false;
          this->aes->modifyParam( aesKey );
@@ -413,7 +416,7 @@ namespace cipher
          break;
             
          default:
-           vverbose<<"--> [CipherServer][toSecureForm] Error, messageType not supported:"<<message->getMessageType()<<'\n';
+           vverbose<<"--> [CipherClient][fromSecureForm] Error, messageType not supported:"<<message->getMessageType()<<'\n';
          return false;    
     }
     return true;
