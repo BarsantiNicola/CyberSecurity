@@ -241,7 +241,10 @@ namespace cipher
        
        case LOGIN_OK:
          return rsa->clientVerifySignature( *message ,true);
-       
+
+       case LOGIN_FAIL:
+         return rsa->clientVerifySignature( *message ,true); 
+      
        case USER_LIST:
          if(!aesKey)
            return false;
