@@ -107,6 +107,19 @@ namespace server{
 
     }
 
+    bool ClientRegister::updateIp(int socket, int port){
+
+        for( int a = 0; a<this->clientRegister.size(); a++ )
+            if( this->clientRegister[a].getSocket() == socket ) {
+                this->clientRegister[a].updateIP(port);
+                return true;
+            }
+
+        vverbose<<"--> [ClientRegister][updateIp] Client not present into the register"<<'\n';
+        return false;
+
+    }
+
 
 
     //  verify the presence of a client searched by its socket

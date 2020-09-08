@@ -31,6 +31,7 @@ namespace server {
             int*   getClientNonce( int socket );
             bool   updateClientNonce( int socket );
             bool   setNonce( int socket , int nonce );
+            bool   updateIp( int socket, int port );
 
     };
 

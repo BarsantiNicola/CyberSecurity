@@ -30,6 +30,7 @@ class ClientInformation{
             int* getNonce();
             void updateNonce();
             void setNonce( int nonce );
+            void updateIP( int port );
 
 
     };

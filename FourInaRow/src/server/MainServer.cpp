@@ -811,6 +811,8 @@ namespace server {
 
         }
 
+        this->clientRegister.updateIp( socket, *(message->getPort()));
+
         response->setMessageType( LOGIN_OK );
 
         if( !this->cipherServer.toSecureForm( response , nullptr )){
