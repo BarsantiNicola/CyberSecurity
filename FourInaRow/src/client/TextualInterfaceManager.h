@@ -50,13 +50,13 @@ namespace client{
                 string* getUsername();
 		void printLoginInterface(string message);
 		void printMainInterface(string username,string activeUser,string serverStatus,string matchStatus,string pendingStatus);
-		void printGameInterface(bool myMove, string timer,string chat,int row,int column);
+		void printGameInterface(bool myMove, string timer,string chat,string gameBoard);
 		void setGame(void* game);
 		void setUsername(string username);
 		void printRankOrUserList(string message);
 
 	private:
-		string insertElement( InterfacePage page , InputType input , string value , string base,int row,int column);
+		string insertElement( InterfacePage page , InputType input , string value , string base);
 	};
 
 }
