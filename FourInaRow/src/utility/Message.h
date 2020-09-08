@@ -60,6 +60,7 @@ namespace utility {
 
             int* nonce = nullptr;
             int* current_token = nullptr;
+            int* port = nullptr;
 
             unsigned char* user_list = nullptr;
             unsigned int user_list_len=0;
@@ -107,6 +108,7 @@ namespace utility {
 
             bool setNonce( int nonce );
             bool setCurrent_Token( int current_token );
+            bool setPort( int port );
 
             bool setUserList( unsigned char* user_list, unsigned int len );
             bool setRankList( unsigned char* rank_list, unsigned int len );
@@ -128,6 +130,7 @@ namespace utility {
 
             int* getNonce();
             int* getCurrent_Token();
+            int* getPort();
 
             unsigned char* getUserList();
             unsigned int getUserListLen();

@@ -7,8 +7,8 @@ namespace utility{
     bool Converter::verifyMessage(MessageType type , Message message  ){
 
         vverbose<<"--> [Converter][verifyMessage] Verification of message"<<'\n';
-        int* nonce;
-        unsigned char* nonceString, *server_certificate,*signature,*key,*net,*chosen_column,*chat,*list;
+        int* nonce,*port;
+        unsigned char* nonceString, portString,*server_certificate,*signature,*key,*net,*chosen_column,*chat,*list;
         const char* app,*app2;
         switch( type ){
 
@@ -84,21 +84,31 @@ namespace utility{
                 }
                 app = message.getUsername().c_str();
 
+                port = message.getPort();
+                if( !port ){
+
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Port"<<'\n';
+                    return false;
+                }
+
                 signature = message.getSignature();
 
                 if (!signature) {
                     verbose << "--> [Converter][verifyMessage] Verification failure: Missing Signature" << '\n';
+                    delete port;
                     delete nonce;
                     return false;
                 }
 
                 if( checkField((const unsigned char*)app,message.getUsername().length()) || checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length())) {
                     verbose<<"--> [Converter][verifyMessage] Verification failure: Presence of <\"&>"<<'\n';
+                    delete port;
                     delete nonce;
                     delete[] signature;
                     return false;
                 }
                 delete[] signature;
+                delete port;
                 delete nonce;
                 vverbose<<"--> [Converter][verifyMessage] Verification LOGIN_REQ success"<<'\n';
                 break;
@@ -827,7 +837,7 @@ namespace utility{
     //  verifies the presence of all the fields needed to a given MessageType and that these don't contain a &" element
     bool Converter::verifyCompact(MessageType type , Message message  ){
         vverbose<<"--> [Converter][verifyMessage] Verification of message"<<'\n';
-        int* nonce;
+        int* nonce,*port;
         unsigned char* nonceString, *server_certificate,*key,*net,*chosen_column,*chat,*list;
         const char* app,*app2;
         switch( type ){
@@ -889,9 +899,19 @@ namespace utility{
                 }
                 nonceString = (unsigned char*)to_string(*nonce).c_str();
 
+                port = message.getPort();
+                if( !port ){
+
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Port"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
                 if( message.getUsername().empty() ){
 
                     verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Username"<<'\n';
+                    delete nonce;
+                    delete port;
                     return false;
                 }
                 app = message.getUsername().c_str();
@@ -899,9 +919,11 @@ namespace utility{
 
                 if( checkField((const unsigned char*)app,message.getUsername().length()) || checkField(nonceString,to_string(*nonce).length())) {
                     verbose<<"--> [Converter][verifyCompact] Verification failure: Presence of <\"&>"<<'\n';
+                    delete port;
                     delete nonce;
                     return false;
                 }
+                delete port;
                 delete nonce;
                 vverbose<<"--> [Converter][verifyCompact] Verification LOGIN_REQ success"<<'\n';
                 break;
@@ -1436,7 +1458,7 @@ namespace utility{
         }
 
         unsigned char* certificate,*key,*net,*sign;
-        int* nonce;
+        int* nonce,*port;
         int pos;
         switch( type ){
 
@@ -1477,8 +1499,9 @@ namespace utility{
 
             case LOGIN_REQ:
                 nonce = message.getNonce();
+                port = message.getPort();
                 sign = message.getSignature();
-                len = 29+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen();
+                len = 29+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen()+to_string(*port).length();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1488,6 +1511,7 @@ namespace utility{
                     value[a] = '\0';
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
                 pos = writeField(value , 'u', (unsigned char*)message.getUsername().c_str(), message.getUsername().length(), pos, false  );
+                pos = writeField(value , 'j', (unsigned char*)to_string(*port).c_str(),to_string(*port).length(),pos,false  );
                 pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
                 pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
 
@@ -2060,6 +2084,10 @@ namespace utility{
                 vverbose<<"--> [Converter][setField] Identified variable: Signature AES"<<'\n';
                 msg->setSignatureAES( fieldValue, len );
                 break;
+            case 'j':
+                vverbose<<"--> [Converter][setField] Identified variable: UDP Port"<<'\n';
+                msg->setPort( stoi(string(reinterpret_cast<char*>(fieldValue))) );
+                break;
             default:
                 verbose<<"--> [Converter][setField] Error, undefined field name: "<<fieldName<<'\n';
                 return false;
@@ -2597,7 +2625,7 @@ namespace utility{
         }
 
         unsigned char* certificate,*key,*net;
-        int* nonce;
+        int* nonce,*port;
         int pos;
         switch( type ){
 
@@ -2635,7 +2663,8 @@ namespace utility{
 
             case LOGIN_REQ:
                 nonce = message.getNonce();
-                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length();
+                port = message.getPort();
+                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+to_string(*port).length();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -2645,6 +2674,7 @@ namespace utility{
                     value[a] = '\0';
                 pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
                 pos = writeCompactField(value ,  (unsigned char*)message.getUsername().c_str(), message.getUsername().length(), pos, false  );
+                pos = writeCompactField(value ,  (unsigned char*)to_string(*port).c_str(),to_string(*port).length(),pos,false );
                 pos = writeCompactField(value ,  (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,true  );
 
                 break;

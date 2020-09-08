@@ -13,6 +13,7 @@ namespace utility {
     Message::Message(){
         nonce = nullptr;
         current_token = nullptr;
+        port = nullptr;
 
         server_certificate = nullptr;
         certificate_len = 0;
@@ -71,6 +72,9 @@ namespace utility {
         if( msg.current_token )
             this->setCurrent_Token(*( msg.current_token ));
 
+        if( msg.port )
+            this->setPort(*( msg.port ));
+
         if( msg.message )
             this->setMessage( msg.message, msg.message_size );
 
@@ -113,6 +117,9 @@ namespace utility {
 
         if( this->current_token )
             delete this->current_token;
+
+        if( this->port )
+            delete port;
 
         if( this->user_list )
             delete[] this->user_list;
@@ -211,6 +218,26 @@ namespace utility {
 
             vverbose<<"--> [Message][setCurrentToken] Set of CurrentToken Completed"<<'\n';
             *(this->current_token) = current_token;
+            return true;
+
+        }else {
+
+            verbose << "--> [Message][setCurrentToken] Error during allocation of memory. Operation Aborted" << '\n';
+            return false;
+
+        }
+
+    }
+
+    bool Message::setPort( int port ){
+
+        if( this->port == nullptr )
+            this->port = new int();
+
+        if( this->port ){
+
+            vverbose<<"--> [Message][setPort] Set of Port Completed"<<'\n';
+            *(this->port) = port;
             return true;
 
         }else {
@@ -608,6 +635,23 @@ namespace utility {
 
         }
         *ret = *(this->current_token);
+
+        return ret;
+
+    }
+
+    int* Message::getPort(){
+
+        if( !this->port ) return nullptr;
+
+        int *ret = new int();
+        if( !ret ){
+
+            verbose<<"--> [Message][getPort] Error during allocation of memory. Operation Aborted"<<'\n';
+            return nullptr;
+
+        }
+        *ret = *(this->port);
 
         return ret;
 
