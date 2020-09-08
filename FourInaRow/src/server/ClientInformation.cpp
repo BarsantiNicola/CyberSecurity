@@ -52,7 +52,7 @@ namespace server{
 
     void ClientInformation::updateIP(int port) {
 
-        this->IPaddress.append( to_string(port).c_str());
+        this->IPaddress.append(":").append( to_string(port).c_str());
     }
 
 
