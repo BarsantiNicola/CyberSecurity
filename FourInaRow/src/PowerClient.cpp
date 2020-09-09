@@ -286,7 +286,7 @@ void PowerClient::startClient() {
     int choose;
     string param;
     while(true){
-        cout<<"0) WAIT"<<'\n'<<"1) CERTIFICATE_REQ"<<'\n'<<"2) LOGIN_REQ"<<'\n'<<"3) KEY_EXCHANGE"<<'\n'<<"4) USER_REQ"<<'\n'<<"5) RANK_REQ"<<'\n'<<"6)MATCH"<<'\n'<<"7)ACCEPT"<<'\n'<<"8) REJECT"<<'\n'<<"9)WITHDRAW"<<'\n'<<"10)DISCONNECT"<<'\n'<<"11)LOGOUT"<<'\n'<<endl;
+        cout<<"0)  WAIT"<<'\n'<<"1)  CERTIFICATE_REQ"<<'\n'<<"2)  LOGIN_REQ"<<'\n'<<"3)  KEY_EXCHANGE"<<'\n'<<"4)  USER_REQ"<<'\n'<<"5)  RANK_REQ"<<'\n'<<"6)  MATCH"<<'\n'<<"7)  ACCEPT"<<'\n'<<"8)  REJECT"<<'\n'<<"9)  WITHDRAW"<<'\n'<<"10) DISCONNECT"<<'\n'<<"11) LOGOUT"<<'\n'<<endl;
         cout<<"Choose the message to send: "<<'\n';
         cin>>choose;
         switch(choose){
