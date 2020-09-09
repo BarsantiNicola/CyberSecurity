@@ -81,17 +81,12 @@ Message* PowerClient::createMessage( MessageType type, const char* param ){
                 break;
 
             case utility::KEY_EXCHANGE:
-                cout<<"a"<<endl;
+
                 message->setMessageType( KEY_EXCHANGE );
-                cout<<"b"<<endl;
                 message->setNonce(this->nonce);
-            cout<<"c"<<endl;
                 mParam = this->cipherDH->generatePartialKey();
-            cout<<"d"<<endl;
                 message->set_DH_key( mParam->getMessage(), mParam->length() );
-            cout<<"e"<<endl;
                 this->cipher->sign( message );
-            cout<<"f"<<endl;
                 this->nonce++;
                 break;
 
@@ -294,7 +289,6 @@ void PowerClient::startClient() {
         cout<<"0) WAIT"<<'\n'<<"1) CERTIFICATE_REQ"<<'\n'<<"2) LOGIN_REQ"<<'\n'<<"3) KEY_EXCHANGE"<<'\n'<<"4) USER_REQ"<<'\n'<<"5) RANK_REQ"<<'\n'<<"6)MATCH"<<'\n'<<"7)ACCEPT"<<'\n'<<"8) REJECT"<<'\n'<<"9)WITHDRAW"<<'\n'<<"10)DISCONNECT"<<'\n'<<"11)LOGOUT"<<'\n'<<endl;
         cout<<"Choose the message to send: "<<'\n';
         cin>>choose;
-        cout<<"fava"<<endl;
         switch(choose){
             case 0: this->waitMessage();
                     break;
@@ -307,8 +301,7 @@ void PowerClient::startClient() {
                     break;
             case 3: this->sendMessage(KEY_EXCHANGE, "" );
                     break;
-            case 4: cout<<"ok"<<endl;
-                    this->sendMessage( USER_LIST_REQ, "" );
+            case 4: this->sendMessage( USER_LIST_REQ, "" );
                     break;
             case 5: this->sendMessage( RANK_LIST_REQ, "" );
                     break;
@@ -329,9 +322,9 @@ void PowerClient::startClient() {
                     break;
             case 9: this->sendMessage( WITHDRAW_REQ, "" );
                     break;
-            case 10: this->sendMessage( DISCONNECT, "" );
+            case 10:this->sendMessage( DISCONNECT, "" );
                     break;
-            case 11: this->sendMessage( LOGOUT_REQ, "" );
+            case 11:this->sendMessage( LOGOUT_REQ, "" );
                     break;
 
         }
@@ -347,11 +340,10 @@ int main( int argc, char* argv[] ) {
         cout<<"Inserire socket udp"<<'\n';
         return 1;
     }
-    cout<<"ok"<<endl<<atoi(argv[1])<<endl;
     Logger::setThreshold(NO_VERBOSE);
     PowerClient *client;
 
     client = new PowerClient(string("127.0.0.1"), atoi(argv[1]));
-    cout << "--------------------start" << endl;
+
     client->startClient();
 }
