@@ -327,4 +327,37 @@ return false in case of non autorizate move
     }
     return columnsFree;
   }
+
+  string Game::printGameBoard()
+  {
+    string ret="";
+    string app;
+    for(int i=0;i<NUMBER_ROW;i++)
+    {
+      for(int j=0;j<NUMBER_COLUMN;++j)
+      {
+        switch(gameBoard[i][j])
+        {
+          case 0:
+            app=" ";
+            break;
+      
+         case 1:
+           app="O";
+           break;
+ 
+        case 2:
+          app="X";
+          break;
+        default:
+          return "";
+        }
+        ret+=" " + app + " ";
+        if(j!=(NUMBER_COLUMN-1))
+          ret+="|";
+      }
+      ret+='\n';
+    }
+    return ret;
+  }
 }

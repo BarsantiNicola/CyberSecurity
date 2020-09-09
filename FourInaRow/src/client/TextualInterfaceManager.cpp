@@ -52,33 +52,26 @@ namespace client{
 		string command;
 		string value;
 		system("tput clear");
-		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::USERNAME , username , main_page,0,0);
-		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::ACTIVE_USER , activeUser , value,0,0 );
-		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::SERVER_STATUS , serverStatus , value,0,0 );
-		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::MATCH_STATUS , matchStatus , value,0,0 );
-		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::PENDING_SIZE , pendingStatus , value,0,0 );
+		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::USERNAME , username , main_page);
+		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::ACTIVE_USER , activeUser , value);
+		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::SERVER_STATUS , serverStatus , value);
+		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::MATCH_STATUS , matchStatus , value);
+		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::PENDING_SIZE , pendingStatus , value);
 		cout<<value<<endl;
 		cout<<"\t# Insert a command:";
 		cout.flush();
 
 	}
 
-	void TextualInterfaceManager::printGameInterface(bool myMove, string timer,string chat,int row,int column){
+	void TextualInterfaceManager::printGameInterface(bool myMove, string timer,string chat,string gameboard){
 	
 		string command;
                 string value;
                 string tok;
-                if(myMove==true)
-                {
-                  tok="0";
-                }
-                else
-                {
-                  tok="X";
-                }
-                value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::TIMER,timer,game_page,0,0);
-		value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::CHAT,chat,value,0,0);
-                value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::GAMEBOARD,tok,value,row,column);
+                system("tput clear");
+                value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::TIMER,timer,game_page);
+		value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::CHAT,chat,value);
+                value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::GAMEBOARD,gameboard,value);
 		cout<<value<<endl;
 		cout<<"\t# Insert a command:";
 		cout.flush();
@@ -86,10 +79,12 @@ namespace client{
 		//return false;
 	}
 
-	string TextualInterfaceManager::insertElement( InterfacePage page , InputType input , string elem , string base,int row,int column){
-	
-		int position = -1;
-		switch( page ){
+	string TextualInterfaceManager::insertElement( InterfacePage page , InputType input , string elem , string base)
+        {
+	                int number_game_row=0;
+          		int position = -1;
+			string stringApp;
+	  		switch( page ){
 			case InterfacePage::MAIN_PAGE_0:
 				switch( input ){
 					case InputType::USERNAME: 
@@ -120,14 +115,9 @@ namespace client{
                                           break;
 
                                       case InputType::GAMEBOARD:
-                                           if(row==0)
-                                           {
-                                             position=START_GAMEBOARD_POSITION+4*column;
-                                           }
-                                           else
-                                           {
-                                             position= (LOCAL_GAMEBOARD_POSITION+3)+(NUMBER_COLLUMN_FOR_ROW *(ROW_OF_GAMEBOARD_START+column))+(4*column);
-                                           }
+                                          position=START_GAMEBOARD_POSITION;
+                                           
+
                                }
 				break;
 		}
@@ -137,6 +127,18 @@ namespace client{
 			switch( page ){
 				case InterfacePage::MAIN_PAGE_0:
 					base[position+a] = elem[a];
+					break;
+                               case InterfacePage::MATCH_PAGE_0:
+                                        if(elem[a]=='\n'&& input==InputType::GAMEBOARD)
+				        {
+                                          ++number_game_row;
+                                          position = START_GAMEBOARD_POSITION + (number_game_row*NUMBER_COLLUMN_FOR_ROW)-(a+1);
+                                        }
+                                        else 
+                                        { 
+                                          base[position+a] = elem[a];  
+                                        }
+                                          
 					break;
 			}
 		}
