@@ -33,7 +33,6 @@ class PowerClient {
         void waitMessage();
     public:
         PowerClient( string ipAddr, int port );
-
         void startClient();
 
 

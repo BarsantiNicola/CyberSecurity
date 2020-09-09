@@ -267,7 +267,7 @@ void PowerClient::showMessage(Message* message){
             cout<<"-------------------"<<endl<<endl;
             break;
         case utility::GAME_PARAM:
-            cout<<"------ ACCEPT ------"<<endl<<endl;
+            cout<<"------ GAME_PARAM ------"<<endl<<endl;
             cout<<"\t- NONCE: "<<*(message->getNonce())<<endl<<endl;
             cout<<"\t- IP: "<<message->getNetInformations()<<endl<<endl;
             cout<<"\t- PUBKEY: ";
