@@ -1501,7 +1501,7 @@ namespace utility{
                 nonce = message.getNonce();
                 port = message.getPort();
                 sign = message.getSignature();
-                len = 29+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen()+to_string(*port).length();
+                len = 37+to_string(type).length()+to_string(*nonce).length()+message.getUsername().length()+message.getSignatureLen()+to_string(*port).length();
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1514,7 +1514,9 @@ namespace utility{
                 pos = writeField(value , 'j', (unsigned char*)to_string(*port).c_str(),to_string(*port).length(),pos,false  );
                 pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
                 pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
-
+                for( int a = 0; a<len;a++)
+                    cout<<value[a];
+                cout<<endl;
                 delete[] sign;
                 break;
 

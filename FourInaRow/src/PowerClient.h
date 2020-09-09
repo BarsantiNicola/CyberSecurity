@@ -24,6 +24,7 @@ class PowerClient {
         ConnectionManager *manager;
         int server_socket;
         int nonce;
+        int port;
         string username;
 
         Message* createMessage( MessageType type, const char* param );

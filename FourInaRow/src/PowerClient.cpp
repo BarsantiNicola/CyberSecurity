@@ -7,6 +7,7 @@ PowerClient::PowerClient( string ipAddr, int port ){
     this->cipherDH = new cipher::CipherDH();
     this->cipherAes = new cipher::CipherAES();
     this->manager = new ConnectionManager(false,ipAddr.c_str(),port);
+    this->port = port;
 
     if(!this->manager->createConnectionWithServerTCP( ipAddr.c_str(), 12345 )){
 
@@ -67,6 +68,7 @@ Message* PowerClient::createMessage( MessageType type, const char* param ){
             case utility::LOGIN_REQ:
                 message->setMessageType( LOGIN_REQ );
                 message->setNonce(this->nonce);
+                message->setPort( this->port );
                 this->username = string(param);
                 password = this->username;
                 password.append( "Password" );
