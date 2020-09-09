@@ -209,7 +209,7 @@ namespace cipher
          {
            return false;
          }
-         message->setSignature(app->getSignature(),app->getSignatureLen());
+         message->setSignatureAES(app->getSignatureAES(),app->getSignatureAESLen());
          message->setChosenColumn( app->getChosenColumn(), app->getChosenColumnLength());
          delete app;
          break;
@@ -436,4 +436,11 @@ namespace cipher
    {
      return this->dh->generatePartialKey();
    }
+
+
+  void CipherClient::newRSAParameter(string username,string password)
+  {
+    delete this->rsa;
+    this->rsa = new CipherRSA(username, password, false );
+  }
 }

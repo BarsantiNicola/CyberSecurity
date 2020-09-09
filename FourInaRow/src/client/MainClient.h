@@ -1,5 +1,6 @@
 #include"Game.h"
 #include<string>
+#include<thread>
 #include"../cipher/CipherClient.h"
 #include"../utility/Message.h"
 #include"../utility/NetMessage.h"
@@ -8,30 +9,56 @@
 #include"ChallengeRegister.h"
 #include"TextualInterfaceManager.h"
 #include"../utility/ConnectionManager.h"
-using namespace cipher;
+#include<mutex>
+
+#define SLEEP_TIME 1000
+using namespace utility;
 namespace client
 {
+  enum MessageGameType{
+        NO_GAME_TYPE_MESSAGE,
+        MOVE_TYPE,
+        CHAT_TYPE
+    };
+
   class MainClient
   {
     private:
+      long timer=15;
+      bool time_expired=false;
+      int nonce;
+      int currentToken;//da inizializzare nel main
+      int currTokenChat;//da inizializzare nel main
+      const char* serverIP="127.0.0.1";
+      int serverPort=1234;
+      int myPort=1235;
+      const char* myIP="127.0.0.1";
+      string username = "";
+      string adv_username_1 = "";
+      //string adv_username_2 = "";
       Game* game;
       ChallengeRegister* challenge_register;
       ConnectionManager connection_manager;
       TextualInterfaceManager textual_interface_manager;
-      CipherClient* cipher_client;
-      bool loginProtocol(NetMessage netmessage);
-      bool signUpProtocol(NetMessage netmessage);
-      bool challengeProtocol(NetMessage netmessage);
-      bool acceptProtocol(NetMessage netmessage);
-      bool rejectProtocol(NetMessage netmessage);
-      bool rankProtocol(NetMessage netmessage);
+      cipher::CipherClient* cipher_client;
+      std::mutex mtx_time;
+      std::unique_lock<std::mutex>lck_time(mtx,std::defer_lock);
+      bool loginProtocol(Message message);
+      bool signUpProtocol(Message message);
+      bool challengeProtocol(Message message);
+      bool acceptProtocol(Message message);
+      bool rejectProtocol(Message message);
+      bool rankProtocol(Message message);
       bool certificateProtocol();
-      bool keyExchangeProtocol(NetMessage netmessage);
-      bool userListProtocol(NetMessage netmessage);
-      bool disconnectProtocol(NetMessage netmessage);
-      bool logoutProtocol(netMessage netmessage);
-      bool matchProtocol(netMessage netmessage);
+      bool keyExchangeProtocol(Message message);
+      bool userListProtocol(Message message);
+      bool disconnectProtocol(Message message);
+      bool logoutProtocol(Message message);
+      bool matchProtocol(Message message);
       bool timerHandler(long secs);
+      bool comand(string comand_line);
+      Message createMessage(MessageType type, const char* param,unsigned char* g_param,int g_paramLen,SessionKey* aesKey,MessageGameType messageGameType);
+      unsigned char* concTwoField(unsigned char* firstField,unsigned int firstFieldSize,unsigned char* secondField,unsigned int secondFieldSize,unsigned char separator,unsigned int numberSeparator)
     public:
       int main(int argc, char** argv); 
   };

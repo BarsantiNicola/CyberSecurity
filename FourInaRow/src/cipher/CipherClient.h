@@ -17,6 +17,7 @@ namespace cipher
     public:
       CipherClient(string username,string password);
       ~CipherClient();
+      void newRSAParameter(string username,string password);
       bool toSecureForm( Message* message, SessionKey* aesKey );
       bool fromSecureForm( Message* message , string username , SessionKey* aesKey );
       //NetMessage* getServerCertificate();//da verificare utilita
