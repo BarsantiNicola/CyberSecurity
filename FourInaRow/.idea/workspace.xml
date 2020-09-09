@@ -28,10 +28,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4cbb8ddf-e807-44fa-ae33-bda27674b47b" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/program" beforeDir="false" afterPath="$PROJECT_DIR$/program" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/PowerClient.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/PowerClient.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/PowerClient.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/PowerClient.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/utility/Converter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/utility/Converter.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -139,7 +135,7 @@
       <workItem from="1599326493765" duration="2964000" />
       <workItem from="1599465849960" duration="563000" />
       <workItem from="1599551640036" duration="3349000" />
-      <workItem from="1599646747075" duration="475000" />
+      <workItem from="1599646747075" duration="686000" />
     </task>
     <servers />
   </component>

@@ -1514,9 +1514,6 @@ namespace utility{
                 pos = writeField(value , 'j', (unsigned char*)to_string(*port).c_str(),to_string(*port).length(),pos,false  );
                 pos = writeField(value , 'n', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
                 pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
-                for( int a = 0; a<len;a++)
-                    cout<<value[a];
-                cout<<endl;
                 delete[] sign;
                 break;
 
