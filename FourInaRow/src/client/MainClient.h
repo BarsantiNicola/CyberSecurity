@@ -5,7 +5,7 @@
 #include"../utility/Message.h"
 #include"../utility/NetMessage.h"
 #include"../utility/Converter.h"
-#include"ChallengeInformation.h"
+//#include"ChallengeInformation.h"
 #include"ChallengeRegister.h"
 #include"TextualInterfaceManager.h"
 #include"../utility/ConnectionManager.h"
@@ -38,11 +38,11 @@ namespace client
       //string adv_username_2 = "";
       Game* game;
       ChallengeRegister* challenge_register;
-      ConnectionManager connection_manager;
+      ConnectionManager* connection_manager;//da inizializzare nel main
       TextualInterfaceManager textual_interface_manager;
       cipher::CipherClient* cipher_client;
       std::mutex mtx_time;
-      std::unique_lock<std::mutex>lck_time(mtx,std::defer_lock);
+      std::unique_lock<std::mutex>* lck_time;//(mtx_time,std::defer_lock);//da inizializzare nel main
       bool loginProtocol(Message message);
       bool signUpProtocol(Message message);
       bool challengeProtocol(Message message);
@@ -55,10 +55,13 @@ namespace client
       bool disconnectProtocol(Message message);
       bool logoutProtocol(Message message);
       bool matchProtocol(Message message);
-      bool timerHandler(long secs);
-      bool comand(string comand_line);
-      Message createMessage(MessageType type, const char* param,unsigned char* g_param,int g_paramLen,SessionKey* aesKey,MessageGameType messageGameType);
-      unsigned char* concTwoField(unsigned char* firstField,unsigned int firstFieldSize,unsigned char* secondField,unsigned int secondFieldSize,unsigned char separator,unsigned int numberSeparator)
+      void timerHandler(long secs);
+      bool comand(std::string comand_line);
+      Message* createMessage(MessageType type, const char* param,unsigned char* g_param,int g_paramLen,cipher::SessionKey* aesKey,MessageGameType messageGameType);
+      unsigned char* concTwoField(unsigned char* firstField,unsigned int firstFieldSize,unsigned char* secondField,unsigned int secondFieldSize,unsigned char separator,unsigned int numberSeparator);
+
+      bool deconcatenateTwoField(unsigned char* originalField,unsigned int originalFieldSize,unsigned char* firsField,unsigned int* firstFieldSize,unsigned char* secondField,unsigned int* secondFieldSize,unsigned char separator,unsigned int numberSeparator);
+
     public:
       int main(int argc, char** argv); 
   };

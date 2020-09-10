@@ -5,23 +5,66 @@ namespace client
   {
     while(true)
     {
-      lck_time.lock();
-      if(time!=0)
+      lck_time->lock();
+      if(timer!=0)
       {
-        lck_time.unlock();
+        lck_time->unlock();
         sleep(SLEEP_TIME);
-        lck_time.lock();
-        --time;
-        lck_time.unlock();
+        lck_time->lock();
+        --timer;
+        lck_time->unlock();
       }
       else
       {
         time_expired=true;
-        lck_time.unlock();
+        lck_time->unlock();
       }
     }
    
   }
+/*
+--------------certificateProtocol function-----------------------------
+*/
+  bool MainClient::certificateProtocol()
+  {
+   const char*ip=nullptr;
+   bool socketIsClosed=false;
+   bool res;
+   Message* messRet;
+   NetMessage* netRet;
+   Converter conv;
+   Message* mess =createMessage(MessageType::CERTIFICATE_REQ, nullptr,nullptr,0,nullptr,MessageGameType::NO_GAME_TYPE_MESSAGE);
+   if(mess==nullptr)
+   {
+     verbose<<"-->[MainClient][certificateProtocol] error to create a CERTIFICATION message "<<'\n';
+     return false;
+   }
+   res=connection_manager->sendMessage(*mess,connection_manager->getserverSocket(),&socketIsClosed,ip,0);
+   if(!res)
+     return false;
+    messRet=connection_manager->getMessage(connection_manager->getserverSocket());
+   if(messRet==nullptr)
+   {
+     verbose<<"-->[MainClient][certificateProtocol] error to recive a CERTIFICATION message "<<'\n';
+     return false;
+   }
+   if(messRet->getMessageType()!=CERTIFICATE)
+   {
+     verbose<<"-->[MainClient][certificateProtocol] error to recive a CERTIFICATION message "<<'\n';
+     return false; 
+   }
+   netRet=conv.encodeMessage(messRet-> getMessageType(), *messRet );
+   if(netRet==nullptr)
+   {
+     return false;
+   }
+   
+   res = cipher_client-> getSessionKey( netRet->getMessage() ,netRet->length() );
+   return res;
+  }
+/*
+--------------------------------loginProtocol function------------------------------
+*/
   bool MainClient::loginProtocol(Message message)//DA FINIRE
   {
     bool res;
@@ -29,13 +72,13 @@ namespace client
     bool socketIsClosed=false;
     if(message.getMessageType()==LOGIN_REQ)
     {
-      res=connection_manager.sendMessage(message,connection_manager.getserverSocket(),&socketIsClosed,nullptr,0); 
+      res=connection_manager->sendMessage(message,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0); 
       while(socketIsClosed)
       {
-        connection_res=rescreateConnectionWithServerTCP(serverIP,serverPort);
+        connection_res=connection_manager->createConnectionWithServerTCP(serverIP,serverPort);
         if(!connection_res)
           return false;
-        res=connection_manager.sendMessage(message,connection_manager.getserverSocket(),&socketIsClosed,nullptr,0); 
+        res=connection_manager->sendMessage(message,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0); 
       }
       return res;
     }
@@ -50,8 +93,10 @@ namespace client
        
   }
 
-
-  Message* MainClient::createMessage(MessageType type, const char* param,unsigned char* g_param,int g_paramLen,SessionKey* aesKey,MessageGameType messageGameType)
+ /*
+-------------------------------------------------------createMessage function-----------------------------------------------------
+*/
+  Message* MainClient::createMessage(MessageType type, const char* param,unsigned char* g_param,int g_paramLen,cipher::SessionKey* aesKey,MessageGameType messageGameType)
   {
     NetMessage* partialKey;
     NetMessage* net;
@@ -68,7 +113,7 @@ namespace client
         message->setNonce(this->nonce);
         message->setPort( this->myPort );
         message->setUsername(param );
-        cipherRes=cipher_client->toSecureForm( Messamessage,aesKey );
+        cipherRes=cipher_client->toSecureForm( message,aesKey );
         this->nonce++;
         break;
         
@@ -98,7 +143,7 @@ namespace client
       case LOGOUT_REQ:
         message->setMessageType( LOGOUT_REQ );
         message->setNonce(this->nonce);
-        message =this->cipher_client->toSecureForm( message,aesKey );
+        cipherRes=this->cipher_client->toSecureForm( message,aesKey );
         this->nonce++;
         break;
 
@@ -107,7 +152,7 @@ namespace client
         message->setNonce(this->nonce);
         message->setAdversary_1(param);
         message->setAdversary_2(this->username.c_str());
-        message = this->cipher_client->toSecureForm( message,aesKey );
+        cipherRes = this->cipher_client->toSecureForm( message,aesKey );
         this->nonce++;
         break;
 
@@ -167,6 +212,7 @@ namespace client
 
         }
         cipherRes = this->cipher_client->toSecureForm( message,aesKey );
+        
         break;
 
       case CHAT:
@@ -180,29 +226,26 @@ namespace client
         break;
 
      case GAME:
-        message->message->setMessageType(CHAT); 
+        message->setMessageType(GAME); 
         message->setCurrent_Token(this->currentToken);
-        message->setMessage( g_param,g_paramLen );
-        setChosenColumn( unsigned char* chosen_column, unsigned int len );
-        cipherRes=cipher_client->toSecureForm( Messamessage,aesKey );
+        message->setChosenColumn(  g_param,g_paramLen);
+        cipherRes=cipher_client->toSecureForm( message,aesKey );
         break;
 
-     case GAME:
-        message->message->setMessageType(CHAT); 
-        message->setCurrent_Token(this->currentToken);
-        message->setMessage( g_param,g_paramLen );
-        setChosenColumn( unsigned char* chosen_column, unsigned int len );
-        cipherRes=cipher_client->toSecureForm( Messamessage,aesKey );
-        break;
     }
     if(!cipherRes)
       return nullptr;
     return message;
   }
- 
+/*
+---------------------------concatenateTwoField function-------------------------------------------------
+*/
   unsigned char* MainClient::concTwoField(unsigned char* firstField,unsigned int firstFieldSize,unsigned char* secondField,unsigned int secondFieldSize,unsigned char separator,unsigned int numberSeparator)
   {
-    unsigned char* app=new unsigned char*[firstFieldSize+secondFieldSize+numberSeparator];
+    if(firstField==nullptr||secondField==nullptr)
+      return nullptr;
+    int j=0;
+    unsigned char* app=new unsigned char[firstFieldSize+secondFieldSize+numberSeparator];
     for(int i=0;i<firstFieldSize;++i)
     {
       app[i]=firstField[i];
@@ -213,8 +256,81 @@ namespace client
     }
     for(int i=(firstFieldSize+numberSeparator);i<(firstFieldSize+numberSeparator+secondFieldSize);++i)
     {
-      app[i]=secondField [i-(firstFieldSize+numberSeparator)];
+     
+      app[i]=secondField [j];
+      ++j;
     }
     return app;
+  }
+/*
+  ------------------------------deconcatenateTwoField function----------------------------------
+*/
+  bool MainClient::deconcatenateTwoField(unsigned char* originalField,unsigned int originalFieldSize,unsigned char* firstField,unsigned int* firstFieldSize,unsigned char* secondField,unsigned int* secondFieldSize, unsigned char separator,unsigned int numberSeparator)
+  {
+    int counter=0;
+    int firstDimension=0;
+    int secondDimension=0;
+    if(originalField==nullptr||firstFieldSize==nullptr||secondField==nullptr)
+      return false;
+    for(int i=0;i<originalFieldSize;++i)
+    {
+       if(originalField[i]==separator)
+       {
+         ++counter;
+         if(counter==numberSeparator)
+         {
+           firstDimension = (i-(numberSeparator-1));
+           secondDimension= originalFieldSize-i;
+         }
+       }
+       else
+       {
+         --counter;
+       }
+    }
+    firstField=new unsigned char[firstDimension];
+    secondField=new unsigned char[secondDimension];
+    for(int i=0;i<firstDimension;++i)
+    {
+      firstField[i]=originalField[i];      
+    }
+    int j=0;
+    for(int i=(firstDimension+numberSeparator);i<originalFieldSize;++i)
+    {    
+      secondField[j]=originalField[i];
+      ++j;
+    }
+    *firstFieldSize=firstDimension;
+    *secondFieldSize=secondDimension;
+    return true;
+  }
+
+/*
+------------------------comand function------------------------------------
+
+*/
+  bool MainClient::comand(std::string comand_line)
+  {
+    if(comand_line.empty())
+    {
+      verbose<<""<<"--> [MainClient][comand] error comand_line is empty"<<'\n';
+      return false;
+    }
+    if(comand_line.compare(0,5,"LOGIN "))
+    {
+      //ESEGUO IL LOGIN
+    }
+    else if(comand_line.compare(0,4,"show "))
+    {
+      //ESEGUO LO SHOW
+    }
+    else if(comand_line.compare(0,9,"challenge "))
+    {
+      //ESEGUO CHALLENGE
+    }
+    else if(comand_line.compare(0,6,"logout "))
+    {
+      //ESEGUO LOGOUT
+    }
   }
 }

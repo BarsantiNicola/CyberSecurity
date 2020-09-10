@@ -197,21 +197,27 @@ namespace cipher
          break;  
 
        case GAME:
-         if(!aesKey)
-           return false;
-
-         if( !this->rsa->sign(message))
-           return false;
-
-         this->aes->modifyParam( aesKey );
-         app = this->aes->encryptMessage(*message);
-         if(app == nullptr)
+        
+         if(message->getSignature()==nullptr)
          {
-           return false;
+           if( !this->rsa->sign(message))
+             return false;
          }
-         message->setSignatureAES(app->getSignatureAES(),app->getSignatureAESLen());
-         message->setChosenColumn( app->getChosenColumn(), app->getChosenColumnLength());
-         delete app;
+         else
+         {
+           if(!aesKey)
+             return false;
+           this->aes->modifyParam( aesKey );
+           app = this->aes->encryptMessage(*message);
+           if(app == nullptr)
+           {
+             return false;
+           }
+           message->setSignatureAES(app->getSignatureAES(),app->getSignatureAESLen());
+           message->setChosenColumn( app->getChosenColumn(), app->getChosenColumnLength());
+           delete app;
+         }
+
          break;
 
          default:
@@ -402,18 +408,20 @@ namespace cipher
          break;
 */
        case GAME:
-         if(!aesKey)
-           return false;
-         this->aes->modifyParam( aesKey );
-         app = this->aes->decryptMessage(*message);
-         if(app == nullptr)
+         if(message->getSignatureAES()==nullptr)
          {
-           return false;
+           if(!aesKey)
+             return false;
+           this->aes->modifyParam( aesKey );
+           app = this->aes->decryptMessage(*message);
+           if(app == nullptr)
+           {
+             return false;
+           }
+           message->setChosenColumn( app->getChosenColumn(), app->getChosenColumnLength());
+           delete app;
          }
-         message->setChosenColumn( app->getChosenColumn(), app->getChosenColumnLength());
-         delete app;
-         rsa->clientVerifySignature(*message,false); 
-         break;
+         return rsa->clientVerifySignature(*message,false); 
             
          default:
            vverbose<<"--> [CipherClient][fromSecureForm] Error, messageType not supported:"<<message->getMessageType()<<'\n';
@@ -430,7 +438,7 @@ namespace cipher
     return this->dh->generateSessionKey( param,len );
   }
 /*
---------------------------function getPartialKey
+--------------------------function getPartialKey-----------------------------------
 */ 
    NetMessage* CipherClient::getPartialKey()
    {
