@@ -72,9 +72,17 @@ Message* PowerClient::createMessage( MessageType type, const char* param ){
                 this->username = string(param);
                 password = this->username;
                 password.append( "Password" );
-
-                this->cipher = new cipher::CipherRSA( this->username, password, false );
-
+                try {
+                    this->cipher = new cipher::CipherRSA(this->username, password, false);
+                }catch(int exc ){
+                    if( exc == 0 ){
+                        cout<<"Username non trovata"<<endl;
+                    }
+                    if( exc == 1 ){
+                        cout<<"Password non valida"<<endl;
+                    }
+                    return nullptr;
+                }
                 message->setUsername(param );
                 this->cipher->sign( message );
                 this->nonce++;

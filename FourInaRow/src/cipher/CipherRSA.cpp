@@ -50,29 +50,30 @@ namespace cipher{
 
             if( !certFile ){
                 verbose<<"--> [CipherRSA][Costructor] Fatal Error. Unable to find: data/client_data/caCertificate.pem"<<'\n';
-                return;
+                throw -1;
             }
 
             certificate = PEM_read_X509( certFile, nullptr, nullptr, nullptr );
             if( !certificate ){
                 verbose<<"--> [CipherRSA][Costruction] Fatal error. Unable to load the ca certificate"<<'\n';
                 fclose( certFile );
-                return;
+                throw -1;
             }
+
             fclose( certFile );
             vverbose<<"--> [CipherRSA][Costructor] Certificate found"<<'\n';
 
             certFile = fopen( "data/client_data/caCrl.pem", "r" );
             if( !certFile ){
                 verbose<<"--> [CipherRSA][Costructor] Fatal Error. Unable to find the file data/client_data/caCrl.pem"<<'\n';
-                return;
+                throw -1;
             }
 
             crl = PEM_read_X509_CRL( certFile, nullptr, nullptr, nullptr );
             if( !crl ){
                 verbose<<"--> [CipherRSA][Costruction] Fatal error. Unable to load the ca CRL"<<'\n';
                 fclose( certFile );
-                return;
+                throw -1;
             }
             fclose( certFile );
             vverbose<<"--> [CipherRSA][Costructor] CRL found"<<'\n';
@@ -81,7 +82,7 @@ namespace cipher{
             this->store = X509_STORE_new();
             if( !this->store ){
                 verbose<<"--> [CipherRSA][Costructor] Fatal Error. Unable to create the keyStore"<<'\n';
-                return;
+                throw -1;
             }
 
             X509_STORE_add_cert(this->store,certificate);
@@ -120,21 +121,23 @@ namespace cipher{
         if( !publicKey || !privateKey ){
 
             verbose<<"--> [CipherRSA][Costructor] Error "<<username<<" undefined, keys not found"<<'\n';
-
+            throw 0;
         }else{
             vverbose<<"--> [CipherRSA][Costructor] "<<username<<"'keys found"<<'\n';
 
             this->myPubKey = PEM_read_PUBKEY( publicKey, nullptr, nullptr , nullptr);
-            if( ! this->myPubKey )
-                verbose<<"--> [CipherRSA][Costructor] Unable to extract "<<username<<" public key"<<'\n';
-            else
+            if( ! this->myPubKey ) {
+                verbose << "--> [CipherRSA][Costructor] Unable to extract " << username << " public key" << '\n';
+                throw 0;
+            }else
                 vverbose<<"--> [CipherRSA][Costructor] "<<username<<" public key correctly loaded"<<'\n';
             fclose(publicKey);
 
             this->myPrivKey = PEM_read_PrivateKey( privateKey, nullptr, nullptr , (void*)password.c_str());
-            if( ! this->myPrivKey )
-                verbose<<"--> [CipherRSA][Costructor] Unable to extract "<<username<<" private key"<<'\n';
-            else
+            if( ! this->myPrivKey ) {
+                verbose << "--> [CipherRSA][Costructor] Unable to extract " << username << " private key" << '\n';
+                throw 1;
+            }else
                 vverbose<<"--> [CipherRSA][Costructor] "<<username<<" private key correctly loaded"<<'\n';
             fclose(privateKey);
 
