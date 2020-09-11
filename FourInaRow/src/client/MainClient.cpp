@@ -419,6 +419,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       if(!cipher_client->getRSA_is_start())
       {
          std::cout<<"login failed retry"<<endl;
+         std::cout<<"\t# Insert a command:";
       }
       else
       {
@@ -442,24 +443,63 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     return true;
   }
 
-
-
-  int MainClient::main(int argc, char** argv)
+  MainClient::MainClient(const char* ipAddr , int port )
   {
+    this->myIP=ipAddr;
+    this->myPort=port;
+  }
+
+  void MainClient::client()
+  {
+     std::vector<int> sock_id_list;
+     int newconnection_id=0;
+     string newconnection_ip="";
      lck_time=new std::unique_lock<std::mutex>(mtx_time,std::defer_lock);
 
      textual_interface_manager=new TextualInterfaceManager();
-     if(argc==0)
-     {
-       bool res;
-       res=startConnectionServer(this->myIP,this->myPort);
-       if(!res)
-         exit(1);
+     bool res;
+     res=startConnectionServer(this->myIP,this->myPort);
+     if(!res)
+       exit(1);
 
-     }
+     
     if(!certificateProtocol())
       exit(1);
     textual_interface_manager->printLoginInterface();
-    return 0;
+    
+    while(true)
+    {
+      string comand_line;
+      sock_id_list= connection_manager->waitForMessage(&newconnection_id,&newconnection_ip);
+      if(!sock_id_list.empty())
+      {
+        for(int idSock: sock_id_list)
+        {
+          if(idSock==connection_manager->getstdinDescriptor())
+          {
+            cin>>comand_line;
+            comand(comand_line);
+          }
+        }
+        
+      }
+    }
   }
+
+
+
+}
+/*
+-------------main function--------------
+*/  
+int main(int argc, char** argv)
+{
+    Logger::setThreshold(  VERY_VERBOSE );
+    client::MainClient* main_client;
+    if(argc==0)
+    {
+      main_client=new client::MainClient("127.0.0.1",1235);
+      main_client->client();
+    }
+    return 0;
 }

@@ -57,6 +57,7 @@ namespace client{
 		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::SERVER_STATUS , serverStatus , value);
 		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::MATCH_STATUS , matchStatus , value);
 		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::PENDING_SIZE , pendingStatus , value);
+                this->username=username;
 		cout<<value<<endl;
 		cout<<"\t# Insert a command:";
 		cout.flush();

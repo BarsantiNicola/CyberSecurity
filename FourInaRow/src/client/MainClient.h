@@ -13,6 +13,7 @@
 #include"../utility/ConnectionManager.h"
 #include<mutex>
 #include<exception>
+#include<vector>
 #define SLEEP_TIME 1000
 using namespace utility;
 namespace client
@@ -69,7 +70,8 @@ namespace client
       bool deconcatenateTwoField(unsigned char* originalField,unsigned int originalFieldSize,unsigned char* firsField,unsigned int* firstFieldSize,unsigned char* secondField,unsigned int* secondFieldSize,unsigned char separator,unsigned int numberSeparator);
 
     public:
-      int main(int argc, char** argv); 
+      MainClient(const char* ipAddr , int port ); 
+      void client();
   };
 
 
