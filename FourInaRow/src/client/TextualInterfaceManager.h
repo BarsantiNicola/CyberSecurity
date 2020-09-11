@@ -48,7 +48,7 @@ namespace client{
 	public:
 		TextualInterfaceManager();
                 string* getUsername();
-		void printLoginInterface(string message);
+		void printLoginInterface();
 		void printMainInterface(string username,string activeUser,string serverStatus,string matchStatus,string pendingStatus);
 		void printGameInterface(bool myMove, string timer,string chat,string gameBoard);
 		void setGame(void* game);

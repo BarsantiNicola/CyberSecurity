@@ -2,10 +2,21 @@
 namespace cipher
 {
   CipherClient::CipherClient(string username,string password)
-  {
-    this->rsa = new CipherRSA(username, password, false );
+  { 
+    bool res=true;
+    try
+    {
+      this->rsa = new CipherRSA(username, password, false );
+      
+    }
+    catch(int myNum)
+    {
+      res=false;
+    }
+    RSA_is_start=res;
     this->dh  = new CipherDH();
     this->aes = new CipherAES();
+   
     if( !this->rsa || !this->dh || !this->aes )
     {
       verbose<<"-->[CipherClient][Costructor] Fatal error, unable to load cipher suites"<<'\n';
@@ -19,7 +30,7 @@ namespace cipher
      delete this->aes;
    }
 /*------------------------------function toSecureForm------------------------------------*/
-   bool CipherClient::toSecureForm( Message* message, SessionKey* aesKey )
+   bool CipherClient::toSecureForm( Message* message, SessionKey* aesKey  )
    {
      if( message == nullptr )
      {
@@ -155,20 +166,14 @@ namespace cipher
          message->setSignature(app->getSignature(),app->getSignatureLen());
          delete app;
          break; 
-/*
+
       case ERROR:
-         if(!aesKey)
-           return false;
-         this->aes->modifyParam( aesKey );
-         app = this->aes->encryptMessage(*message);
-         if(app == nullptr)
-         {
-           return false;
-         }
-         message->setSignature(app->getSignature(),app->getSignatureLen());
-         delete app;
-         break; 
- */  
+
+         if( !this->rsa->sign(message))
+            return false;
+         break;
+         
+   
       case CHAT:
          if(!aesKey)
            return false;
@@ -227,7 +232,7 @@ namespace cipher
   }
 
 /*---------------fromSecureForm function*----------------------------------------------------- */
-  bool CipherClient::fromSecureForm( Message* message , string username , SessionKey* aesKey )
+  bool CipherClient::fromSecureForm( Message* message , string username , SessionKey* aesKey,bool serverKeyExchange)
   {
     if(!message)
     {
@@ -245,11 +250,13 @@ namespace cipher
         }
         return rsa->clientVerifySignature( *message ,true);
        
+       case KEY_EXCHANGE:
+         return rsa->clientVerifySignature(*message,serverKeyExchange);
        case LOGIN_OK:
          return rsa->clientVerifySignature( *message ,true);
 
        case ERROR:
-         return rsa->clientVerifySignature( *message ,true);
+         return rsa->clientVerifySignature( *message ,true);           
 
        case LOGIN_FAIL:
          return rsa->clientVerifySignature( *message ,true); 
@@ -449,6 +456,21 @@ namespace cipher
   void CipherClient::newRSAParameter(string username,string password)
   {
     delete this->rsa;
-    this->rsa = new CipherRSA(username, password, false );
+    bool res=true;
+    try
+    {
+      this->rsa = new CipherRSA(username, password, false );
+      
+    }
+    catch(int myNum)
+    {
+      res=false;
+    }
+    RSA_is_start=res;
+  }
+
+  bool CipherClient::getRSA_is_start()
+  {
+    return RSA_is_start;
   }
 }

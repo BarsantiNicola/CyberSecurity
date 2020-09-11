@@ -30,6 +30,7 @@ namespace client
    const char*ip=nullptr;
    bool socketIsClosed=false;
    bool res;
+   bool DecodRes;
    Message* messRet;
    NetMessage* netRet;
    Converter conv;
@@ -40,7 +41,8 @@ namespace client
      return false;
    }
    res=connection_manager->sendMessage(*mess,connection_manager->getserverSocket(),&socketIsClosed,ip,0);
-   if(!res)
+   DecodRes=cipher_client->fromSecureForm( mess , this->username ,nullptr ,true);
+   if(!res||!DecodRes)
      return false;
     messRet=connection_manager->getMessage(connection_manager->getserverSocket());
    if(messRet==nullptr)
@@ -58,43 +60,98 @@ namespace client
    {
      return false;
    }
-   
+   this->nonce = *(mess->getNonce())+1;
    res = cipher_client-> getSessionKey( netRet->getMessage() ,netRet->length() );
    return res;
   }
 /*
 --------------------------------loginProtocol function------------------------------
 */
-  bool MainClient::loginProtocol(Message message)//DA FINIRE
+  bool MainClient::loginProtocol(Message message,bool *socketIsClosed)//DA FINIRE
   {
     bool res;
+    int* nonce_s;
     bool connection_res;
-    bool socketIsClosed=false;
+    Message* retMess;
+    Message* sendMess;
     if(message.getMessageType()==LOGIN_REQ)
     {
-      res=connection_manager->sendMessage(message,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0); 
-      while(socketIsClosed)
+      res=connection_manager->sendMessage(message,connection_manager->getserverSocket(),socketIsClosed,nullptr,0); 
+      if(!res)
+        return false;
+
+      retMess=connection_manager->getMessage(connection_manager->getserverSocket());
+      if(retMess==nullptr)
+        return false;
+
+      nonce_s=message.getNonce();
+      if(*nonce_s!=this->nonce)
       {
-        connection_res=connection_manager->createConnectionWithServerTCP(serverIP,serverPort);
-        if(!connection_res)
-          return false;
-        res=connection_manager->sendMessage(message,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0); 
+        delete nonce_s;
+        return false;
       }
-      return res;
-    }
-    if(message.getMessageType()==LOGIN_OK)
-    {
-      return true;
-    }
-    else
-    {
-      return false;
+      delete nonce_s;
+      res=cipher_client->fromSecureForm( retMess , username ,nullptr,true);
+      if(res==false)
+      {
+        return false;
+      }
+    
+      if(retMess->getMessageType()==LOGIN_OK)
+      {
+        sendMess=createMessage(MessageType::KEY_EXCHANGE, nullptr,nullptr,0,nullptr,MessageGameType::NO_GAME_TYPE_MESSAGE);
+        
+        res=connection_manager->sendMessage(message,connection_manager->getserverSocket(),socketIsClosed,nullptr,0); 
+        if(!res)
+          return false;
+        retMess=connection_manager->getMessage(connection_manager->getserverSocket());
+        if(retMess==nullptr)
+          return false;
+        res=keyExchangeReciveProtocol(retMess,true);
+        return res;
+      }
+      else if(retMess->getMessageType()==LOGIN_FAIL)
+      {     
+        return false;
+      }
     }
        
   }
 
+/*
+---------------------keyExchangeReciveProtocol--------------------
+*/
+  bool MainClient::keyExchangeReciveProtocol(Message* message,bool exchangeWithServer)
+  {
+      unsigned char* app; 
+      int len;
+      int* nonce_s=message->getNonce();
+      bool res;
+      if(*nonce_s!=this->nonce)
+      {
+        vverbose<<"--> [MainClient][keyExchangeProtocol] nonce not valid";
+        delete nonce_s;
+        return false;
+      }
+      if(message->getMessageType()==KEY_EXCHANGE)
+      {
+       
+        res=cipher_client->fromSecureForm( message , username ,nullptr,exchangeWithServer);
+        if(!res)
+          return false; 
+        app=message->getDHkey();
+        len=message->getDHkeyLength();
+        if(app==nullptr)
+          return false;
+        this->aesKeyServer=cipher_client->getSessionKey( app , len );
+        delete nonce_s;
+        return true;
+        
+      }
+      return false;
+  }
  /*
--------------------------------------------------------createMessage function-----------------------------------------------------
+--------------------------------------------createMessage function----------------------------
 */
   Message* MainClient::createMessage(MessageType type, const char* param,unsigned char* g_param,int g_paramLen,cipher::SessionKey* aesKey,MessageGameType messageGameType)
   {
@@ -113,7 +170,7 @@ namespace client
         message->setNonce(this->nonce);
         message->setPort( this->myPort );
         message->setUsername(param );
-        cipherRes=cipher_client->toSecureForm( message,aesKey );
+        cipherRes=cipher_client->toSecureForm( message,aesKey);
         this->nonce++;
         break;
         
@@ -122,14 +179,14 @@ namespace client
         message->setNonce(this->nonce);
         partialKey = this->cipher_client->getPartialKey();
         message->set_DH_key( partialKey->getMessage(), partialKey->length() );
-        cipherRes=this->cipher_client->toSecureForm( message,aesKey );
+        cipherRes=this->cipher_client->toSecureForm( message,aesKey);
         this->nonce++;
         break;
 
       case USER_LIST_REQ:
         message->setMessageType(USER_LIST_REQ);
         message->setNonce(this->nonce);
-        cipherRes =this->cipher_client->toSecureForm( message,aesKey );
+        cipherRes =this->cipher_client->toSecureForm( message,aesKey);
         this->nonce++;
         break;
 
@@ -143,7 +200,7 @@ namespace client
       case LOGOUT_REQ:
         message->setMessageType( LOGOUT_REQ );
         message->setNonce(this->nonce);
-        cipherRes=this->cipher_client->toSecureForm( message,aesKey );
+        cipherRes=this->cipher_client->toSecureForm( message,aesKey);
         this->nonce++;
         break;
 
@@ -152,7 +209,7 @@ namespace client
         message->setNonce(this->nonce);
         message->setAdversary_1(param);
         message->setAdversary_2(this->username.c_str());
-        cipherRes = this->cipher_client->toSecureForm( message,aesKey );
+        cipherRes = this->cipher_client->toSecureForm( message,aesKey);
         this->nonce++;
         break;
 
@@ -161,7 +218,7 @@ namespace client
         message->setNonce(this->nonce);
         message->setAdversary_1(param );
         message->setAdversary_2(this->username.c_str());
-        cipherRes = this->cipher_client->toSecureForm( message,aesKey );
+        cipherRes = this->cipher_client->toSecureForm( message,aesKey);
         this->nonce++;
         break;
 
@@ -169,7 +226,7 @@ namespace client
         message->setMessageType( WITHDRAW_REQ );
         message->setNonce(this->nonce);
         message->setUsername(this->username);
-        cipherRes = this->cipher_client->toSecureForm( message,aesKey );
+        cipherRes = this->cipher_client->toSecureForm( message,aesKey);
         this->nonce++;
         break;
 
@@ -177,7 +234,7 @@ namespace client
         message->setMessageType( MATCH );
         message->setNonce(this->nonce);
         message->setUsername(string(param) );
-        cipherRes = this->cipher_client->toSecureForm( message,aesKey );
+        cipherRes = this->cipher_client->toSecureForm( message,aesKey);
        // net = Converter::encodeMessage(MATCH, *message );                //da vedere l'utilità in caso cancellare
        // message = this->cipher_client->toSecureForm( message,aesKey );
         this->nonce++;
@@ -187,7 +244,7 @@ namespace client
         message->setMessageType( DISCONNECT );
         message->setNonce(this->nonce);
         message->setUsername(string(param) );
-        cipherRes = this->cipher_client->toSecureForm( message,aesKey );
+        cipherRes = this->cipher_client->toSecureForm( message,aesKey);
         //net = Converter::encodeMessage(MATCH, *message );               //da vedere l'utilità in caso cancellare
         //message = this->cipher_client->toSecureForm( message,aesKey );
         this->nonce++;
@@ -211,7 +268,7 @@ namespace client
             return nullptr;
 
         }
-        cipherRes = this->cipher_client->toSecureForm( message,aesKey );
+        cipherRes = this->cipher_client->toSecureForm( message,aesKey);
         
         break;
 
@@ -221,7 +278,7 @@ namespace client
         if( g_param==nullptr||aesKey==nullptr)
           return nullptr;
         message->setMessage( g_param,g_paramLen );
-        cipherRes = this->cipher_client->toSecureForm( message,aesKey );
+        cipherRes = this->cipher_client->toSecureForm( message,aesKey);
         this->currTokenChat++;
         break;
 
@@ -238,7 +295,7 @@ namespace client
     return message;
   }
 /*
----------------------------concatenateTwoField function-------------------------------------------------
+---------------------------concatenateTwoField function--------------------------------------
 */
   unsigned char* MainClient::concTwoField(unsigned char* firstField,unsigned int firstFieldSize,unsigned char* secondField,unsigned int secondFieldSize,unsigned char separator,unsigned int numberSeparator)
   {
@@ -304,7 +361,25 @@ namespace client
     *secondFieldSize=secondDimension;
     return true;
   }
-
+/*
+----------------------function startConnectionServer-----------------------------
+*/
+bool MainClient::startConnectionServer(const char* myIP,int myPort)
+{
+  bool res;
+  this->myIP=myIP;
+  this->myPort=myPort;
+  connection_manager=new ConnectionManager(false,this->myIP,this->myPort);
+  try
+  {
+    res=connection_manager->createConnectionWithServerTCP(this->serverIP,this->serverPort);
+  }
+  catch(exception e)
+  {
+    res=false;
+  }
+  return res;
+}
 /*
 ------------------------comand function------------------------------------
 
@@ -318,7 +393,39 @@ namespace client
     }
     if(comand_line.compare(0,5,"LOGIN "))
     {
-      //ESEGUO IL LOGIN
+      string password;
+      string username;
+      cout<<"username: "<<endl;
+      cin>>username;
+      
+      
+      
+      cout<<"password:"<<endl;
+
+      termios oldt;
+      tcgetattr(STDIN_FILENO, &oldt);
+      termios newt = oldt;
+      newt.c_lflag &= ~ECHO;
+      tcsetattr(STDIN_FILENO, TCSANOW, &newt);//hide input
+      std::cin>>password;
+      tcsetattr(STDIN_FILENO, TCSANOW, &oldt);//show input
+     
+      if(username.empty()||password.empty())
+      {
+        std::cout<<"username or password not valid"<<endl;
+      }
+      delete cipher_client;
+      cipher_client=new cipher::CipherClient(username,password);
+      if(!cipher_client->getRSA_is_start())
+      {
+         std::cout<<"login failed retry"<<endl;
+      }
+      else
+      {
+        this->username=username;
+        textual_interface_manager->printMainInterface(this->username," ","online","none","0");
+      }
+      return true;
     }
     else if(comand_line.compare(0,4,"show "))
     {
@@ -332,5 +439,27 @@ namespace client
     {
       //ESEGUO LOGOUT
     }
+    return true;
+  }
+
+
+
+  int MainClient::main(int argc, char** argv)
+  {
+     lck_time=new std::unique_lock<std::mutex>(mtx_time,std::defer_lock);
+
+     textual_interface_manager=new TextualInterfaceManager();
+     if(argc==0)
+     {
+       bool res;
+       res=startConnectionServer(this->myIP,this->myPort);
+       if(!res)
+         exit(1);
+
+     }
+    if(!certificateProtocol())
+      exit(1);
+    textual_interface_manager->printLoginInterface();
+    return 0;
   }
 }

@@ -38,7 +38,7 @@ namespace client{
 
    
        }
-	void TextualInterfaceManager::printLoginInterface(string message){
+	void TextualInterfaceManager::printLoginInterface(){
 		string command;
 		system("tput clear");
 		cout<<login_page<<endl;
