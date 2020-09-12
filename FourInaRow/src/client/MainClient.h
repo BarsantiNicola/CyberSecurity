@@ -23,14 +23,30 @@ namespace client
         MOVE_TYPE,
         CHAT_TYPE
     };
+  
+  enum ClientPhase
+  {
+    MAIN_INTERFACE_PHASE,
+    LOGIN_PHASE,
+    LOGOUT_PHASE,
+    REJECT_PHASE,
+    ACCEPT_PHASE,
+    USER_LIST_PHASE,
+    RANK_LIST_PHASE,
+    MATCH_PHASE,
+    NO_PHASE
+
+  };  
 
   class MainClient
   {
     private:
       long timer=15;
       bool time_expired=false;
+      bool notConnected=true;
       int nonce;
       bool logged=false;
+      ClientPhase clientPhase= ClientPhase::NO_PHASE;
       int currentToken;//da inizializzare nel main
       int currTokenChat;//da inizializzare nel main
       const char* serverIP="127.0.0.1";
@@ -59,7 +75,8 @@ namespace client
       bool keyExchangeReciveProtocol(Message* message,bool exchangeWithServer);
       bool userListProtocol(Message message);
       bool disconnectProtocol(Message message);
-      bool logoutProtocol(Message message);
+      bool sendLogoutProtocol();
+      bool receiveLogoutProtocol(Message* message);
       bool matchProtocol(Message message);
       void timerHandler(long secs);
       bool comand(std::string comand_line);

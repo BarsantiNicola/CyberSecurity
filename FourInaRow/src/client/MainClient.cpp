@@ -43,8 +43,20 @@ namespace client
    res=connection_manager->sendMessage(*mess,connection_manager->getserverSocket(),&socketIsClosed,ip,0);
    DecodRes=cipher_client->fromSecureForm( mess , this->username ,nullptr ,true);
    if(!res||!DecodRes)
+   {
+     if(socketIsClosed)
+       notConnected=true;
      return false;
-    messRet=connection_manager->getMessage(connection_manager->getserverSocket());
+   }
+   try
+   {
+     messRet=connection_manager->getMessage(connection_manager->getserverSocket());
+   }
+   catch(exception e)
+   {
+     notConnected=true;
+     return false;
+   }
    if(messRet==nullptr)
    {
      verbose<<"-->[MainClient][certificateProtocol] error to recive a CERTIFICATION message "<<'\n';
@@ -78,9 +90,20 @@ namespace client
     {
       res=connection_manager->sendMessage(message,connection_manager->getserverSocket(),socketIsClosed,nullptr,0); 
       if(!res)
+      {
+        if(socketIsClosed)
+          notConnected=true;
         return false;
-
-      retMess=connection_manager->getMessage(connection_manager->getserverSocket());
+      }
+      try
+      {
+        retMess=connection_manager->getMessage(connection_manager->getserverSocket());
+      }
+      catch(exception e)
+      {
+        notConnected=true;
+        return false;
+      }
       if(retMess==nullptr)
         return false;
 
@@ -103,8 +126,20 @@ namespace client
         
         res=connection_manager->sendMessage(message,connection_manager->getserverSocket(),socketIsClosed,nullptr,0); 
         if(!res)
+        {
+          if(*socketIsClosed)
+            notConnected=true;
           return false;
-        retMess=connection_manager->getMessage(connection_manager->getserverSocket());
+        }
+        try
+        {
+          retMess=connection_manager->getMessage(connection_manager->getserverSocket());
+        }
+        catch(exception e)
+        {
+          notConnected=true;
+          return false;
+        }
         if(retMess==nullptr)
           return false;
         res=keyExchangeReciveProtocol(retMess,true);
@@ -117,6 +152,55 @@ namespace client
     }
        
   }
+/*
+--------------------sendLogoutProtocol------------------
+*/
+  bool MainClient::sendLogoutProtocol()
+  {
+    bool res;
+    bool socketIsClosed=false;
+    Message* message;
+    message=createMessage(MessageType::LOGOUT_REQ, nullptr,nullptr,0,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE);
+    res=connection_manager->sendMessage(*message,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
+    if(socketIsClosed)
+    {
+      vverbose<<"-->[MainClient][sendLogoutProtocol] error server is offline reconnecting"<<'\n';
+      notConnected=true;
+      return false;
+    }
+    if(res)
+      clientPhase=ClientPhase::LOGOUT_PHASE;
+    return res;
+  }
+/*
+---------------------reciveLogoutProtocol----------------------------------
+*/
+  bool MainClient::receiveLogoutProtocol(Message* message)
+  {
+      int* nonce_s;
+      bool res;
+      if(*nonce_s!=this->nonce)
+      {
+        verbose<<"--> [MainClient][reciveLogoutProtocol] nonce not valid"<<'\n';
+        delete nonce_s;
+        clientPhase=ClientPhase::NO_PHASE;
+        return false;
+      }
+      if(message->getMessageType()!=LOGOUT_OK || clientPhase!=ClientPhase::LOGOUT_PHASE)
+      {
+        verbose<<"--> [MainClient][reciveLogoutProtocol] message type not expected"<<'\n';
+        return false;
+      }
+      else
+      {
+        res=cipher_client->fromSecureForm( message , username ,nullptr,false);
+        if(!res)
+          return false; 
+        clientPhase=ClientPhase::NO_PHASE;
+        logged=false;
+        return true;
+      }
+  }
 
 /*
 ---------------------keyExchangeReciveProtocol--------------------
@@ -127,9 +211,10 @@ namespace client
       int len;
       int* nonce_s=message->getNonce();
       bool res;
+      nonce_s=message->getNonce();
       if(*nonce_s!=this->nonce)
       {
-        vverbose<<"--> [MainClient][keyExchangeProtocol] nonce not valid";
+        verbose<<"--> [MainClient][keyExchangeProtocol] nonce not valid"<<'\n';
         delete nonce_s;
         return false;
       }
@@ -391,7 +476,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       verbose<<""<<"--> [MainClient][comand] error comand_line is empty"<<'\n';
       return false;
     }
-    if(comand_line.compare(0,5,"LOGIN "))
+    if(comand_line.compare(0,5,"LOGIN ")&&logged==false)
     {
       string password;
       string username;
@@ -424,6 +509,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       else
       {
         this->username=username;
+        this->logged=true;
         textual_interface_manager->printMainInterface(this->username," ","online","none","0");
       }
       return true;
@@ -436,9 +522,11 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     {
       //ESEGUO CHALLENGE
     }
-    else if(comand_line.compare(0,6,"logout "))
+    else if(comand_line.compare(0,6,"logout ")&&logged==true)
     {
       //ESEGUO LOGOUT
+      sendLogoutProtocol();
+      
     }
     return true;
   }
@@ -448,9 +536,12 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     this->myIP=ipAddr;
     this->myPort=port;
   }
-
+/*
+------------------------MainClient----------------------------------
+*/
   void MainClient::client()
   {
+     
      std::vector<int> sock_id_list;
      int newconnection_id=0;
      string newconnection_ip="";
@@ -458,17 +549,21 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 
      textual_interface_manager=new TextualInterfaceManager();
      bool res;
-     res=startConnectionServer(this->myIP,this->myPort);
-     if(!res)
-       exit(1);
-
-     
-    if(!certificateProtocol())
-      exit(1);
-    textual_interface_manager->printLoginInterface();
-    
     while(true)
     {
+       if(notConnected==true)
+       {
+         res=startConnectionServer(this->myIP,this->myPort);
+         if(!res)
+           exit(1);
+
+     
+         if(!certificateProtocol())
+           exit(1);
+         textual_interface_manager->printLoginInterface();
+         notConnected=false;
+        }
+
       string comand_line;
       sock_id_list= connection_manager->waitForMessage(&newconnection_id,&newconnection_ip);
       if(!sock_id_list.empty())
@@ -477,8 +572,30 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         {
           if(idSock==connection_manager->getstdinDescriptor())
           {
-            cin>>comand_line;
+            std::cin>>comand_line;
             comand(comand_line);
+          }
+          if(idSock==connection_manager->getserverSocket())
+          {
+            
+            Message* message=connection_manager->getMessage(connection_manager->getserverSocket());
+            if(message==nullptr)
+              continue;
+           
+            switch(message->getMessageType())
+            {
+              case LOGOUT_OK:
+                if(clientPhase==ClientPhase::LOGOUT_PHASE)
+                {
+                    res=receiveLogoutProtocol(message);
+                    if(!res)
+                      continue;
+                    username="";
+                    logged=false;
+                    textual_interface_manager->printLoginInterface();
+                }
+                break;
+            }
           }
         }
         
