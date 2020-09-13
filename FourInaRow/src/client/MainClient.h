@@ -65,18 +65,21 @@ namespace client
       cipher::CipherClient* cipher_client;
       std::mutex mtx_time;
       std::unique_lock<std::mutex>* lck_time;//(mtx_time,std::defer_lock);//da inizializzare nel main
-      bool loginProtocol(Message message,bool* socketIsClosed);
+      bool loginProtocol(Message message,bool* socketIsClosed);//ok
       //bool signUpProtocol(Message message);
+      string printableString(unsigned char* toConvert,int len);//ok
       bool challengeProtocol(Message message);
       bool acceptProtocol(Message message);
       bool rejectProtocol(Message message);
-      bool rankProtocol(Message message);
-      bool certificateProtocol();
-      bool keyExchangeReciveProtocol(Message* message,bool exchangeWithServer);
-      bool userListProtocol(Message message);
+      bool sendRankProtocol();//ok
+      bool reciveRankProtocol(Message* message);//ok
+      bool certificateProtocol();//ok
+      bool keyExchangeReciveProtocol(Message* message,bool exchangeWithServer);//ok
+      bool sendReqUserListProtocol();//ok
+      bool receiveUserListProtocol(Message* message);//ok
       bool disconnectProtocol(Message message);
-      bool sendLogoutProtocol();
-      bool receiveLogoutProtocol(Message* message);
+      bool sendLogoutProtocol();//ok
+      bool receiveLogoutProtocol(Message* message);//ok
       bool matchProtocol(Message message);
       void timerHandler(long secs);
       bool comand(std::string comand_line);
@@ -84,11 +87,11 @@ namespace client
       Message* createMessage(MessageType type, const char* param,unsigned char* g_param,int g_paramLen,cipher::SessionKey* aesKey,MessageGameType messageGameType);
       unsigned char* concTwoField(unsigned char* firstField,unsigned int firstFieldSize,unsigned char* secondField,unsigned int secondFieldSize,unsigned char separator,unsigned int numberSeparator);
 
-      bool deconcatenateTwoField(unsigned char* originalField,unsigned int originalFieldSize,unsigned char* firsField,unsigned int* firstFieldSize,unsigned char* secondField,unsigned int* secondFieldSize,unsigned char separator,unsigned int numberSeparator);
+      bool deconcatenateTwoField(unsigned char* originalField,unsigned int originalFieldSize,unsigned char* firsField,unsigned int* firstFieldSize,unsigned char* secondField,unsigned int* secondFieldSize,unsigned char separator,unsigned int numberSeparator);//ok
 
     public:
       MainClient(const char* ipAddr , int port ); 
-      void client();
+      void client();//ok
   };
 
 

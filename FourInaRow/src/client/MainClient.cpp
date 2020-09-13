@@ -153,7 +153,121 @@ namespace client
        
   }
 /*
---------------------sendLogoutProtocol------------------
+--------------------sendReqUserListProtocol function----------------------------
+*/
+
+  bool MainClient::sendReqUserListProtocol()
+  {
+    bool res;
+    bool socketIsClosed=false;
+    Message* message;
+    message=createMessage(MessageType::USER_LIST_REQ, nullptr,nullptr,0,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE);
+    res=connection_manager->sendMessage(*message,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
+    if(socketIsClosed)
+    {
+      vverbose<<"-->[MainClient][sendReqUserProtocol] error server is offline reconnecting"<<'\n';
+      notConnected=true;
+      return false;
+    }
+    if(res)
+      clientPhase=ClientPhase::USER_LIST_PHASE;
+    return res;
+  
+  }
+/*
+-------------------receiveUserListProtocol function--------------------------------
+*/
+    bool MainClient::receiveUserListProtocol(Message* message)
+  {
+      int* nonce_s;
+      bool res;
+      if(*nonce_s!=this->nonce)
+      {
+        verbose<<"--> [MainClient][reciveUserListProtocol] nonce not valid"<<'\n';
+        delete nonce_s;
+        clientPhase=ClientPhase::NO_PHASE;
+        return false;
+      }
+      if(message->getMessageType()!=USER_LIST || clientPhase!=ClientPhase::USER_LIST_PHASE)
+      {
+        verbose<<"--> [MainClient][reciveUserListProtocol] message type not expected"<<'\n';
+        return false;
+      }
+      else
+      {
+        string app;
+        res=cipher_client->fromSecureForm( message , username ,aesKeyServer,false);
+        
+        if(!res)
+          return false; 
+        clientPhase=ClientPhase::NO_PHASE;
+        unsigned char* userList=message->getUserList();
+        int userListLen;
+        app=printableString(userList,userListLen);
+        std::cout<<app<<endl;
+        return true;
+      }
+  }
+
+/*
+--------------------sendRankProtocol function----------------------------
+*/
+
+  bool MainClient::sendRankProtocol()
+  {
+    bool res;
+    bool socketIsClosed=false;
+    Message* message;
+    message=createMessage(MessageType::RANK_LIST_REQ, nullptr,nullptr,0,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE);
+    res=connection_manager->sendMessage(*message,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
+    if(socketIsClosed)
+    {
+      vverbose<<"-->[MainClient][sendReqUserProtocol] error server is offline reconnecting"<<'\n';
+      notConnected=true;
+      return false;
+    }
+    if(res)
+      clientPhase=ClientPhase::RANK_LIST_PHASE;
+    return res;
+  
+  }
+/*
+-------------------receiveRankProtocol function--------------------------------
+*/
+    bool MainClient::reciveRankProtocol(Message* message)
+  {
+      int* nonce_s;
+      bool res;
+      if(*nonce_s!=this->nonce)
+      {
+        verbose<<"--> [MainClient][receiveRankProtocol] nonce not valid"<<'\n';
+        delete nonce_s;
+        clientPhase=ClientPhase::NO_PHASE;
+        return false;
+      }
+      if(message->getMessageType()!=RANK_LIST || clientPhase!=ClientPhase::RANK_LIST_PHASE)
+      {
+        verbose<<"--> [MainClient][receiveRankProtocol] message type not expected"<<'\n';
+        return false;
+      }
+      else
+      {
+        string app;
+        res=cipher_client->fromSecureForm( message , username ,aesKeyServer,false);
+        
+        if(!res)
+          return false;
+        clientPhase=ClientPhase::NO_PHASE;
+        unsigned char* userList=message->getUserList();
+        int userListLen;
+        app=printableString(userList,userListLen);
+        std::cout<<app<<endl;
+        return true;
+      }
+  }
+
+/*
+--------------------sendLogoutProtocol---------------------------------------------
 */
   bool MainClient::sendLogoutProtocol()
   {
@@ -193,11 +307,12 @@ namespace client
       }
       else
       {
-        res=cipher_client->fromSecureForm( message , username ,nullptr,false);
+        res=cipher_client->fromSecureForm( message , username ,aesKeyServer,false);
         if(!res)
           return false; 
         clientPhase=ClientPhase::NO_PHASE;
         logged=false;
+        username="";
         return true;
       }
   }
@@ -476,7 +591,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       verbose<<""<<"--> [MainClient][comand] error comand_line is empty"<<'\n';
       return false;
     }
-    if(comand_line.compare(0,5,"LOGIN ")&&logged==false)
+    if(comand_line.compare(0,5,"LOGIN ")==0 && logged==false)
     {
       string password;
       string username;
@@ -514,19 +629,38 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       }
       return true;
     }
-    else if(comand_line.compare(0,4,"show "))
+    else if(comand_line.compare(0,4,"show ")==0)
     {
-      //ESEGUO LO SHOW
+      if(comand_line.compare(5,11,"[users]")==0)
+      {
+        if(!sendReqUserListProtocol())
+        {
+          std::cout<<"show user online failed retry"<<endl;
+          std::cout<<"\t# Insert a command:";
+        }
+      }
+      else if(comand_line.compare(5,11,"[users]")==0)
+      {
+        if(!sendRankProtocol())
+        {
+          std::cout<<"show user online failed retry"<<endl;
+          std::cout<<"\t# Insert a command:";
+        }
+      }
     }
-    else if(comand_line.compare(0,9,"challenge "))
+    else if(comand_line.compare(0,9,"challenge ")==0)
     {
       //ESEGUO CHALLENGE
     }
-    else if(comand_line.compare(0,6,"logout ")&&logged==true)
+    else if(comand_line.compare(0,6,"logout ")==0&&logged==true)
     {
       //ESEGUO LOGOUT
-      sendLogoutProtocol();
-      
+      bool ret=sendLogoutProtocol();
+      if(!ret)
+      {
+          std::cout<<"logout failed retry"<<endl;
+          std::cout<<"\t# Insert a command:";
+      }
     }
     return true;
   }
@@ -590,11 +724,45 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                     res=receiveLogoutProtocol(message);
                     if(!res)
                       continue;
-                    username="";
-                    logged=false;
                     textual_interface_manager->printLoginInterface();
                 }
                 break;
+              case USER_LIST:
+               if(clientPhase==ClientPhase::USER_LIST_PHASE)
+               {
+                 res=receiveUserListProtocol(message);
+                 if(!res)
+                 {
+                   cout<<"error to show the online user list"<<endl;
+                   std::cout<<"\t# Insert a command:";
+                 }
+               }
+               break;
+              case RANK_LIST:
+               if(clientPhase==ClientPhase::RANK_LIST_PHASE)
+               {
+                 res=receiveUserListProtocol(message);
+                 if(!res)
+                 {
+                   cout<<"error to show the online user list"<<endl;
+                   std::cout<<"\t# Insert a command:";
+                 }
+               }
+               break;
+              case ERROR:
+              {
+                res=cipher_client->fromSecureForm( message , username ,aesKeyServer,true);
+                if(res==false)
+                {
+                  break;
+                }
+                cout<<"error to server request try again."<<endl;
+                clientPhase=ClientPhase::NO_PHASE;
+                std::cout<<"\t# Insert a command:";
+                break;
+              }
+              default:
+                 verbose<<"--> [MainClient][client] message_type unexpected"<<'\n';
             }
           }
         }
@@ -603,11 +771,27 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     }
   }
 
-
+/*
+--------------------------utility function---------------------------------------
+*/
+  string MainClient::printableString(unsigned char* toConvert,int len)
+  {
+    char* app=new char[len+1];
+    string res="";
+    for(int i =0;i<len;i++)
+    {
+      app[i]=toConvert[i];
+    }
+    app[len]='\0';
+    res.append(app);
+    delete[] app;
+    return res;
+  }
 
 }
+
 /*
--------------main function--------------
+--------------------main function-----------------
 */  
 int main(int argc, char** argv)
 {
