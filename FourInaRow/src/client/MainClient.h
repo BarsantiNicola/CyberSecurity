@@ -50,7 +50,7 @@ namespace client
       int currentToken;//da inizializzare nel main
       int currTokenChat;//da inizializzare nel main
       const char* serverIP="127.0.0.1";
-      int serverPort=1234;
+      int serverPort=12345;
       int myPort=1235;
       const char* myIP="127.0.0.1";
       string username = "";
@@ -62,7 +62,7 @@ namespace client
       ChallengeRegister* challenge_register;
       ConnectionManager* connection_manager;//da inizializzare nel main
       TextualInterfaceManager* textual_interface_manager;
-      cipher::CipherClient* cipher_client;
+      cipher::CipherClient* cipher_client=new cipher::CipherClient();
       std::mutex mtx_time;
       std::unique_lock<std::mutex>* lck_time;//(mtx_time,std::defer_lock);//da inizializzare nel main
       bool loginProtocol(Message message,bool* socketIsClosed);//ok

@@ -11,12 +11,14 @@ namespace cipher
   class CipherClient
   {
     private:
+      EVP_PKEY* serverKey=nullptr;
       bool RSA_is_start=false;
       CipherRSA* rsa;
       CipherDH*  dh;
       CipherAES* aes;
     public:
       CipherClient(string username,string password);
+      CipherClient();
       ~CipherClient();
       void newRSAParameter(string username,string password);
       bool toSecureForm( Message* message, SessionKey* aesKey );

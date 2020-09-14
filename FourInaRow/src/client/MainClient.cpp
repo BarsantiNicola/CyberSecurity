@@ -41,13 +41,7 @@ namespace client
      return false;
    }
    res=connection_manager->sendMessage(*mess,connection_manager->getserverSocket(),&socketIsClosed,ip,0);
-   DecodRes=cipher_client->fromSecureForm( mess , this->username ,nullptr ,true);
-   if(!res||!DecodRes)
-   {
-     if(socketIsClosed)
-       notConnected=true;
-     return false;
-   }
+ 
    try
    {
      messRet=connection_manager->getMessage(connection_manager->getserverSocket());
@@ -67,13 +61,26 @@ namespace client
      verbose<<"-->[MainClient][certificateProtocol] error to recive a CERTIFICATION message "<<'\n';
      return false; 
    }
+   vverbose<<"-->[MainClient][certificateProtocol] message recived!!"<<'\n';
+   DecodRes=cipher_client->fromSecureForm( messRet , this->username ,nullptr ,true);//da controllare
+   
+   if(!res||!DecodRes)
+   {
+     verbose<<"-->[MainClient][certificateProtocol] error certificate protocol!!"<<'\n';
+     if(socketIsClosed)
+       notConnected=true;
+     return false;
+   }
+    vverbose<<"-->[MainClient][certificateProtocol] message decifred!!"<<'\n';
    netRet=conv.encodeMessage(messRet-> getMessageType(), *messRet );
    if(netRet==nullptr)
    {
      return false;
    }
+   vverbose<<"-->[MainClient][certificateProtocol] nonce control"<<'\n';
    this->nonce = *(mess->getNonce())+1;
    res = cipher_client-> getSessionKey( netRet->getMessage() ,netRet->length() );
+   vverbose<<"-->[MainClient][certificateProtocol] sessionKey obtained"<<'\n';
    return res;
   }
 /*
@@ -185,7 +192,7 @@ namespace client
       {
         verbose<<"--> [MainClient][reciveUserListProtocol] nonce not valid"<<'\n';
         delete nonce_s;
-        clientPhase=ClientPhase::NO_PHASE;
+        //clientPhase=ClientPhase::NO_PHASE;
         return false;
       }
       if(message->getMessageType()!=USER_LIST || clientPhase!=ClientPhase::USER_LIST_PHASE)
@@ -242,7 +249,7 @@ namespace client
       {
         verbose<<"--> [MainClient][receiveRankProtocol] nonce not valid"<<'\n';
         delete nonce_s;
-        clientPhase=ClientPhase::NO_PHASE;
+        //clientPhase=ClientPhase::NO_PHASE;
         return false;
       }
       if(message->getMessageType()!=RANK_LIST || clientPhase!=ClientPhase::RANK_LIST_PHASE)
@@ -297,7 +304,7 @@ namespace client
       {
         verbose<<"--> [MainClient][reciveLogoutProtocol] nonce not valid"<<'\n';
         delete nonce_s;
-        clientPhase=ClientPhase::NO_PHASE;
+        //clientPhase=ClientPhase::NO_PHASE;
         return false;
       }
       if(message->getMessageType()!=LOGOUT_OK || clientPhase!=ClientPhase::LOGOUT_PHASE)
@@ -357,7 +364,7 @@ namespace client
   {
     NetMessage* partialKey;
     NetMessage* net;
-    bool cipherRes=false;
+    bool cipherRes=true;
     Message* message = new Message();
     switch(type)
     {
@@ -614,8 +621,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       {
         std::cout<<"username or password not valid"<<endl;
       }
-      delete cipher_client;
-      cipher_client=new cipher::CipherClient(username,password);
+      cipher_client->newRSAParameter(username,password);
       if(!cipher_client->getRSA_is_start())
       {
          std::cout<<"login failed retry"<<endl;
@@ -770,8 +776,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       }
     }
   }
-
 /*
+
+
 --------------------------utility function---------------------------------------
 */
   string MainClient::printableString(unsigned char* toConvert,int len)
@@ -797,9 +804,9 @@ int main(int argc, char** argv)
 {
     Logger::setThreshold(  VERY_VERBOSE );
     client::MainClient* main_client;
-    if(argc==0)
+    if(argc==1)
     {
-      main_client=new client::MainClient("127.0.0.1",1235);
+      main_client=new client::MainClient("127.0.0.1",12000);
       main_client->client();
     }
     return 0;

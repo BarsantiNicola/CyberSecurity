@@ -23,9 +23,21 @@ namespace cipher
       exit(1);
     }
   }
+   CipherClient::CipherClient()
+   {
+    this->dh  = new CipherDH();
+    this->aes = new CipherAES();
+   
+    if( !this->dh || !this->aes )
+    {
+      verbose<<"-->[CipherClient][Costructor] Fatal error, unable to load cipher suites"<<'\n';
+      exit(1);
+    }
+   }
    CipherClient::~CipherClient()
    {
-     delete this->rsa;
+     if(RSA_is_start)
+       delete this->rsa;
      delete this->dh;
      delete this->aes;
    }
@@ -234,7 +246,7 @@ namespace cipher
 /*---------------fromSecureForm function*----------------------------------------------------- */
   bool CipherClient::fromSecureForm( Message* message , string username , SessionKey* aesKey,bool serverKeyExchange)
   {
-    if(!message)
+    if(message==nullptr)
     {
       verbose<<"-->[CipherClient][fromSecureForm] Error, null pointer message"<<'\n';
       return false;
@@ -244,11 +256,15 @@ namespace cipher
     switch( message->getMessageType())
     {
       case CERTIFICATE:
-        if(!rsa->extractServerKey(message->getServerCertificate(),message-> getServerCertificateLength()))
+        vverbose<<"-->[CipherClient][fromSecureForm] Verifing extracting keyServer"<<'\n';
+/*PROBLEMI*/
+       serverKey= CipherRSA::extractServerKey(message->getServerCertificate(),message-> getServerCertificateLength());
+        if(serverKey==nullptr)
         {
           return false;
         }
-        return rsa->clientVerifySignature( *message ,true);
+        vverbose<<"-->[CipherClient][fromSecureForm] Verifing server signature"<<'\n';
+        return CipherRSA::certificateVerification( message ,serverKey);
        
        case KEY_EXCHANGE:
          return rsa->clientVerifySignature(*message,serverKeyExchange);
@@ -429,9 +445,9 @@ namespace cipher
            delete app;
          }
          return rsa->clientVerifySignature(*message,false); 
-            
+         break; 
          default:
-           vverbose<<"--> [CipherClient][fromSecureForm] Error, messageType not supported:"<<message->getMessageType()<<'\n';
+           verbose<<"--> [CipherClient][fromSecureForm] Error, messageType not supported:"<<message->getMessageType()<<'\n';
          return false;    
     }
     return true;
@@ -466,6 +482,12 @@ namespace cipher
     {
       res=false;
     }
+    if(res && serverKey!=nullptr)
+    {
+      res=this->rsa->setServerKey( serverKey );  
+    }
+    else 
+     delete rsa;   
     RSA_is_start=res;
   }
 
