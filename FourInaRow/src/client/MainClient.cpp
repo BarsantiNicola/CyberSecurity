@@ -79,7 +79,7 @@ namespace client
    }
    vverbose<<"-->[MainClient][certificateProtocol] nonce control"<<'\n';
    this->nonce = *(mess->getNonce())+1;
-   res = cipher_client-> getSessionKey( netRet->getMessage() ,netRet->length() );
+   //res = cipher_client-> getSessionKey( netRet->getMessage() ,netRet->length() );
    vverbose<<"-->[MainClient][certificateProtocol] sessionKey obtained"<<'\n';
    return res;
   }
@@ -598,7 +598,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       verbose<<""<<"--> [MainClient][comand] error comand_line is empty"<<'\n';
       return false;
     }
-    if(comand_line.compare(0,5,"LOGIN ")==0 && logged==false)
+    if(comand_line.compare(0,5,"LOGIN")==0 && logged==false)
     {
       string password;
       string username;
