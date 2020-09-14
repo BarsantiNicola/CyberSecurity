@@ -178,6 +178,7 @@ void PowerClient::showMessage(Message* message){
             for( int a= 0; a<message->getServerCertificateLength(); a++ )
                 cout<<result[a];
             cout<<endl<<endl;
+            cipher::CipherRSA::extractServerKey( message->getServerCertificate(), message->getServerCertificateLength());
             cout<<"-------------------"<<endl<<endl;
             break;
 

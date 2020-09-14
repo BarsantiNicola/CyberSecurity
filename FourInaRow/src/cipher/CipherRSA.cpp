@@ -15,7 +15,6 @@ namespace cipher{
 
         this->server = server;
         this->advPubKey = nullptr;
-        this->pubServerKey = nullptr;
 
         if( server ){
 
@@ -40,55 +39,6 @@ namespace cipher{
             certRead.read( (char*)this->serverCertificate, this->lenServerCertificate );
             certRead.close();
             vverbose<<"--> [CipherRSA][Costructor] Certificate correctly loaded."<<'\n';
-
-        }else{
-
-            vverbose<<"--> [CipherRSA][Costructor] Searching CA certificate and CRL.."<<'\n';
-            X509* certificate;
-            X509_CRL* crl;
-            FILE* certFile = fopen( "data/client_data/caCertificate.pem", "r" );
-
-            if( !certFile ){
-                verbose<<"--> [CipherRSA][Costructor] Fatal Error. Unable to find: data/client_data/caCertificate.pem"<<'\n';
-                throw -1;
-            }
-
-            certificate = PEM_read_X509( certFile, nullptr, nullptr, nullptr );
-            if( !certificate ){
-                verbose<<"--> [CipherRSA][Costruction] Fatal error. Unable to load the ca certificate"<<'\n';
-                fclose( certFile );
-                throw -1;
-            }
-
-            fclose( certFile );
-            vverbose<<"--> [CipherRSA][Costructor] Certificate found"<<'\n';
-
-            certFile = fopen( "data/client_data/caCrl.pem", "r" );
-            if( !certFile ){
-                verbose<<"--> [CipherRSA][Costructor] Fatal Error. Unable to find the file data/client_data/caCrl.pem"<<'\n';
-                throw -1;
-            }
-
-            crl = PEM_read_X509_CRL( certFile, nullptr, nullptr, nullptr );
-            if( !crl ){
-                verbose<<"--> [CipherRSA][Costruction] Fatal error. Unable to load the ca CRL"<<'\n';
-                fclose( certFile );
-                throw -1;
-            }
-            fclose( certFile );
-            vverbose<<"--> [CipherRSA][Costructor] CRL found"<<'\n';
-
-            vverbose<<"--> [CipherRSA][Costructor] Starting generation of keyStore"<<'\n';
-            this->store = X509_STORE_new();
-            if( !this->store ){
-                verbose<<"--> [CipherRSA][Costructor] Fatal Error. Unable to create the keyStore"<<'\n';
-                throw -1;
-            }
-
-            X509_STORE_add_cert(this->store,certificate);
-            X509_STORE_add_crl(this->store,crl);
-            X509_STORE_set_flags( this->store , X509_V_FLAG_CRL_CHECK );
-            vverbose<<"--> [CipherRSA][Costructor] Keystore correctly created"<<'\n';
 
         }
 
@@ -167,9 +117,6 @@ namespace cipher{
 
         }
 
-        if( !server )
-            X509_STORE_free(this->store);
-
         vverbose<<"--> [CipherRSA][Destructor] Object destroyed"<<'\n';
 
     }
@@ -232,22 +179,71 @@ namespace cipher{
     //  Function of utility to verify a certificate. It can be used only in a CipherRSA made with the server=false in the costructor.
     bool CipherRSA::verifyCertificate(X509* certificate){
 
-        if( server ){
-            verbose<<"--> [CipherRSA][verifyCertificate] Error, the class should be inizialized as a client"<<'\n';
-            return false;
-        }
-
         if( !certificate ){
             verbose<<"--> [CipherRSA][verifyCertificate] Error, null-pointer passed as argument"<<'\n';
             return false;
         }
+        vverbose<<"--> [CipherRSA][verifyCertificate] Searching CA certificate and CRL.."<<'\n';
+        X509* caCertificate;
+        X509_CRL* crl;
+        FILE* certFile = fopen( "data/client_data/caCertificate.pem", "r" );
+
+        if( !certFile ){
+            verbose<<"--> [CipherRSA][verifyCertificate] Fatal Error. Unable to find: data/client_data/caCertificate.pem"<<'\n';
+            throw -1;
+        }
+
+        caCertificate = PEM_read_X509( certFile, nullptr, nullptr, nullptr );
+        if( !caCertificate ){
+            verbose<<"--> [CipherRSA][verifyCertificate] Fatal error. Unable to load the ca certificate"<<'\n';
+            fclose( certFile );
+            throw -1;
+        }
+
+        fclose( certFile );
+        vverbose<<"--> [CipherRSA][verifyCertificate] Certificate found"<<'\n';
+
+        certFile = fopen( "data/client_data/caCrl.pem", "r" );
+        if( !certFile ){
+            verbose<<"--> [CipherRSA][verifyCertificate] Fatal Error. Unable to find the file data/client_data/caCrl.pem"<<'\n';
+            throw -1;
+        }
+
+        crl = PEM_read_X509_CRL( certFile, nullptr, nullptr, nullptr );
+        if( !crl ){
+            verbose<<"--> [CipherRSA][verifyCertificate] Fatal error. Unable to load the ca CRL"<<'\n';
+            fclose( certFile );
+            throw -1;
+        }
+        fclose( certFile );
+        vverbose<<"--> [CipherRSA][verifyCertificate] CRL found"<<'\n';
+        X509_STORE* store = X509_STORE_new();
+        vverbose<<"--> [CipherRSA][verifyCertificate] Starting generation of keyStore"<<'\n';
+
+        if( !store ){
+            verbose<<"--> [CipherRSA][verifyCertificate] Fatal Error. Unable to create the keyStore"<<'\n';
+            throw -1;
+        }
+
+        X509_STORE_add_cert(store,caCertificate);
+        X509_STORE_add_crl(store,crl);
+        X509_STORE_set_flags( store , X509_V_FLAG_CRL_CHECK );
+        vverbose<<"--> [CipherRSA][verifyCertificate] Keystore correctly created"<<'\n';
+
         X509_STORE_CTX* ctx = X509_STORE_CTX_new();
+        if( !ctx ){
+            verbose<<"--> [CipherRSA][verifyCertificate] Error, unable to create a X509 store"<<'\n';
+            return false;
+        }
+
         X509_STORE_CTX_init(ctx,store,certificate,NULL);
+
         int ret = X509_verify_cert(ctx);
         if( ret!= 1 ){
             verbose<<"--> [CipherRSA][verifyCertificate] Fatal error, certificate unknown"<<'\n';
             return false;
         }
+
         vverbose<<"--> [CipherRSA][verifyCertificate] Certificate verified"<<'\n';
         return true;
 
@@ -430,12 +426,12 @@ namespace cipher{
 
     //  CLIENT
     //  Validate a certificate(taken from Message.certificate field) and if it is the server extract the public key
-    bool CipherRSA::extractServerKey( unsigned char* certificate , int len ){
+    EVP_PKEY* CipherRSA::extractServerKey( unsigned char* certificate , int len ){
 
         if( !certificate || !len ){
 
             verbose<<"-->[CipherRSA][extractServerKey] Error, invalid arguments"<<'\n';
-            return false;
+            return nullptr;
 
         }
         vverbose<<"-->[CipherRSA][extractServerKey] Starting verification of certificate"<<'\n';
@@ -445,25 +441,37 @@ namespace cipher{
 
         pemWrite.write((char*)certificate,len);
         pemWrite.close();
+
         FILE* f = fopen("data/temp/serverCertificate.pem" , "r");
+        if(!f){
+            verbose<<"-->[CipherRSA][extractServerKey] Error. File not found"<<'\n';
+            return nullptr;
+        }
+
         cert = PEM_read_X509(f, nullptr, nullptr, nullptr);
         fclose(f);
         remove("data/temp/serverCertificate.pem");
+
         if( !cert ){
             verbose<<"-->[CipherRSA][extractServerKey] Error, unable to perform certificate analysis"<<'\n';
-            return false;
+            return nullptr;
         }
 
-        if( this->verifyCertificate(cert)) {
+        if( CipherRSA::verifyCertificate(cert)) {
             vverbose<<"-->[CipherRSA][extractServerKey] Extraction of the public key"<<'\n';
-            this->pubServerKey = X509_get_pubkey(cert);
-            return true;
+            return X509_get_pubkey(cert);
         }
 
-        return false;
+        return nullptr;
 
     }
+    bool CipherRSA::setServerKey( EVP_PKEY* server ){
 
+        if( this->pubServerKey ) return false;
+        this->pubServerKey = server;
+        return true;
+
+    }
     //  CLIENT
     //  Extract the public key from what its textual form given with message
     bool CipherRSA::extractAdversaryKey( unsigned char* pubKey , int len ){

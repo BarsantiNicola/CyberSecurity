@@ -38,8 +38,7 @@ namespace cipher {
         private:
             //  CLIENT VARIABLES
             EVP_PKEY* advPubKey = nullptr;
-            EVP_PKEY* pubServerKey = nullptr;
-            X509_STORE* store = nullptr;
+            EVP_PKEY* pubServerKey;
 
             //  SERVER VARIABLES
             std::unordered_map<string,EVP_PKEY*> keyArchive;
@@ -53,7 +52,7 @@ namespace cipher {
 
             unsigned char* makeSignature( unsigned char* fields, unsigned int& len, EVP_PKEY* privKey  );                 //  GENERATE A SIGNATURE FROM A COMPRESS FORM OF A MESSAGE
             bool verifySignature( unsigned char* msg, unsigned char* signature , int msgLen, int len, EVP_PKEY* pubKey ); //  VERIFY A SIGNATURE OF A MESSAGE
-            bool verifyCertificate(X509* certificate);                                                                    //  VERIFY THE VALIDITY OF A CERTIFICATE
+            static bool verifyCertificate(X509* certificate);                                                                    //  VERIFY THE VALIDITY OF A CERTIFICATE
 
         public:
 
@@ -74,10 +73,10 @@ namespace cipher {
             //  CLIENT UTILITIES
             bool setAdversaryKey( EVP_PKEY* signature );                        //  SET AN ADVERSARY KEY
             void unsetAdversaryKey();                                           //  REMOVE AN ADVERSARY KEY
-            bool extractServerKey( unsigned char* certificate , int len ); //  EXTRACT A PUBLIC KEY FROM A CERTIFICATE[CERTIFICATE MESSAGE]
+            static EVP_PKEY* extractServerKey( unsigned char* certificate , int len ); //  EXTRACT A PUBLIC KEY FROM A CERTIFICATE[CERTIFICATE MESSAGE]
             bool extractAdversaryKey( unsigned char* pubKey , int len );        //  EXTRACT ADVERSARY PUBLIC KEY FROM PUBKEY FIELD[GAME_PARAM MESSAGE]
             bool clientVerifySignature( Message message , bool server );        //  VERIFY THE SIGNATURE OF A MESSAGE[CLIENT]
-
+            bool setServerKey( EVP_PKEY* server );                              //  SET SERVER PUBLIC KEY
             EVP_PKEY* getPubKey();                                              //  UTILITY FOR TESTING [TO BE REMOVED]
 
     };
