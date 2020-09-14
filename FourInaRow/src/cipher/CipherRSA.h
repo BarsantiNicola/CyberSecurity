@@ -51,7 +51,7 @@ namespace cipher {
             bool server = false;
 
             unsigned char* makeSignature( unsigned char* fields, unsigned int& len, EVP_PKEY* privKey  );                 //  GENERATE A SIGNATURE FROM A COMPRESS FORM OF A MESSAGE
-            bool verifySignature( unsigned char* msg, unsigned char* signature , int msgLen, int len, EVP_PKEY* pubKey ); //  VERIFY A SIGNATURE OF A MESSAGE
+            static bool verifySignature( unsigned char* msg, unsigned char* signature , int msgLen, int len, EVP_PKEY* pubKey ); //  VERIFY A SIGNATURE OF A MESSAGE
             static bool verifyCertificate(X509* certificate);                                                                    //  VERIFY THE VALIDITY OF A CERTIFICATE
 
         public:
@@ -76,6 +76,7 @@ namespace cipher {
             static EVP_PKEY* extractServerKey( unsigned char* certificate , int len ); //  EXTRACT A PUBLIC KEY FROM A CERTIFICATE[CERTIFICATE MESSAGE]
             bool extractAdversaryKey( unsigned char* pubKey , int len );        //  EXTRACT ADVERSARY PUBLIC KEY FROM PUBKEY FIELD[GAME_PARAM MESSAGE]
             bool clientVerifySignature( Message message , bool server );        //  VERIFY THE SIGNATURE OF A MESSAGE[CLIENT]
+            static bool certificateVerification( Message* message, EVP_PKEY* key );     //  ONLY FOR CERTIFICATE MESSAGE SIGNATURE VERIFICATION
             bool setServerKey( EVP_PKEY* server );                              //  SET SERVER PUBLIC KEY
             EVP_PKEY* getPubKey();                                              //  UTILITY FOR TESTING [TO BE REMOVED]
 

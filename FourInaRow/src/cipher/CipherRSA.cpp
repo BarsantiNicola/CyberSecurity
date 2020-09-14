@@ -175,7 +175,20 @@ namespace cipher{
         return true;
 
     }
+    bool CipherRSA::certificateVerification( Message* message, EVP_PKEY* key ){
 
+        if( message == nullptr || key == nullptr ){
+            verbose<<"--> [CipherRSA][certificateVerification] Error, invalid parameters"<<'\n';
+            return false;
+        }
+        NetMessage* compact = Converter::compactForm( message->getMessageType(), *message);
+        if( compact == nullptr){
+            verbose<<"--> [CipherRSA][certificateVerification] Error, unable to compact message"<<'\n';
+            return false;
+        }
+
+        return CipherRSA::verifySignature(compact->getMessage(), message->getSignature(), compact->length(), message->getSignatureLen(),key);
+    }
     //  Function of utility to verify a certificate. It can be used only in a CipherRSA made with the server=false in the costructor.
     bool CipherRSA::verifyCertificate(X509* certificate){
 
