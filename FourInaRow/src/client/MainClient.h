@@ -62,7 +62,7 @@ namespace client
       ChallengeRegister* challenge_register;
       ConnectionManager* connection_manager;//da inizializzare nel main
       TextualInterfaceManager* textual_interface_manager;
-      cipher::CipherClient* cipher_client=new cipher::CipherClient();
+      cipher::CipherClient* cipher_client;
       std::mutex mtx_time;
       std::unique_lock<std::mutex>* lck_time;//(mtx_time,std::defer_lock);//da inizializzare nel main
       bool loginProtocol(Message message,bool* socketIsClosed);//ok

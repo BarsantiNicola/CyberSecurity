@@ -209,7 +209,12 @@ This function encryptMessage with AES_256 gcm
     unsigned char* tag=new unsigned char[16];
     Converter converter;
     NetMessage* netMessage=converter.compactForm( message.getMessageType(),message,&lengthPlaintext );
-    
+    if(iv==nullptr || key==nullptr)
+    {
+       verbose<<"-->[CipherAES][encryptMessage] error key or iv is nullptr"<<'\n';
+       return nullptr;
+    } 
+    vverbose<<"-->[CipherAES][encryptMessage] key and iv is nullptr"<<'\n';
     if(netMessage==nullptr)
     {
        verbose<<"-->[CipherAES][encryptMessage] errorTo create a message compact"<<'\n';
@@ -296,7 +301,11 @@ This function encryptMessage with AES_256 gcm
     Converter converter;
 
     NetMessage* netMessage=converter.compactForm( message.getMessageType(),message,&lengthCleareText );
-    
+    if(iv==nullptr || key==nullptr)
+    {
+       verbose<<"-->[CipherAES][decryptMessage] error key or iv is nullptr"<<'\n';
+       return nullptr;
+    }
     if(netMessage==nullptr)
     {
        verbose<<"-->[CipherAES][decryptMessage] errorTo create a message compact"<<'\n';

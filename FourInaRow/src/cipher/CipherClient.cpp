@@ -28,7 +28,7 @@ namespace cipher
     this->dh  = new CipherDH();
     this->aes = new CipherAES();
    
-    if( !this->dh || !this->aes )
+    if( this->dh==nullptr || this->aes==nullptr )
     {
       verbose<<"-->[CipherClient][Costructor] Fatal error, unable to load cipher suites"<<'\n';
       exit(1);
@@ -44,6 +44,7 @@ namespace cipher
 /*------------------------------function toSecureForm------------------------------------*/
    bool CipherClient::toSecureForm( Message* message, SessionKey* aesKey  )
    {
+     bool correct=false;
      if( message == nullptr )
      {
        verbose<<"-->[CipherClient][toSecureForm] Error, null pointer message"<<'\n';
@@ -62,9 +63,13 @@ namespace cipher
          break;
        
        case LOGOUT_REQ:
-         if(!aesKey)
+         vverbose<<"-->[CipherClient][toSecureForm] securing LOGOUT_REQ"<<'\n';
+         if(aesKey==nullptr)
            return false;
-         this->aes->modifyParam( aesKey );
+         correct=this->aes->modifyParam( aesKey );
+         vverbose<<"-->[CipherClient][toSecureForm] param modified"<<'\n';
+         if(!correct)
+           return false;
          app = this->aes->encryptMessage(*message);
          if( app == nullptr )
          {
@@ -75,9 +80,11 @@ namespace cipher
          break;
 
        case USER_LIST_REQ:
-         if(!aesKey)
+         if(aesKey==nullptr)
            return false;
-         this->aes->modifyParam( aesKey );
+         correct=this->aes->modifyParam( aesKey );
+         if(!correct)
+           return false;
          app = this->aes->encryptMessage(*message);
          if( app == nullptr )
          {
@@ -88,9 +95,11 @@ namespace cipher
          break;
          
        case RANK_LIST_REQ:
-         if(!aesKey)
+         if(aesKey==nullptr)
            return false;
-         this->aes->modifyParam( aesKey );
+         correct=this->aes->modifyParam( aesKey );
+         if(!correct)
+           return false;
          app = this->aes->encryptMessage(*message);
          if( app == nullptr )
          {
@@ -101,9 +110,11 @@ namespace cipher
          break;
 
        case MATCH:
-         if(!aesKey)
+         if(aesKey==nullptr)
            return false;
-         this->aes->modifyParam( aesKey );
+         correct=this->aes->modifyParam( aesKey );
+         if(!correct)
+           return false;
          app = this->aes->encryptMessage(*message);
          if( app == nullptr )
          {
@@ -114,9 +125,11 @@ namespace cipher
          break;
 
        case ACCEPT:
-         if(!aesKey)
+         if(aesKey==nullptr)
            return false;
-         this->aes->modifyParam( aesKey );
+         correct=this->aes->modifyParam( aesKey );
+         if(!correct)
+           return false;
          app = this->aes->encryptMessage(*message);
          if(app == nullptr)
          {
@@ -127,9 +140,11 @@ namespace cipher
          break;
 
        case REJECT:
-         if(!aesKey)
+         if(aesKey=nullptr)
            return false;
-         this->aes->modifyParam( aesKey );
+         correct=this->aes->modifyParam( aesKey );
+         if(!correct)
+           return false;
          app = this->aes->encryptMessage(*message);
          if(app == nullptr)
          {
@@ -140,9 +155,11 @@ namespace cipher
          break;
    
       case WITHDRAW_REQ:
-         if(!aesKey)
+         if(aesKey==nullptr)
            return false;
-         this->aes->modifyParam( aesKey );
+         correct=this->aes->modifyParam( aesKey );
+         if(!correct)
+           return false;
          app = this->aes->encryptMessage(*message);
          if(app == nullptr)
          {
@@ -153,9 +170,11 @@ namespace cipher
          break;  
 
       case MOVE:
-         if(!aesKey)
+         if(aesKey==nullptr)
            return false;
-         this->aes->modifyParam( aesKey );
+         correct=this->aes->modifyParam( aesKey );
+         if(!correct)
+           return false;
          app = this->aes->encryptMessage(*message);
          if(app == nullptr)
          {
@@ -167,9 +186,11 @@ namespace cipher
          break;
 
       case ACK:
-         if(!aesKey)
+         if(aesKey==nullptr)
            return false;
-         this->aes->modifyParam( aesKey );
+         correct=this->aes->modifyParam( aesKey );
+         if(!correct)
+           return false;
          app = this->aes->encryptMessage(*message);
          if(app == nullptr)
          {
@@ -187,9 +208,11 @@ namespace cipher
          
    
       case CHAT:
-         if(!aesKey)
+         if(aesKey==nullptr)
            return false;
-         this->aes->modifyParam( aesKey );
+         correct=this->aes->modifyParam( aesKey );
+         if(!correct)
+           return false;
          app = this->aes->encryptMessage(*message);
          if(app == nullptr)
          {
@@ -201,9 +224,11 @@ namespace cipher
          break;
 
       case DISCONNECT:
-         if(!aesKey)
+         if(aesKey==nullptr)
            return false;
-         this->aes->modifyParam( aesKey );
+         correct=this->aes->modifyParam( aesKey );
+         if(!correct)
+           return false;
          app = this->aes->encryptMessage(*message);
          if(app == nullptr)
          {
@@ -222,9 +247,11 @@ namespace cipher
          }
          else
          {
-           if(!aesKey)
+           if(aesKey==nullptr)
              return false;
-           this->aes->modifyParam( aesKey );
+           correct=this->aes->modifyParam( aesKey );
+           if(!correct)
+             return false;
            app = this->aes->encryptMessage(*message);
            if(app == nullptr)
            {
@@ -246,6 +273,8 @@ namespace cipher
 /*---------------fromSecureForm function*----------------------------------------------------- */
   bool CipherClient::fromSecureForm( Message* message , string username , SessionKey* aesKey,bool serverKeyExchange)
   {
+    vverbose<<"-->[CipherClient][fromSecureForm] start function"<<'\n';
+    bool correct=false;
     if(message==nullptr)
     {
       verbose<<"-->[CipherClient][fromSecureForm] Error, null pointer message"<<'\n';
@@ -257,7 +286,7 @@ namespace cipher
     {
       case CERTIFICATE:
         vverbose<<"-->[CipherClient][fromSecureForm] Verifing extracting keyServer"<<'\n';
-/*PROBLEMI*/
+
        serverKey= CipherRSA::extractServerKey(message->getServerCertificate(),message-> getServerCertificateLength());
         if(serverKey==nullptr)
         {
@@ -280,7 +309,9 @@ namespace cipher
        case USER_LIST:
          if(!aesKey)
            return false;
-         this->aes->modifyParam( aesKey );
+         correct=this->aes->modifyParam( aesKey );
+         if(!correct)
+           return false;
          app = this->aes->decryptMessage(*message);
          if(app == nullptr)
          {
@@ -293,7 +324,9 @@ namespace cipher
        case RANK_LIST:
          if(!aesKey)
            return false;
-         this->aes->modifyParam( aesKey );
+         correct=this->aes->modifyParam( aesKey );
+         if(!correct)
+           return false;
          app = this->aes->decryptMessage(*message);
          if(app == nullptr)
          {
@@ -306,7 +339,9 @@ namespace cipher
        case REJECT:
          if(!aesKey)
            return false;
-         this->aes->modifyParam( aesKey );
+         correct=this->aes->modifyParam( aesKey );
+         if(!correct)
+           return false;
          app = this->aes->decryptMessage(*message);
          if(app == nullptr)
          {
@@ -330,7 +365,9 @@ namespace cipher
        case GAME_PARAM:
          if(!aesKey)
            return false;
-         this->aes->modifyParam( aesKey );
+         correct=this->aes->modifyParam( aesKey );
+         if(!correct)
+           return false;
          app = this->aes->decryptMessage(*message);
          if(app == nullptr)
          {
@@ -347,7 +384,9 @@ namespace cipher
        case MATCH:
          if(!aesKey)
            return false;
-         this->aes->modifyParam( aesKey );
+         correct=this->aes->modifyParam( aesKey );
+         if(!correct)
+           return false;
          app = this->aes->decryptMessage(*message);
          if(app == nullptr)
          {
@@ -359,7 +398,9 @@ namespace cipher
        case WITHDRAW_OK:
          if(!aesKey)
            return false;
-         this->aes->modifyParam( aesKey );
+         correct=this->aes->modifyParam( aesKey );
+         if(!correct)
+           return false;
          app = this->aes->decryptMessage(*message);
          if(app == nullptr)
          {
@@ -371,7 +412,9 @@ namespace cipher
        case ACK:
          if(!aesKey)
            return false;
-         this->aes->modifyParam( aesKey );
+         correct=this->aes->modifyParam( aesKey );
+         if(!correct)
+           return false;
          app = this->aes->decryptMessage(*message);
          if(app == nullptr)
          {
@@ -383,7 +426,9 @@ namespace cipher
        case MOVE:
          if(!aesKey)
            return false;
-         this->aes->modifyParam( aesKey );
+         correct=this->aes->modifyParam( aesKey );
+         if(!correct)
+           return false;
          app = this->aes->decryptMessage(*message);
          if(app == nullptr)
          {
@@ -396,7 +441,9 @@ namespace cipher
        case CHAT:
          if(!aesKey)
            return false;
-         this->aes->modifyParam( aesKey );
+         correct=this->aes->modifyParam( aesKey );
+         if(!correct)
+           return false;
          app = this->aes->decryptMessage(*message);
          if(app == nullptr)
          {
@@ -409,7 +456,9 @@ namespace cipher
        case DISCONNECT:
          if(!aesKey)
            return false;
-         this->aes->modifyParam( aesKey );
+         correct=this->aes->modifyParam( aesKey );
+         if(!correct)
+           return false;
          app = this->aes->decryptMessage(*message);
          if(app == nullptr)
          {
@@ -435,7 +484,9 @@ namespace cipher
          {
            if(!aesKey)
              return false;
-           this->aes->modifyParam( aesKey );
+         correct=this->aes->modifyParam( aesKey );
+         if(!correct)
+           return false;
            app = this->aes->decryptMessage(*message);
            if(app == nullptr)
            {

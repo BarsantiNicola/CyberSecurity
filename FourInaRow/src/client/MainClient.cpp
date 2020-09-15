@@ -282,6 +282,7 @@ namespace client
     bool socketIsClosed=false;
     Message* message;
     message=createMessage(MessageType::LOGOUT_REQ, nullptr,nullptr,0,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE);
+    
     res=connection_manager->sendMessage(*message,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
     if(socketIsClosed)
     {
@@ -351,6 +352,8 @@ namespace client
         if(app==nullptr)
           return false;
         this->aesKeyServer=cipher_client->getSessionKey( app , len );
+        if(this->aesKeyServer==nullptr||this->aesKeyServer->iv==nullptr || this->aesKeyServer->sessionKey==nullptr)
+          return false;
         delete nonce_s;
         return true;
         
@@ -407,6 +410,7 @@ namespace client
       case LOGOUT_REQ:
         message->setMessageType( LOGOUT_REQ );
         message->setNonce(this->nonce);
+        vverbose<<"-->[MainClient][createMessage] key iv "<<aesKey->iv<<" session key: "<<aesKey->sessionKey<<'\n';//da eliminare
         cipherRes=this->cipher_client->toSecureForm( message,aesKey);
         this->nonce++;
         break;
@@ -598,16 +602,21 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       verbose<<""<<"--> [MainClient][comand] error comand_line is empty"<<'\n';
       return false;
     }
-    if(comand_line.compare(0,5,"LOGIN")==0 && logged==false)
+    if(comand_line.compare(0,5,"LOGIN")==0)
     {
+      if(logged)
+      {
+        std::cout<<"already logged"<<endl;
+        return true;
+      }
       string password;
       string username;
-      cout<<"username: "<<endl;
+      cout<<"username:";
       cin>>username;
+      cout<<'\n';
       
       
-      
-      cout<<"password:"<<endl;
+      cout<<"password:";
 
       termios oldt;
       tcgetattr(STDIN_FILENO, &oldt);
@@ -616,7 +625,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       tcsetattr(STDIN_FILENO, TCSANOW, &newt);//hide input
       std::cin>>password;
       tcsetattr(STDIN_FILENO, TCSANOW, &oldt);//show input
-     
+      cout<<'\n';
       if(username.empty()||password.empty())
       {
         std::cout<<"username or password not valid"<<endl;
@@ -635,14 +644,13 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       }
       return true;
     }
-    else if(comand_line.compare(0,4,"show ")==0)
+    else if(comand_line.compare(0,4,"show")==0)
     {
       if(comand_line.compare(5,11,"[users]")==0)
       {
         if(!sendReqUserListProtocol())
         {
-          std::cout<<"show user online failed retry"<<endl;
-          std::cout<<"\t# Insert a command:";
+          std::cout<<"show user online failed retry \n \t# Insert a command:";
         }
       }
       else if(comand_line.compare(5,11,"[users]")==0)
@@ -654,11 +662,11 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         }
       }
     }
-    else if(comand_line.compare(0,9,"challenge ")==0)
+    else if(comand_line.compare(0,9,"challenge")==0)
     {
       //ESEGUO CHALLENGE
     }
-    else if(comand_line.compare(0,6,"logout ")==0&&logged==true)
+    else if(comand_line.compare(0,6,"logout")==0&&logged==true)
     {
       //ESEGUO LOGOUT
       bool ret=sendLogoutProtocol();
@@ -667,6 +675,11 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           std::cout<<"logout failed retry"<<endl;
           std::cout<<"\t# Insert a command:";
       }
+    }
+    else
+    {
+      std::cout<<"comand: "<<comand_line<<" not valid"<<endl;
+      std::cout<<"\t# Insert a command:";
     }
     return true;
   }
@@ -681,12 +694,12 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 */
   void MainClient::client()
   {
-     
+     //char* buffer;
      std::vector<int> sock_id_list;
      int newconnection_id=0;
      string newconnection_ip="";
      lck_time=new std::unique_lock<std::mutex>(mtx_time,std::defer_lock);
-
+     cipher_client=new cipher::CipherClient();
      textual_interface_manager=new TextualInterfaceManager();
      bool res;
     while(true)
@@ -712,8 +725,12 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         {
           if(idSock==connection_manager->getstdinDescriptor())
           {
-            std::cin>>comand_line;
+            //buffer=new char[500];
+            //std::fgets(buffer,400,stdin);
+            //cin>>comand_line=*buffer;
+            cin>>comand_line;
             comand(comand_line);
+            //delete[] buffer;
           }
           if(idSock==connection_manager->getserverSocket())
           {
