@@ -27,6 +27,7 @@ namespace client
 */
   bool MainClient::certificateProtocol()
   {
+  
    const char*ip=nullptr;
    bool socketIsClosed=false;
    bool res;
@@ -77,25 +78,33 @@ namespace client
    {
      return false;
    }
-   vverbose<<"-->[MainClient][certificateProtocol] nonce control"<<'\n';
-   this->nonce = *(mess->getNonce())+1;
+   
+   this->nonce = *(messRet->getNonce())+1;
+   verbose<<"-->[MainClient][certificateProtocol] the vulue of nonce is "<<this->nonce<<'\n';
    //res = cipher_client-> getSessionKey( netRet->getMessage() ,netRet->length() );
-   vverbose<<"-->[MainClient][certificateProtocol] sessionKey obtained"<<'\n';
+   //vverbose<<"-->[MainClient][certificateProtocol] sessionKey obtained"<<'\n';
    return res;
   }
 /*
 --------------------------------loginProtocol function------------------------------
 */
-  bool MainClient::loginProtocol(Message message,bool *socketIsClosed)//DA FINIRE
+  bool MainClient::loginProtocol(std::string username,bool *socketIsClosed)//DA FINIRE
   {
     bool res;
     int* nonce_s;
     bool connection_res;
     Message* retMess;
     Message* sendMess;
-    if(message.getMessageType()==LOGIN_REQ)
+    if(username.empty())
     {
-      res=connection_manager->sendMessage(message,connection_manager->getserverSocket(),socketIsClosed,nullptr,0); 
+      return false;
+    }
+    char* cUsername=new char[username.size()+1];
+    std::strcpy(cUsername,username.c_str());
+    Message* message=createMessage(MessageType::LOGIN_REQ, (const char*)cUsername,nullptr,0,nullptr,MessageGameType::NO_GAME_TYPE_MESSAGE);
+    if(message->getMessageType()==LOGIN_REQ)
+    {
+      res=connection_manager->sendMessage(*message,connection_manager->getserverSocket(),socketIsClosed,nullptr,0); 
       if(!res)
       {
         if(socketIsClosed)
@@ -105,6 +114,7 @@ namespace client
       try
       {
         retMess=connection_manager->getMessage(connection_manager->getserverSocket());
+        verbose<<"-->[MainClient][loginProtocol] a message recived"<<'\n';
       }
       catch(exception e)
       {
@@ -112,26 +122,30 @@ namespace client
         return false;
       }
       if(retMess==nullptr)
+      {
+        verbose<<"-->[MainClient][loginProtocol] message nullptr"<<'\n';
         return false;
-
-      nonce_s=message.getNonce();
-      if(*nonce_s!=this->nonce)
+      }
+      nonce_s=message->getNonce();
+      if(*nonce_s!=(this->nonce-1))
       {
         delete nonce_s;
+        verbose<<"-->[MainClient][loginProtocol] nonce not equal"<<'\n';
         return false;
       }
       delete nonce_s;
       res=cipher_client->fromSecureForm( retMess , username ,nullptr,true);
       if(res==false)
       {
+        verbose<<"-->[MainClient][loginProtocol] error to dec"<<'\n';
         return false;
       }
     
       if(retMess->getMessageType()==LOGIN_OK)
       {
         sendMess=createMessage(MessageType::KEY_EXCHANGE, nullptr,nullptr,0,nullptr,MessageGameType::NO_GAME_TYPE_MESSAGE);
-        
-        res=connection_manager->sendMessage(message,connection_manager->getserverSocket(),socketIsClosed,nullptr,0); 
+        verbose<<"-->[MainClient][loginProtocol] start key exchange protocol"<<'\n';
+        res=connection_manager->sendMessage(*sendMess,connection_manager->getserverSocket(),socketIsClosed,nullptr,0); 
         if(!res)
         {
           if(*socketIsClosed)
@@ -150,10 +164,12 @@ namespace client
         if(retMess==nullptr)
           return false;
         res=keyExchangeReciveProtocol(retMess,true);
+        verbose<<"-->[MainClient][loginProtocol] loginProtocol finished "<<'\n';
         return res;
       }
       else if(retMess->getMessageType()==LOGIN_FAIL)
-      {     
+      {  
+        verbose<<"-->[MainClient][loginProtocol] loginFail"<<'\n';   
         return false;
       }
     }
@@ -188,7 +204,7 @@ namespace client
   {
       int* nonce_s;
       bool res;
-      if(*nonce_s!=this->nonce)
+      if(*nonce_s!=(this->nonce-1))
       {
         verbose<<"--> [MainClient][reciveUserListProtocol] nonce not valid"<<'\n';
         delete nonce_s;
@@ -197,6 +213,7 @@ namespace client
       }
       if(message->getMessageType()!=USER_LIST || clientPhase!=ClientPhase::USER_LIST_PHASE)
       {
+
         verbose<<"--> [MainClient][reciveUserListProtocol] message type not expected"<<'\n';
         return false;
       }
@@ -245,7 +262,7 @@ namespace client
   {
       int* nonce_s;
       bool res;
-      if(*nonce_s!=this->nonce)
+      if(*nonce_s!=(this->nonce-1))
       {
         verbose<<"--> [MainClient][receiveRankProtocol] nonce not valid"<<'\n';
         delete nonce_s;
@@ -335,7 +352,7 @@ namespace client
       int* nonce_s=message->getNonce();
       bool res;
       nonce_s=message->getNonce();
-      if(*nonce_s!=this->nonce)
+      if(*nonce_s!=(this->nonce-1))
       {
         verbose<<"--> [MainClient][keyExchangeProtocol] nonce not valid"<<'\n';
         delete nonce_s;
@@ -354,6 +371,7 @@ namespace client
         this->aesKeyServer=cipher_client->getSessionKey( app , len );
         if(this->aesKeyServer==nullptr||this->aesKeyServer->iv==nullptr || this->aesKeyServer->sessionKey==nullptr)
           return false;
+        vverbose<<"-->[MainClient][keyExchangeReciveProtoco] key iv "<<aesKeyServer->iv<<" session key: "<<aesKeyServer->sessionKey<<'\n';//da eliminare
         delete nonce_s;
         return true;
         
@@ -410,7 +428,7 @@ namespace client
       case LOGOUT_REQ:
         message->setMessageType( LOGOUT_REQ );
         message->setNonce(this->nonce);
-        vverbose<<"-->[MainClient][createMessage] key iv "<<aesKey->iv<<" session key: "<<aesKey->sessionKey<<'\n';//da eliminare
+        
         cipherRes=this->cipher_client->toSecureForm( message,aesKey);
         this->nonce++;
         break;
@@ -580,6 +598,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
   bool res;
   this->myIP=myIP;
   this->myPort=myPort;
+  this->nonce=0;
   connection_manager=new ConnectionManager(false,this->myIP,this->myPort);
   try
   {
@@ -591,6 +610,27 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
   }
   return res;
 }
+/*
+------------------------------function errorHandler----------------------------
+
+*/
+  bool MainClient::errorHandler(Message* message)
+  {
+    bool res;         
+    res=cipher_client->fromSecureForm( message , username ,aesKeyServer,true);
+    int *nonce_s=message->getNonce();
+    if(res==false || *nonce_s!=(this->nonce-1))
+    {
+      return false;
+    }
+    std::cout<<"error to server request try again."<<endl;
+    clientPhase=ClientPhase::NO_PHASE;
+    std::cout<<"\t# Insert a command:";
+    cout.flush();
+    return true;
+  }
+
+
 /*
 ------------------------comand function------------------------------------
 
@@ -607,6 +647,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       if(logged)
       {
         std::cout<<"already logged"<<endl;
+        std::cout<<"\t# Insert a command:";
+        std::cout.flush();
         return true;
       }
       string password;
@@ -635,12 +677,18 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       {
          std::cout<<"login failed retry"<<endl;
          std::cout<<"\t# Insert a command:";
+         cout.flush();
       }
       else
       {
-        this->username=username;
-        this->logged=true;
-        textual_interface_manager->printMainInterface(this->username," ","online","none","0");
+        bool socketIsClosed=false;
+        if(loginProtocol(username,&socketIsClosed))
+        {
+          this->username=username;
+          this->logged=true;
+        
+          textual_interface_manager->printMainInterface(this->username," ","online","none","0");
+         }
       }
       return true;
     }
@@ -674,12 +722,14 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       {
           std::cout<<"logout failed retry"<<endl;
           std::cout<<"\t# Insert a command:";
+          cout.flush();
       }
     }
     else
     {
-      std::cout<<"comand: "<<comand_line<<" not valid"<<endl;
+      std::cout<<"\t  comand: "<<comand_line<<" not valid"<<endl;
       std::cout<<"\t# Insert a command:";
+      cout.flush();
     }
     return true;
   }
@@ -699,7 +749,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
      int newconnection_id=0;
      string newconnection_ip="";
      lck_time=new std::unique_lock<std::mutex>(mtx_time,std::defer_lock);
-     cipher_client=new cipher::CipherClient();
+     cipher_client=new cipher::CipherClient();//create new CipherClient object
+
      textual_interface_manager=new TextualInterfaceManager();
      bool res;
     while(true)
@@ -756,8 +807,12 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                  res=receiveUserListProtocol(message);
                  if(!res)
                  {
-                   cout<<"error to show the online user list"<<endl;
-                   std::cout<<"\t# Insert a command:";
+                   if(clientPhase==ClientPhase::NO_PHASE)
+                   {
+                     cout<<"error to show the online users list"<<endl;
+                     std::cout<<"\t# Insert a command:";
+                     cout.flush();
+                   }
                  }
                }
                break;
@@ -767,22 +822,22 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                  res=receiveUserListProtocol(message);
                  if(!res)
                  {
-                   cout<<"error to show the online user list"<<endl;
-                   std::cout<<"\t# Insert a command:";
+                   if(clientPhase==ClientPhase::NO_PHASE)
+                   {
+                     cout<<"error to show the rank users list"<<endl;
+                     std::cout<<"\t# Insert a command:";
+                     cout.flush();
+                   }
                  }
                }
                break;
               case ERROR:
               {
-                res=cipher_client->fromSecureForm( message , username ,aesKeyServer,true);
-                if(res==false)
+                res=errorHandler(message);
+                if(res)
                 {
                   break;
                 }
-                cout<<"error to server request try again."<<endl;
-                clientPhase=ClientPhase::NO_PHASE;
-                std::cout<<"\t# Insert a command:";
-                break;
               }
               default:
                  verbose<<"--> [MainClient][client] message_type unexpected"<<'\n';

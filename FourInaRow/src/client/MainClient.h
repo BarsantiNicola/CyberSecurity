@@ -65,12 +65,13 @@ namespace client
       cipher::CipherClient* cipher_client;
       std::mutex mtx_time;
       std::unique_lock<std::mutex>* lck_time;//(mtx_time,std::defer_lock);//da inizializzare nel main
-      bool loginProtocol(Message message,bool* socketIsClosed);//ok
+      bool loginProtocol(std::string username,bool *socketIsClosed);//ok
       //bool signUpProtocol(Message message);
       string printableString(unsigned char* toConvert,int len);//ok
       bool challengeProtocol(Message message);
       bool acceptProtocol(Message message);
       bool rejectProtocol(Message message);
+      bool errorHandler(Message* message);
       bool sendRankProtocol();//ok
       bool reciveRankProtocol(Message* message);//ok
       bool certificateProtocol();//ok
