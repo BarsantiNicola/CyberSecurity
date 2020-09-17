@@ -29,7 +29,6 @@
   <component name="ChangeListManager">
     <list default="true" id="4cbb8ddf-e807-44fa-ae33-bda27674b47b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/program" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/cipher/CipherRSA.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/cipher/CipherRSA.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -143,7 +142,7 @@
       <workItem from="1600118165013" duration="802000" />
       <workItem from="1600121093443" duration="548000" />
       <workItem from="1600333364190" duration="3000" />
-      <workItem from="1600333378640" duration="698000" />
+      <workItem from="1600333378640" duration="5357000" />
     </task>
     <servers />
   </component>

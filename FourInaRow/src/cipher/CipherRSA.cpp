@@ -68,9 +68,9 @@ namespace cipher{
 
             string pubKey = "data/client_data/";
             pubKey.append(username).append("PubRSA.pem");
-
             publicKey = fopen(pubKey.c_str(), "r");
             privateKey = fopen(privKey.c_str(), "r");
+            cout<<pubKey<<endl<<publicKey<<endl;
         }
 
         if( !publicKey || !privateKey ){
@@ -80,7 +80,12 @@ namespace cipher{
         }else{
             vverbose<<"--> [CipherRSA][Costructor] "<<username<<"'keys found"<<'\n';
 
+
+            if( username.compare("bob") == 0 )
             this->myPubKey = PEM_read_PUBKEY( publicKey, nullptr, nullptr , nullptr);
+            else
+                PEM_read_PUBKEY( publicKey, nullptr, nullptr , nullptr);
+
             if( ! this->myPubKey ) {
                 verbose << "--> [CipherRSA][Costructor] Unable to extract " << username << " public key" << '\n';
                 fclose(publicKey);
@@ -89,6 +94,7 @@ namespace cipher{
             }else
                 vverbose<<"--> [CipherRSA][Costructor] "<<username<<" public key correctly loaded"<<'\n';
             fclose(publicKey);
+
 
             this->myPrivKey = PEM_read_PrivateKey( privateKey, nullptr, nullptr , (void*)password.c_str());
             if( ! this->myPrivKey ) {
@@ -105,20 +111,25 @@ namespace cipher{
 
     CipherRSA::~CipherRSA(){
 
-        if( myPubKey )
-            EVP_PKEY_free( this->myPubKey );
+        if( myPubKey ) {
+            EVP_PKEY_free(this->myPubKey);
+            this->myPubKey = nullptr;
+        }
 
-        if( myPrivKey )
-            EVP_PKEY_free( this->myPrivKey );
+        if( myPrivKey ) {
+            EVP_PKEY_free(this->myPrivKey);
+            this->myPrivKey = nullptr;
+        }
 
-        if( advPubKey )
-            EVP_PKEY_free( this->advPubKey );
+        if( advPubKey ) {
+            EVP_PKEY_free(this->advPubKey);
+            this->advPubKey = nullptr;
+        }
 
-        if( pubServerKey )
-            EVP_PKEY_free( this->pubServerKey );
-
-        if( this->serverCertificate )
-            delete[] this->serverCertificate;
+        if( pubServerKey ) {
+            EVP_PKEY_free(this->pubServerKey);
+            this->pubServerKey = nullptr;
+        }
 
         if( !keyArchive.empty() ) {
 
@@ -127,7 +138,6 @@ namespace cipher{
             keyArchive.clear();
 
         }
-
         vverbose<<"--> [CipherRSA][Destructor] Object destroyed"<<'\n';
 
     }
