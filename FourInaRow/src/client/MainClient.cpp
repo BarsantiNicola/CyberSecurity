@@ -80,7 +80,7 @@ namespace client
    }
    
    this->nonce = *(messRet->getNonce())+1;
-   verbose<<"-->[MainClient][certificateProtocol] the vulue of nonce is "<<this->nonce<<'\n';
+   vverbose<<"-->[MainClient][certificateProtocol] the vulue of nonce is "<<this->nonce<<'\n';
    //res = cipher_client-> getSessionKey( netRet->getMessage() ,netRet->length() );
    //vverbose<<"-->[MainClient][certificateProtocol] sessionKey obtained"<<'\n';
    return res;
@@ -95,11 +95,15 @@ namespace client
     bool connection_res;
     Message* retMess;
     Message* sendMess;
+    if(socketIsClosed==nullptr)
+      return false;
     if(username.empty())
     {
       return false;
     }
     char* cUsername=new char[username.size()+1];
+    if(cUsername==nullptr)
+      return false;
     std::strcpy(cUsername,username.c_str());
     Message* message=createMessage(MessageType::LOGIN_REQ, (const char*)cUsername,nullptr,0,nullptr,MessageGameType::NO_GAME_TYPE_MESSAGE);
     if(message->getMessageType()==LOGIN_REQ)
@@ -204,6 +208,12 @@ namespace client
   {
       int* nonce_s;
       bool res;
+      if(message==nullptr)
+      {
+        verbose<<"--> [MainClient][reciveUserListProtocol] error the message is null"<<'\n';
+        return false;
+      }
+      nonce_s=message->getNonce();
       if(*nonce_s!=(this->nonce-1))
       {
         verbose<<"--> [MainClient][reciveUserListProtocol] nonce not valid"<<'\n';
@@ -262,6 +272,12 @@ namespace client
   {
       int* nonce_s;
       bool res;
+      if(message==nullptr)
+      {
+        verbose<<"--> [MainClient][reciveRankProtocol] error the message is null"<<'\n';
+        return false;
+      }
+      nonce_s=message->getNonce();
       if(*nonce_s!=(this->nonce-1))
       {
         verbose<<"--> [MainClient][receiveRankProtocol] nonce not valid"<<'\n';
@@ -303,24 +319,33 @@ namespace client
     res=connection_manager->sendMessage(*message,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
     if(socketIsClosed)
     {
-      vverbose<<"-->[MainClient][sendLogoutProtocol] error server is offline reconnecting"<<'\n';
+      verbose<<"-->[MainClient][sendLogoutProtocol] error server is offline reconnecting"<<'\n';
       notConnected=true;
       return false;
     }
     if(res)
+    {
+      verbose<<"-->[MainClient][sendLogoutProtocol] LOGOUT_PHASE"<<'\n';
       clientPhase=ClientPhase::LOGOUT_PHASE;
+    }
     return res;
   }
 /*
----------------------reciveLogoutProtocol----------------------------------
+---------------------receiveLogoutProtocol----------------------------------
 */
   bool MainClient::receiveLogoutProtocol(Message* message)
   {
       int* nonce_s;
       bool res;
-      if(*nonce_s!=this->nonce)
+      if(message==nullptr)
       {
-        verbose<<"--> [MainClient][reciveLogoutProtocol] nonce not valid"<<'\n';
+        verbose<<"--> [MainClient][reciveLogoutProtocol] error the message is null"<<'\n';
+        return false;
+      }
+      nonce_s=message->getNonce();
+      if(*nonce_s!=(this->nonce-1))
+      {
+        verbose<<"--> [MainClient][reciveLogoutProtocol] error the nonce isn't valid"<<'\n';
         delete nonce_s;
         //clientPhase=ClientPhase::NO_PHASE;
         return false;
@@ -330,16 +355,16 @@ namespace client
         verbose<<"--> [MainClient][reciveLogoutProtocol] message type not expected"<<'\n';
         return false;
       }
-      else
-      {
-        res=cipher_client->fromSecureForm( message , username ,aesKeyServer,false);
-        if(!res)
-          return false; 
-        clientPhase=ClientPhase::NO_PHASE;
-        logged=false;
-        username="";
-        return true;
-      }
+
+      //verbose<<"--> [MainClient][reciveLogoutProtocol] decript start"<<'\n';
+      res=cipher_client->fromSecureForm( message , username ,aesKeyServer,false);
+      if(!res)
+        return false; 
+      clientPhase=ClientPhase::NO_PHASE;
+      logged=false;
+      username="";
+      return true;
+      
   }
 
 /*
@@ -351,6 +376,11 @@ namespace client
       int len;
       int* nonce_s=message->getNonce();
       bool res;
+      if(message==nullptr)
+      {
+        verbose<<"--> [MainClient][keyExchangeReciveProtocol(] error the message is null"<<'\n';
+        return false;
+      }
       nonce_s=message->getNonce();
       if(*nonce_s!=(this->nonce-1))
       {
@@ -875,6 +905,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 int main(int argc, char** argv)
 {
     Logger::setThreshold(  VERY_VERBOSE );
+    //Logger::setThreshold(  VERBOSE );
     client::MainClient* main_client;
     if(argc==1)
     {

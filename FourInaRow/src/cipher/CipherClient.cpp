@@ -353,7 +353,23 @@ namespace cipher
        case ACCEPT:
          if(!aesKey)
            return false;
-         this->aes->modifyParam( aesKey );
+         correct=this->aes->modifyParam( aesKey );
+         if(!correct)
+           return false;
+         app = this->aes->decryptMessage(*message);
+         if(app == nullptr)
+         {
+           return false;
+         }
+         delete app;
+         break;
+
+       case LOGOUT_OK:
+         if(!aesKey)
+           return false;
+         correct=this->aes->modifyParam( aesKey );
+         if(!correct)
+           return false;
          app = this->aes->decryptMessage(*message);
          if(app == nullptr)
          {
@@ -526,19 +542,29 @@ namespace cipher
     bool res=true;
     try
     {
+      if(this->rsa!=nullptr)
+        delete this->rsa;
       this->rsa = new CipherRSA(username, password, false );
-      
+      verbose<<"-->[CipherClient][newRSAParameter] new CipherRSA: "<<'\n';
     }
     catch(int myNum)
     {
+      RSA_is_start=false;
+      verbose<<"-->[CipherClient][newRSAParameter] error type: "<<myNum<<'\n';
       res=false;
     }
     if(res && serverKey!=nullptr)
     {
-      res=this->rsa->setServerKey( serverKey );  
+      res=this->rsa->setServerKey( serverKey ); 
+
+      if(res==false)
+        verbose<<"-->[CipherClient][newRSAParameter] result setServerKey is false: "<<'\n';
     }
     else 
-     delete rsa;   
+    {
+      RSA_is_start=false;
+      delete rsa; 
+    }  
     RSA_is_start=res;
   }
 
