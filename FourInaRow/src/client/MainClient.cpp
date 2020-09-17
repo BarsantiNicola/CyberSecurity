@@ -673,7 +673,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       verbose<<""<<"--> [MainClient][comand] error comand_line is empty"<<'\n';
       return false;
     }
-    if(comand_line.compare(0,5,"LOGIN")==0)
+    if(comand_line.compare(0,5,"login")==0)
     {
       if(logged)
       {
