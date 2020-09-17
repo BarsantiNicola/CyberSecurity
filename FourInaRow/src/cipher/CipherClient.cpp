@@ -545,8 +545,8 @@ namespace cipher
       CipherRSA* app;
 
       app=new CipherRSA(username, password, false );
-      if(this->rsa!=nullptr)
-        delete this->rsa;
+     /* if(this->rsa!=nullptr)
+        delete this->rsa;*/
       this->rsa = app;
       verbose<<"-->[CipherClient][newRSAParameter] new CipherRSA: "<<'\n';
     }

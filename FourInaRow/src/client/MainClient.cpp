@@ -176,8 +176,9 @@ namespace client
         verbose<<"-->[MainClient][loginProtocol] loginFail"<<'\n';   
         return false;
       }
+      
     }
-       
+      return false; 
   }
 /*
 --------------------sendReqUserListProtocol function----------------------------
