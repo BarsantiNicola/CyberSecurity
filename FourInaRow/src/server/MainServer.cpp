@@ -88,6 +88,7 @@ namespace server {
                             vverbose << "--> [MainServer][server] Error, unable to send message, client " << socket << " disconnected" << '\n';
 
                             this->logoutClient( sock );
+                            this->clientRegister.removeClient(sock);
 
                         }else
                             base << "--> [MainServer][server] Response sent: "<<response->getMessageType()<<'\n';
@@ -317,7 +318,7 @@ namespace server {
             this->closeMatch( username, matchID );
 
         this->userRegister.removeUser( socket );
-        this->clientRegister.removeClient( socket );
+
         base<<"--> [MainServer][logoutClient] Logout of client: "<<socket<<" completed"<<'\n';
 
     }
