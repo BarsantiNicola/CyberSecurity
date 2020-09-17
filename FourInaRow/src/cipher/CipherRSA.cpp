@@ -123,10 +123,10 @@ namespace cipher{
             this->advPubKey = nullptr;
         }
 
-        if( pubServerKey ) {
+      /*  if( pubServerKey ) {
             EVP_PKEY_free(this->pubServerKey);
             this->pubServerKey = nullptr;
-        }
+        }*/
 
         if( !keyArchive.empty() ) {
 

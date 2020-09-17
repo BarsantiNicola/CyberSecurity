@@ -897,8 +897,30 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     return res;
   }
 
-}
 
+/*-----------------destructor-----------------------------------
+*/
+  MainClient::~MainClient()
+  {
+    if(serverIP!=nullptr)
+      delete[] serverIP;
+    if(myIP!=nullptr)
+      delete[]myIP;
+    if(game!=nullptr)
+      delete game;
+    if(aesKeyServer!=nullptr)
+      delete aesKeyServer;
+    if(aesKeyClient!=nullptr)
+      delete aesKeyClient;
+    if(textual_interface_manager!=nullptr)
+      delete textual_interface_manager;
+    if(connection_manager!=nullptr)
+    {
+      connection_manager->closeConnection(connection_manager->getserverSocket());
+      delete connection_manager;
+    }
+  }
+}
 /*
 --------------------main function-----------------
 */  

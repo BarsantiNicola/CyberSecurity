@@ -92,6 +92,7 @@ namespace client
 
     public:
       MainClient(const char* ipAddr , int port ); 
+      ~MainClient();
       void client();//ok
   };
 
