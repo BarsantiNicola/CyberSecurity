@@ -79,12 +79,9 @@ namespace cipher{
             throw 0;
         }else{
             vverbose<<"--> [CipherRSA][Costructor] "<<username<<"'keys found"<<'\n';
-
-
-            if( username.compare("bob") == 0 )
+            
             this->myPubKey = PEM_read_PUBKEY( publicKey, nullptr, nullptr , nullptr);
-            else
-                PEM_read_PUBKEY( publicKey, nullptr, nullptr , nullptr);
+
 
             if( ! this->myPubKey ) {
                 verbose << "--> [CipherRSA][Costructor] Unable to extract " << username << " public key" << '\n';
