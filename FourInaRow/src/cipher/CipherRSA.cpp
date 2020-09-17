@@ -15,6 +15,11 @@ namespace cipher{
 
         this->server = server;
         this->advPubKey = nullptr;
+        this->serverCertificate = nullptr;
+        this->lenServerCertificate = 0;
+        this->myPubKey = nullptr;
+        this->myPrivKey = nullptr;
+        this->pubServerKey = nullptr;
 
         if( server ){
 
@@ -78,6 +83,8 @@ namespace cipher{
             this->myPubKey = PEM_read_PUBKEY( publicKey, nullptr, nullptr , nullptr);
             if( ! this->myPubKey ) {
                 verbose << "--> [CipherRSA][Costructor] Unable to extract " << username << " public key" << '\n';
+                fclose(publicKey);
+                fclose(privateKey);
                 throw 0;
             }else
                 vverbose<<"--> [CipherRSA][Costructor] "<<username<<" public key correctly loaded"<<'\n';
@@ -86,6 +93,7 @@ namespace cipher{
             this->myPrivKey = PEM_read_PrivateKey( privateKey, nullptr, nullptr , (void*)password.c_str());
             if( ! this->myPrivKey ) {
                 verbose << "--> [CipherRSA][Costructor] Unable to extract " << username << " private key" << '\n';
+                fclose(privateKey);
                 throw 1;
             }else
                 vverbose<<"--> [CipherRSA][Costructor] "<<username<<" private key correctly loaded"<<'\n';
@@ -108,6 +116,9 @@ namespace cipher{
 
         if( pubServerKey )
             EVP_PKEY_free( this->pubServerKey );
+
+        if( this->serverCertificate )
+            delete[] this->serverCertificate;
 
         if( !keyArchive.empty() ) {
 
@@ -175,6 +186,7 @@ namespace cipher{
         return true;
 
     }
+    
     bool CipherRSA::certificateVerification( Message* message, EVP_PKEY* key ){
 
         if( message == nullptr || key == nullptr ){
@@ -197,6 +209,7 @@ namespace cipher{
         delete compact;
         return ret;
     }
+
     //  Function of utility to verify a certificate. It can be used only in a CipherRSA made with the server=false in the costructor.
     bool CipherRSA::verifyCertificate(X509* certificate){
 
