@@ -542,9 +542,12 @@ namespace cipher
     bool res=true;
     try
     {
+      CipherRSA* app;
+
+      app=new CipherRSA(username, password, false );
       if(this->rsa!=nullptr)
         delete this->rsa;
-      this->rsa = new CipherRSA(username, password, false );
+      this->rsa = app;
       verbose<<"-->[CipherClient][newRSAParameter] new CipherRSA: "<<'\n';
     }
     catch(int myNum)
