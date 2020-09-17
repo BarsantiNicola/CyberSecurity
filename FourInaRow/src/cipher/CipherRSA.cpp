@@ -70,7 +70,7 @@ namespace cipher{
             pubKey.append(username).append("PubRSA.pem");
             publicKey = fopen(pubKey.c_str(), "r");
             privateKey = fopen(privKey.c_str(), "r");
-            cout<<pubKey<<endl<<publicKey<<endl;
+
         }
 
         if( !publicKey || !privateKey ){
@@ -79,7 +79,7 @@ namespace cipher{
             throw 0;
         }else{
             vverbose<<"--> [CipherRSA][Costructor] "<<username<<"'keys found"<<'\n';
-            
+
             this->myPubKey = PEM_read_PUBKEY( publicKey, nullptr, nullptr , nullptr);
 
 
