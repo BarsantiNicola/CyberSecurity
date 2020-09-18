@@ -73,7 +73,7 @@ namespace client
       bool rejectProtocol(Message message);
       bool errorHandler(Message* message);
       bool sendRankProtocol();//ok
-      bool reciveRankProtocol(Message* message);//ok
+      bool receiveRankProtocol(Message* message);//ok
       bool certificateProtocol();//ok
       bool keyExchangeReciveProtocol(Message* message,bool exchangeWithServer);//ok
       bool sendReqUserListProtocol();//ok

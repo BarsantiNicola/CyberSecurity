@@ -88,7 +88,7 @@ namespace client
 /*
 --------------------------------loginProtocol function------------------------------
 */
-  bool MainClient::loginProtocol(std::string username,bool *socketIsClosed)//DA FINIRE
+  bool MainClient::loginProtocol(std::string username,bool *socketIsClosed)
   {
     bool res;
     int* nonce_s;
@@ -224,8 +224,10 @@ namespace client
       }
       if(message->getMessageType()!=USER_LIST || clientPhase!=ClientPhase::USER_LIST_PHASE)
       {
-
-        verbose<<"--> [MainClient][reciveUserListProtocol] message type not expected"<<'\n';
+        if(clientPhase==ClientPhase::USER_LIST_PHASE)
+          verbose<<"--> [MainClient][reciveUserListProtocol] message type: "<<message->getMessageType() << " not expected"<<'\n';
+        else
+          verbose<<"--> [MainClient][reciveUserListProtocol] wrong phase:"<<clientPhase<<'\n';
         return false;
       }
       else
@@ -237,9 +239,11 @@ namespace client
           return false; 
         clientPhase=ClientPhase::NO_PHASE;
         unsigned char* userList=message->getUserList();
-        int userListLen;
+        int userListLen=message->getUserListLen();
         app=printableString(userList,userListLen);
         std::cout<<app<<endl;
+        std::cout<<"\t# Insert a command:";
+        cout.flush();
         return true;
       }
   }
@@ -269,7 +273,7 @@ namespace client
 /*
 -------------------receiveRankProtocol function--------------------------------
 */
-    bool MainClient::reciveRankProtocol(Message* message)
+    bool MainClient::receiveRankProtocol(Message* message)
   {
       int* nonce_s;
       bool res;
@@ -299,10 +303,12 @@ namespace client
         if(!res)
           return false;
         clientPhase=ClientPhase::NO_PHASE;
-        unsigned char* userList=message->getUserList();
-        int userListLen;
+        unsigned char* userList=message->getRankList();
+        int userListLen=message->getRankListLen();
         app=printableString(userList,userListLen);
         std::cout<<app<<endl;
+        std::cout<<"\t# Insert a command:";
+        cout.flush();
         return true;
       }
   }
@@ -673,95 +679,105 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       verbose<<""<<"--> [MainClient][comand] error comand_line is empty"<<'\n';
       return false;
     }
-    if(comand_line.compare(0,5,"login")==0)
+    try
     {
-      if(logged)
+      if(comand_line.compare(0,5,"login")==0)
       {
-        std::cout<<"already logged"<<endl;
-        std::cout<<"\t# Insert a command:";
-        std::cout.flush();
-        return true;
-      }
-      string password;
-      string username;
-      cout<<"username:";
-      cin>>username;
-      cout<<'\n';
-      
-      
-      cout<<"password:";
-
-      termios oldt;
-      tcgetattr(STDIN_FILENO, &oldt);
-      termios newt = oldt;
-      newt.c_lflag &= ~ECHO;
-      tcsetattr(STDIN_FILENO, TCSANOW, &newt);//hide input
-      std::cin>>password;
-      tcsetattr(STDIN_FILENO, TCSANOW, &oldt);//show input
-      cout<<'\n';
-      if(username.empty()||password.empty())
-      {
-        std::cout<<"username or password not valid"<<endl;
-      }
-      cipher_client->newRSAParameter(username,password);
-      if(!cipher_client->getRSA_is_start())
-      {
-         std::cout<<"login failed retry"<<endl;
-         std::cout<<"\t# Insert a command:";
-         cout.flush();
-      }
-      else
-      {
-        bool socketIsClosed=false;
-        if(loginProtocol(username,&socketIsClosed))
+        if(logged)
         {
-          this->username=username;
-          this->logged=true;
+          std::cout<<"already logged"<<endl;
+          std::cout<<"\t# Insert a command:";
+          std::cout.flush();
+          return true;
+        }
+        string password;
+        string username;
+        cout<<"username:";
+        cin>>username;
+        cout<<'\n';
+      
+      
+        cout<<"password:";
+
+        termios oldt;
+        tcgetattr(STDIN_FILENO, &oldt);
+        termios newt = oldt;
+        newt.c_lflag &= ~ECHO;
+        tcsetattr(STDIN_FILENO, TCSANOW, &newt);//hide input
+        std::cin>>password;
+        tcsetattr(STDIN_FILENO, TCSANOW, &oldt);//show input
+        cout<<'\n';
+        if(username.empty()||password.empty())
+        {
+          std::cout<<"username or password not valid"<<endl;
+        }
+        cipher_client->newRSAParameter(username,password);
+        if(!cipher_client->getRSA_is_start())
+        {
+          std::cout<<"login failed retry"<<endl;
+          std::cout<<"\t# Insert a command:";
+          cout.flush();
+        }
+        else
+        {
+          bool socketIsClosed=false;
+          if(loginProtocol(username,&socketIsClosed))
+          {
+            this->username=username;
+            this->logged=true;
         
-          textual_interface_manager->printMainInterface(this->username," ","online","none","0");
+            textual_interface_manager->printMainInterface(this->username," ","online","none","0");
+          }
+         }
+         return true;
+       }
+       else if(comand_line.compare(0,4,"show")==0)
+       {
+         if(comand_line.compare(5,7,"[users]")==0)
+         {
+           if(!sendReqUserListProtocol())
+           {
+             std::cout<<"show user online failed retry \n \t# Insert a command:";
+           }
+         }
+         else if(comand_line.compare(5,6,"[rank]")==0)
+         {
+           if(!sendRankProtocol())
+           {
+             std::cout<<"show user online failed retry"<<endl;
+             std::cout<<"\t# Insert a command:";
+           }
          }
       }
-      return true;
-    }
-    else if(comand_line.compare(0,4,"show")==0)
-    {
-      if(comand_line.compare(5,11,"[users]")==0)
+      else if(comand_line.compare(0,9,"challenge")==0)
       {
-        if(!sendReqUserListProtocol())
-        {
-          std::cout<<"show user online failed retry \n \t# Insert a command:";
-        }
-      }
-      else if(comand_line.compare(5,11,"[users]")==0)
-      {
-        if(!sendRankProtocol())
-        {
-          std::cout<<"show user online failed retry"<<endl;
-          std::cout<<"\t# Insert a command:";
-        }
-      }
-    }
-    else if(comand_line.compare(0,9,"challenge")==0)
-    {
       //ESEGUO CHALLENGE
-    }
-    else if(comand_line.compare(0,6,"logout")==0&&logged==true)
-    {
-      //ESEGUO LOGOUT
-      bool ret=sendLogoutProtocol();
-      if(!ret)
+      }
+      else if(comand_line.compare(0,6,"logout")==0&&logged==true)
       {
+        //ESEGUO LOGOUT
+        bool ret=sendLogoutProtocol();
+        if(!ret)
+        {
           std::cout<<"logout failed retry"<<endl;
           std::cout<<"\t# Insert a command:";
           cout.flush();
+        }
       }
+      else
+      {
+        std::cout<<"\t  comand: "<<comand_line<<" not valid"<<endl;
+        std::cout<<"\t# Insert a command:";
+        cout.flush();
+      }
+      
     }
-    else
-    {
-      std::cout<<"\t  comand: "<<comand_line<<" not valid"<<endl;
-      std::cout<<"\t# Insert a command:";
-      cout.flush();
-    }
+      catch(exception e)
+      {
+          std::cout<<"comand not valid"<<endl;
+          std::cout<<"\t# Insert a command:";
+          cout.flush();
+      }
     return true;
   }
 
@@ -810,7 +826,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
             //buffer=new char[500];
             //std::fgets(buffer,400,stdin);
             //cin>>comand_line=*buffer;
-            cin>>comand_line;
+            std::getline(std::cin,comand_line);
             comand(comand_line);
             //delete[] buffer;
           }
@@ -850,7 +866,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
               case RANK_LIST:
                if(clientPhase==ClientPhase::RANK_LIST_PHASE)
                {
-                 res=receiveUserListProtocol(message);
+                 res=receiveRankProtocol(message);
                  if(!res)
                  {
                    if(clientPhase==ClientPhase::NO_PHASE)
@@ -871,7 +887,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                 }
               }
               default:
-                 verbose<<"--> [MainClient][client] message_type unexpected"<<'\n';
+                 vverbose<<"--> [MainClient][client] message_type: "<<message->getMessageType()<<" unexpected"<<'\n';
+                 std::cout<<"\t# Insert a command:";
+                 cout.flush();
             }
           }
         }
@@ -888,6 +906,10 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
   {
     char* app=new char[len+1];
     string res="";
+    if(len==0)
+    {
+      res="NO RANK_LIST";
+    }
     for(int i =0;i<len;i++)
     {
       app[i]=toConvert[i];
