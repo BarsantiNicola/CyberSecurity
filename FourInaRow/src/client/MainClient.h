@@ -59,7 +59,7 @@ namespace client
       bool sendImplicitUserListReq();
       string username = "";
       string adv_username_1 = "";
-      //string adv_username_2 = "";
+      string challenged_username = "";
       Game* game;
       cipher::SessionKey* aesKeyServer;
       cipher::SessionKey* aesKeyClient;
@@ -73,10 +73,11 @@ namespace client
       //bool signUpProtocol(Message message);
       string printableString(unsigned char* toConvert,int len);//ok
       bool sendChallengeProtocol(const char* adversaryUsername);
-      bool reciveChallengeProtocol(Message* message);
-      bool acceptProtocol(Message message);
-      bool rejectProtocol(Message message);
-      bool errorHandler(Message* message);
+      bool receiveChallengeProtocol(Message* message);
+      bool sendAcceptProtocol();
+      bool sendRejectProtocol(const char* usernameAdv);
+      bool reciveRejectProtocol(Message* message);
+      bool errorHandler(Message* message);//ok
       bool sendRankProtocol();//ok
       bool receiveRankProtocol(Message* message);//ok
       bool certificateProtocol();//ok

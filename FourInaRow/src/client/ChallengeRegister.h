@@ -12,6 +12,8 @@ namespace client
       vector<ChallengeInformation> challengeInformationList;
     public:
       bool addData(ChallengeInformation data);
+      bool removeData(ChallengeInformation data);
+      bool findData(ChallengeInformation data);
       ChallengeInformation* getData(int dataPosition);
       string printChallengeList();
       ~ChallengeRegister();

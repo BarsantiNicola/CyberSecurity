@@ -49,8 +49,43 @@ namespace client
    }
    return res;
  }
-
-
+ bool ChallengeRegister::findData(ChallengeInformation data)
+ {
+   for(int i=0;i<challengeInformationList.size();i++)
+   {
+     try
+     {
+       if(challengeInformationList.at(i).equals(&data))
+       {
+          return true;
+       }
+     }
+     catch(out_of_range& e)
+     {
+       break;
+     }
+   }
+   return false;   
+ }
+ bool ChallengeRegister::removeData(ChallengeInformation data)
+ {
+   for(int i=0;i<challengeInformationList.size();i++)
+   {
+     try
+     {
+       if(challengeInformationList.at(i).equals(&data))
+       {
+          challengeInformationList.erase(challengeInformationList.begin()+i);
+          return true;
+       }
+     }
+     catch(out_of_range& e)
+     {
+       break;
+     }
+   }
+   return false;
+ }
  ChallengeRegister::~ChallengeRegister()
  {
    challengeInformationList.clear();

@@ -466,18 +466,19 @@ namespace client
     {
       vverbose<<"-->[MainClient][sendChallengeProtocol]start a challenge";
       startChallenge=true;
-      
+      challenged_username=string(adversaryUsername);
     }
     return res;
   }
 /*
 --------------------------reciveChallengeProtocol function------------------------------------
 */
- /* bool MainClient::reciveChallengeProtocol(Message* message)//da continuare con il challenge_register
+  bool MainClient::receiveChallengeProtocol(Message* message)//da continuare con il challenge_register
   {
     bool res;
     int* nonce_s;
-    
+    string advUsername="";
+    ChallengeInformation *data=nullptr;
     if(message==nullptr)
     {
       return false;
@@ -489,7 +490,7 @@ namespace client
       delete nonce_s;
       return false;
       }
-    if(message->getMessageType()!=LOGOUT_OK || clientPhase!=ClientPhase::LOGOUT_PHASE)
+    if(message->getMessageType()!=MATCH)
     {
       verbose<<"--> [MainClient][reciveChallengeProtocol] message type not expected"<<'\n';
         return false;
@@ -497,10 +498,49 @@ namespace client
     res=cipher_client->fromSecureForm( message , username ,aesKeyServer,false);
     if(!res)
       return false;
-    res=challenge_register->addData(ChallengeInformation data);
+    advUsername=message->getUsername();
+    data=new ChallengeInformation(advUsername);
+    res=challenge_register->addData(*data);
     return res;
-  }/*
+  }
+/*
+-----------------------------sendRejectProtocol----------------------------------
+*/
+  bool MainClient::sendRejectProtocol(const char* usernameAdv)
+  {
+     bool res;
+     bool socketIsClosed=false;
+     ChallengeInformation *data=nullptr;
+     Message* message=nullptr;
+     if(usernameAdv==nullptr)
+     {
+       return false;
+     }
+     if(!challenge_register->findData(*data))
+       return false;
 
+     message=createMessage(MessageType::REJECT,usernameAdv,nullptr,0,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE);
+     if(message==nullptr)
+     {
+       return false;
+     }
+    res=connection_manager->sendMessage(*message,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
+    if(socketIsClosed)
+    {
+      verbose<<"-->[MainClient][sendChallengeProtocol] error server is offline reconnecting"<<'\n';
+      notConnected=true;
+      return false;
+    }
+    if(res)
+    {
+      vverbose<<"-->[MainClient][sendChallengeProtocol]start a challenge";
+      data=new ChallengeInformation(string(usernameAdv));
+
+      res=challenge_register->removeData(*data);
+      
+    }
+    return res;
+  }
  /*
 --------------------------------------createMessage function---------------------------------
 */

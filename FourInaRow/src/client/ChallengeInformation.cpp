@@ -31,6 +31,10 @@ namespace client
     this->totalMatch=challengeInfo.totalMatch;
     this->wonPercent=challengeInfo.wonPercent;
   }
+  bool ChallengeInformation::equals(ChallengeInformation* data)
+  {
+    return (this->username==data->username && this->totalMatch==data->totalMatch && this->wonPercent==data->wonPercent);
+  }
 /*
  -----------------------------------------get methods-------------------------------------
 
