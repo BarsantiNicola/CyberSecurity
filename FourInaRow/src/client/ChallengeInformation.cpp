@@ -12,6 +12,14 @@ namespace client
     this->wonPercent=wonPercent;
   }
 
+  ChallengeInformation::ChallengeInformation(string username)
+  {
+    if(!username.empty())
+      this->username=username;
+    this->totalMatch=0;
+    this->wonPercent=0;
+  }
+
   /*
   Copy costructor
  */

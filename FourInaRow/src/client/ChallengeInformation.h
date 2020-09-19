@@ -6,10 +6,11 @@ namespace client
   {
     private:
       string username="";
-      int totalMatch;
-      double wonPercent;
+      int totalMatch=0;
+      double wonPercent=0;
     public:
       ChallengeInformation(string userName,int totalMatch,double wonPercent);
+      ChallengeInformation(string username);
       ChallengeInformation(const ChallengeInformation& challengeInfo);
       string getUserName();
       int getTotalMatch();
