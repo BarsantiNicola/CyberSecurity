@@ -14,6 +14,7 @@
 #include<mutex>
 #include<exception>
 #include<vector>
+#include<sstream>
 #define SLEEP_TIME 1000
 using namespace utility;
 namespace client
@@ -44,6 +45,8 @@ namespace client
       long timer=15;
       bool time_expired=false;
       bool notConnected=true;
+      bool startChallenge=false;
+      bool implicitUserListReq=false;
       int nonce;
       bool logged=false;
       ClientPhase clientPhase= ClientPhase::NO_PHASE;
@@ -53,13 +56,14 @@ namespace client
       int serverPort=12345;
       int myPort=1235;
       const char* myIP="127.0.0.1";
+      bool sendImplicitUserListReq();
       string username = "";
       string adv_username_1 = "";
       //string adv_username_2 = "";
       Game* game;
       cipher::SessionKey* aesKeyServer;
       cipher::SessionKey* aesKeyClient;
-      ChallengeRegister* challenge_register;
+      ChallengeRegister* challenge_register=new ChallengeRegister();
       ConnectionManager* connection_manager;//da inizializzare nel main
       TextualInterfaceManager* textual_interface_manager;
       cipher::CipherClient* cipher_client;
@@ -68,7 +72,8 @@ namespace client
       bool loginProtocol(std::string username,bool *socketIsClosed);//ok
       //bool signUpProtocol(Message message);
       string printableString(unsigned char* toConvert,int len);//ok
-      bool challengeProtocol(Message message);
+      bool sendChallengeProtocol(const char* adversaryUsername);
+      bool reciveChallengeProtocol(Message* message);
       bool acceptProtocol(Message message);
       bool rejectProtocol(Message message);
       bool errorHandler(Message* message);
@@ -81,10 +86,11 @@ namespace client
       bool disconnectProtocol(Message message);
       bool sendLogoutProtocol();//ok
       bool receiveLogoutProtocol(Message* message);//ok
-      bool matchProtocol(Message message);
+      bool gameProtocol(Message message);
       void timerHandler(long secs);
       bool comand(std::string comand_line);
       bool startConnectionServer(const char* myIP,int myPort);
+      int countOccurences(string source,string searchFor);
       Message* createMessage(MessageType type, const char* param,unsigned char* g_param,int g_paramLen,cipher::SessionKey* aesKey,MessageGameType messageGameType);
       unsigned char* concTwoField(unsigned char* firstField,unsigned int firstFieldSize,unsigned char* secondField,unsigned int secondFieldSize,unsigned char separator,unsigned int numberSeparator);
 

@@ -36,6 +36,7 @@ namespace client
    NetMessage* netRet;
    Converter conv;
    Message* mess =createMessage(MessageType::CERTIFICATE_REQ, nullptr,nullptr,0,nullptr,MessageGameType::NO_GAME_TYPE_MESSAGE);
+
    if(mess==nullptr)
    {
      verbose<<"-->[MainClient][certificateProtocol] error to create a CERTIFICATION message "<<'\n';
@@ -106,6 +107,8 @@ namespace client
       return false;
     std::strcpy(cUsername,username.c_str());
     Message* message=createMessage(MessageType::LOGIN_REQ, (const char*)cUsername,nullptr,0,nullptr,MessageGameType::NO_GAME_TYPE_MESSAGE);
+    if(message==nullptr)
+      return false;
     if(message->getMessageType()==LOGIN_REQ)
     {
       res=connection_manager->sendMessage(*message,connection_manager->getserverSocket(),socketIsClosed,nullptr,0); 
@@ -148,6 +151,8 @@ namespace client
       if(retMess->getMessageType()==LOGIN_OK)
       {
         sendMess=createMessage(MessageType::KEY_EXCHANGE, nullptr,nullptr,0,nullptr,MessageGameType::NO_GAME_TYPE_MESSAGE);
+        if(sendMess==nullptr)
+          return false;
         verbose<<"-->[MainClient][loginProtocol] start key exchange protocol"<<'\n';
         res=connection_manager->sendMessage(*sendMess,connection_manager->getserverSocket(),socketIsClosed,nullptr,0); 
         if(!res)
@@ -190,6 +195,8 @@ namespace client
     bool socketIsClosed=false;
     Message* message;
     message=createMessage(MessageType::USER_LIST_REQ, nullptr,nullptr,0,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE);
+    if(message==nullptr)
+      return false;
     res=connection_manager->sendMessage(*message,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
     if(socketIsClosed)
     {
@@ -209,6 +216,7 @@ namespace client
   {
       int* nonce_s;
       bool res;
+      string search="username";
       if(message==nullptr)
       {
         verbose<<"--> [MainClient][reciveUserListProtocol] error the message is null"<<'\n';
@@ -241,13 +249,25 @@ namespace client
         unsigned char* userList=message->getUserList();
         int userListLen=message->getUserListLen();
         app=printableString(userList,userListLen);
-        std::cout<<app<<endl;
+        int nUser= countOccurences(app,search);
+        stringstream sstr;
+        sstr<<nUser;
+        textual_interface_manager->printMainInterface(this->username,sstr.str(),"online","none","0");
+        if(!implicitUserListReq)
+          std::cout<<app<<endl;
+        implicitUserListReq=false;
         std::cout<<"\t# Insert a command:";
         cout.flush();
         return true;
       }
   }
-
+  bool MainClient::sendImplicitUserListReq()
+  {
+    bool res;
+    implicitUserListReq=true;
+    res=sendReqUserListProtocol();
+    return res;
+  }
 /*
 --------------------sendRankProtocol function----------------------------
 */
@@ -258,6 +278,8 @@ namespace client
     bool socketIsClosed=false;
     Message* message;
     message=createMessage(MessageType::RANK_LIST_REQ, nullptr,nullptr,0,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE);
+    if(message==nullptr)
+      return false;
     res=connection_manager->sendMessage(*message,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
     if(socketIsClosed)
     {
@@ -322,7 +344,8 @@ namespace client
     bool socketIsClosed=false;
     Message* message;
     message=createMessage(MessageType::LOGOUT_REQ, nullptr,nullptr,0,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE);
-    
+    if(message==nullptr)
+      return false;
     res=connection_manager->sendMessage(*message,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
     if(socketIsClosed)
     {
@@ -415,8 +438,71 @@ namespace client
       }
       return false;
   }
+/*
+----------------------------------sendChallengeProtocol function------------------------------------------------------
+*/
+  bool MainClient::sendChallengeProtocol(const char* adversaryUsername)
+  {
+     bool res;
+     bool socketIsClosed=false;
+     Message* message=nullptr;
+     if(adversaryUsername==nullptr)
+     {
+       return false;
+     }
+     message=createMessage(MessageType::MATCH,adversaryUsername,nullptr,0,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE);
+     if(message==nullptr)
+     {
+       return false;
+     }
+    res=connection_manager->sendMessage(*message,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
+    if(socketIsClosed)
+    {
+      verbose<<"-->[MainClient][sendChallengeProtocol] error server is offline reconnecting"<<'\n';
+      notConnected=true;
+      return false;
+    }
+    if(res)
+    {
+      vverbose<<"-->[MainClient][sendChallengeProtocol]start a challenge";
+      startChallenge=true;
+      
+    }
+    return res;
+  }
+/*
+--------------------------reciveChallengeProtocol function------------------------------------
+*/
+ /* bool MainClient::reciveChallengeProtocol(Message* message)//da continuare con il challenge_register
+  {
+    bool res;
+    int* nonce_s;
+    
+    if(message==nullptr)
+    {
+      return false;
+    }
+    nonce_s=message->getNonce();
+    if(*nonce_s!=(this->nonce-1))
+    {
+      verbose<<"--> [MainClient][reciveChallengeProtocol] error the nonce isn't valid"<<'\n';
+      delete nonce_s;
+      return false;
+      }
+    if(message->getMessageType()!=LOGOUT_OK || clientPhase!=ClientPhase::LOGOUT_PHASE)
+    {
+      verbose<<"--> [MainClient][reciveChallengeProtocol] message type not expected"<<'\n';
+        return false;
+    }
+    res=cipher_client->fromSecureForm( message , username ,aesKeyServer,false);
+    if(!res)
+      return false;
+    res=challenge_register->addData(ChallengeInformation data);
+    return res;
+  }/*
+
  /*
---------------------------------------------createMessage function----------------------------
+--------------------------------------createMessage function---------------------------------
 */
   Message* MainClient::createMessage(MessageType type, const char* param,unsigned char* g_param,int g_paramLen,cipher::SessionKey* aesKey,MessageGameType messageGameType)
   {
@@ -725,8 +811,11 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           {
             this->username=username;
             this->logged=true;
-        
-            textual_interface_manager->printMainInterface(this->username," ","online","none","0");
+            if(!sendImplicitUserListReq())
+            {
+              implicitUserListReq=false;
+            }
+           // textual_interface_manager->printMainInterface(this->username," ","online","none","0");
           }
          }
          return true;
@@ -792,6 +881,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
   void MainClient::client()
   {
      //char* buffer;
+     Message* message;
      std::vector<int> sock_id_list;
      int newconnection_id=0;
      string newconnection_ip="";
@@ -833,10 +923,11 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           if(idSock==connection_manager->getserverSocket())
           {
             
-            Message* message=connection_manager->getMessage(connection_manager->getserverSocket());
+            message=connection_manager->getMessage(connection_manager->getserverSocket());
             if(message==nullptr)
+            {
               continue;
-           
+            }
             switch(message->getMessageType())
             {
               case LOGOUT_OK:
@@ -891,6 +982,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                  std::cout<<"\t# Insert a command:";
                  cout.flush();
             }
+            delete message;
           }
         }
         
@@ -919,8 +1011,39 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     delete[] app;
     return res;
   }
+/*
+-----------------------------countOccurences ---------------------------------
+*/
+  int MainClient::countOccurences(string source,string searchFor)
+  {
+    unsigned int count=0;
+    unsigned int startPos=0;
+    const string app=searchFor;
+    if(source.empty()||searchFor.empty())
+      return 0;
+    if(searchFor.size()>source.size())
+      return 0;
+    unsigned int searchSize=searchFor.size();
+    while(startPos+(searchSize-1)<source.size())
+    {
+      try
+      {
+        if(source.compare(startPos,searchSize,app)==0)
+        {
+          ++count;
+          startPos+=searchSize;
+        }
+        else
+          ++startPos;
+      }
+      catch(exception e)
+      {
+        break;
+      }
+    }
+    return count; 
 
-
+   } 
 /*-----------------destructor-----------------------------------
 */
   MainClient::~MainClient()
