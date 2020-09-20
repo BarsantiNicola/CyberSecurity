@@ -35,7 +35,8 @@ namespace client
     USER_LIST_PHASE,
     RANK_LIST_PHASE,
     MATCH_PHASE,
-    NO_PHASE
+    NO_PHASE,
+    START_GAME_PHASE
 
   };  
 
@@ -52,6 +53,7 @@ namespace client
       ClientPhase clientPhase= ClientPhase::NO_PHASE;
       int currentToken;//da inizializzare nel main
       int currTokenChat;//da inizializzare nel main
+      int* advPort=nullptr;
       const char* serverIP="127.0.0.1";
       int serverPort=12345;
       int myPort=1235;
@@ -72,11 +74,12 @@ namespace client
       bool loginProtocol(std::string username,bool *socketIsClosed);//ok
       //bool signUpProtocol(Message message);
       string printableString(unsigned char* toConvert,int len);//ok
-      bool sendChallengeProtocol(const char* adversaryUsername);
-      bool receiveChallengeProtocol(Message* message);
-      bool sendAcceptProtocol();
-      bool sendRejectProtocol(const char* usernameAdv);
-      bool reciveRejectProtocol(Message* message);
+      bool sendChallengeProtocol(const char* adversaryUsername,int size);//ok
+      bool receiveChallengeProtocol(Message* message);//ok
+      bool sendAcceptProtocol(const char* usernameAdv,int size);//ok
+      bool receiveAcceptProtocol(Message* message);
+      bool sendRejectProtocol(const char* usernameAdv,int size);//ok
+      bool receiveRejectProtocol(Message* message);//ok
       bool errorHandler(Message* message);//ok
       bool sendRankProtocol();//ok
       bool receiveRankProtocol(Message* message);//ok
@@ -85,8 +88,11 @@ namespace client
       bool sendReqUserListProtocol();//ok
       bool receiveUserListProtocol(Message* message);//ok
       bool disconnectProtocol(Message message);
+      bool sendWithDrawProtocol();
+      bool receiveWithDrawOkProtocol(Message* message);
       bool sendLogoutProtocol();//ok
       bool receiveLogoutProtocol(Message* message);//ok
+      bool receiveGameParamProtocol(Message* message);
       bool gameProtocol(Message message);
       void timerHandler(long secs);
       bool comand(std::string comand_line);

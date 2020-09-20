@@ -393,6 +393,8 @@ namespace client
       clientPhase=ClientPhase::NO_PHASE;
       logged=false;
       username="";
+      startChallenge=false;
+      implicitUserListReq=false;
       return true;
       
   }
@@ -441,7 +443,7 @@ namespace client
 /*
 ----------------------------------sendChallengeProtocol function------------------------------------------------------
 */
-  bool MainClient::sendChallengeProtocol(const char* adversaryUsername)
+  bool MainClient::sendChallengeProtocol(const char* adversaryUsername,int size)
   {
      bool res;
      bool socketIsClosed=false;
@@ -450,7 +452,7 @@ namespace client
      {
        return false;
      }
-     message=createMessage(MessageType::MATCH,adversaryUsername,nullptr,0,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE);
+     message=createMessage(MessageType::MATCH,(const char*)username.c_str(),(unsigned char*)adversaryUsername,size,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE);
      if(message==nullptr)
      {
        return false;
@@ -506,7 +508,7 @@ namespace client
 /*
 -----------------------------sendRejectProtocol----------------------------------
 */
-  bool MainClient::sendRejectProtocol(const char* usernameAdv)
+  bool MainClient::sendRejectProtocol(const char* usernameAdv,int size)
   {
      bool res;
      bool socketIsClosed=false;
@@ -519,7 +521,7 @@ namespace client
      if(!challenge_register->findData(*data))
        return false;
 
-     message=createMessage(MessageType::REJECT,usernameAdv,nullptr,0,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE);
+     message=createMessage(MessageType::REJECT,(const char*)username.c_str(),(unsigned char*)usernameAdv,size,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE);
      if(message==nullptr)
      {
        return false;
@@ -540,6 +542,207 @@ namespace client
       
     }
     return res;
+  }
+/*
+--------------------------receiveRejectProtocol--------------------------------------
+*/
+  bool MainClient::receiveRejectProtocol(Message* message)
+  {
+    bool res;
+    int* nonce_s;
+    string advUsername="";
+    ChallengeInformation *data=nullptr;
+    if(message==nullptr)
+    {
+      return false;
+    }
+    nonce_s=message->getNonce();
+    if(*nonce_s!=(this->nonce-1))
+    {
+      verbose<<"--> [MainClient][reciveChallengeProtocol] error the nonce isn't valid"<<'\n';
+      delete nonce_s;
+      return false;
+      }
+    if(message->getMessageType()!=REJECT)
+    {
+      verbose<<"--> [MainClient][reciveChallengeProtocol] message type not expected"<<'\n';
+        return false;
+    }
+    res=cipher_client->fromSecureForm( message , username ,aesKeyServer,false);
+    if(!res)
+      return false;
+    challenged_username = "";
+    startChallenge=false;
+    return res;
+  }
+/*
+---------------------------------------sendAccept------------------------------
+*/
+   bool MainClient::sendAcceptProtocol(const char* usernameAdv,int size)
+   {
+     bool res;
+     bool socketIsClosed=false;
+     ChallengeInformation *data=nullptr;
+     Message* message=nullptr; 
+     if(usernameAdv ==nullptr)
+     {
+       return false;
+     }  
+     if(!challenge_register->findData(*data))
+       return false;
+
+     message=createMessage(MessageType::ACCEPT,(const char*)username.c_str(),(unsigned char*)usernameAdv,size,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE);
+     if(message==nullptr)
+     {
+       return false;
+     }
+     res=connection_manager->sendMessage(*message,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
+     if(socketIsClosed)
+     {
+       verbose<<"-->[MainClient][sendAcceptProtocol] error server is offline reconnecting"<<'\n';
+       notConnected=true;
+       return false;
+     }
+     adv_username_1 =string(usernameAdv);
+     clientPhase=START_GAME_PHASE;
+     delete challenge_register;
+     challenge_register= nullptr;//da valutare un possibile spostamento
+     challenge_register = new ChallengeRegister();//da valutare un possibile spostamento
+     return true;
+   }
+/*
+--------------------------receiveAcceptProtocol--------------------------------------
+*/
+  bool MainClient::receiveAcceptProtocol(Message* message)
+  {
+    bool res;
+    int* nonce_s;
+    string advUsername="";
+    ChallengeInformation *data=nullptr;
+    if(message==nullptr)
+    {
+      return false;
+    }
+    nonce_s=message->getNonce();
+    if(*nonce_s!=(this->nonce-1))
+    {
+      verbose<<"--> [MainClient][reciveAcceptProtocol] error the nonce isn't valid"<<'\n';
+      delete nonce_s;
+      return false;
+      }
+    if(message->getMessageType()!=ACCEPT)
+    {
+      verbose<<"--> [MainClient][reciveAcceptProtocol] message type not expected"<<'\n';
+        return false;
+    }
+    res=cipher_client->fromSecureForm( message , username ,aesKeyServer,false);
+    if(!res)
+      return false;
+     clientPhase=START_GAME_PHASE;
+     adv_username_1 = challenged_username;
+     delete challenge_register;
+     challenge_register= nullptr;
+     challenge_register = new ChallengeRegister();
+     return true;
+  }
+/*
+-------------------------receiveGameParamProtocol------------------------------------------
+*/
+  bool MainClient::receiveGameParamProtocol(Message* message)
+  {
+    bool res;
+    int* nonce_s;
+    string advUsername="";
+    ChallengeInformation *data=nullptr;
+    if(message==nullptr)
+    {
+      return false;
+    }
+    nonce_s=message->getNonce();
+    if(*nonce_s!=(this->nonce-1))
+    {
+      verbose<<"--> [MainClient][receiveGameParamProtocol] error the nonce isn't valid"<<'\n';
+      delete nonce_s;
+      return false;
+      }
+    if(message->getMessageType()!=GAME_PARAM||clientPhase!=START_GAME_PHASE)
+    {
+      verbose<<"--> [MainClient][receiveGameParamProtocol] message type not expected"<<'\n';
+        return false;
+    }
+    res=cipher_client->fromSecureForm( message , username ,aesKeyServer,false);
+    if(!res)
+      return false;
+    advPort= message->getPort();
+    //da estrarre netInformation
+  }
+/*
+
+-------------------------------sendWithDrawProtocol---------------------------
+*/
+  bool MainClient::sendWithDrawProtocol()
+  {
+     if(challenged_username.empty())
+     {
+       return false;
+     }
+     bool res;
+     bool socketIsClosed=false;
+     ChallengeInformation *data=nullptr;
+     Message* message=nullptr; 
+    /* if(adversaryUsername.empty())
+     {
+       return false;
+     }*/ 
+     if(!challenge_register->findData(*data))
+       return false;
+
+     message=createMessage(MessageType::WITHDRAW_REQ,(const char*)username.c_str(),(unsigned char*)challenged_username.c_str(),challenged_username.size(),aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE);
+     if(message==nullptr)
+     {
+       return false;
+     }
+     res=connection_manager->sendMessage(*message,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
+     if(socketIsClosed)
+     {
+       verbose<<"-->[MainClient][sendWithDrawProtocol] error server is offline reconnecting"<<'\n';
+       notConnected=true;
+       return false;
+     }
+     return true;
+  }
+/*
+----------------------------receiveWithDrawOkProtocol----------------------------
+*/
+  bool MainClient::receiveWithDrawOkProtocol(Message* message)
+  {
+    bool res;
+    int* nonce_s;
+    string advUsername="";
+    ChallengeInformation *data=nullptr;
+    if(message==nullptr)
+    {
+      return false;
+    }
+    nonce_s=message->getNonce();
+    if(*nonce_s!=(this->nonce-1))
+    {
+      verbose<<"--> [MainClient][receiveWithDrawOkProtocol] error the nonce isn't valid"<<'\n';
+      delete nonce_s;
+      return false;
+      }
+    if(message->getMessageType()!=WITHDRAW_OK)
+    {
+      verbose<<"--> [MainClient][receiveWithDrawOkProtocol] message type not expected"<<'\n';
+        return false;
+    }
+    res=cipher_client->fromSecureForm( message , username ,aesKeyServer,false);
+    if(!res)
+      return false;
+     //clientPhase=START_GAME_PHASE;
+     adv_username_1 = "";
+     string challenged_username = "";
+     return true;
   }
  /*
 --------------------------------------createMessage function---------------------------------
@@ -977,6 +1180,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                     if(!res)
                       continue;
                     textual_interface_manager->printLoginInterface();
+
                 }
                 break;
               case USER_LIST:
@@ -1110,8 +1314,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 /*
 --------------------main function-----------------
 */  
-int main(int argc, char** argv)
-{
+  int main(int argc, char** argv)
+  {
     Logger::setThreshold(  VERY_VERBOSE );
     //Logger::setThreshold(  VERBOSE );
     client::MainClient* main_client;
@@ -1121,4 +1325,4 @@ int main(int argc, char** argv)
       main_client->client();
     }
     return 0;
-}
+  }
