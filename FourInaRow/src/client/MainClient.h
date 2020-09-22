@@ -61,6 +61,7 @@ namespace client
       bool sendImplicitUserListReq();
       string username = "";
       string adv_username_1 = "";
+      char* advIP;
       string challenged_username = "";
       Game* game;
       cipher::SessionKey* aesKeyServer;

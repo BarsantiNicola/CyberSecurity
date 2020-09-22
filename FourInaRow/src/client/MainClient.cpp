@@ -652,8 +652,10 @@ namespace client
   {
     bool res;
     int* nonce_s;
+    int keyLen;
     string advUsername="";
     ChallengeInformation *data=nullptr;
+    unsigned char* pubKeyAdv=nullptr;
     if(message==nullptr)
     {
       return false;
@@ -674,7 +676,16 @@ namespace client
     if(!res)
       return false;
     advPort= message->getPort();
-    //da estrarre netInformation
+    pubKeyAdv=message->getPubKey();
+    keyLen=message->getPubKeyLength();
+    res=cipher_client->setAdversaryRSAKey( pubKeyAdv , keyLen );
+    if(!res)
+      return false;
+    advIP=(char*)message->getNetInformations();
+    if(advIP==nullptr)
+      return false;
+    return true;
+    
   }
 /*
 
@@ -1078,12 +1089,29 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
            {
              std::cout<<"show user online failed retry"<<endl;
              std::cout<<"\t# Insert a command:";
+             cout.flush();
            }
          }
+         else if(comand_line.compare(5,9,"[pending]"))
+         {
+            string toPrint=challenge_register->printChallengeList();
+            if(toPrint.empty())
+            {
+              std::cout<<"no active request game"<<endl;
+            }
+            else
+            {
+              std::cout<<"challenger list:"<<endl;
+              std::cout<<toPrint<<endl;
+            }
+            std::cout<<"\t# Insert a command:";
+            cout.flush();
+         }
       }
+      
       else if(comand_line.compare(0,9,"challenge")==0)
       {
-      //ESEGUO CHALLENGE
+      	 
       }
       else if(comand_line.compare(0,6,"logout")==0&&logged==true)
       {
@@ -1198,6 +1226,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                  }
                }
                break;
+
               case RANK_LIST:
                if(clientPhase==ClientPhase::RANK_LIST_PHASE)
                {
@@ -1213,13 +1242,39 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                  }
                }
                break;
+              case MATCH:
+                res=receiveChallengeProtocol(message);
+                if(!res)
+                {
+                     cout<<"error to recive challengeProtocol"<<endl;
+                     std::cout<<"\t# Insert a command:";
+                     cout.flush();
+                }
+                break;
+
+              case REJECT:
+                receiveRejectProtocol(message);
+                break;
+
+              case GAME_PARAM:
+                res=receiveGameParamProtocol(message);
+                if(res)
+                {
+                  //parto con la key exchange
+                }
+                break;
+
               case ERROR:
               {
                 res=errorHandler(message);
                 if(res)
                 {
-                  break;
+                  cout<<"an error occured"<<endl;
+                  std::cout<<"\t# Insert a command:";
+                  cout.flush();
+                  
                 }
+                break;
               }
               default:
                  vverbose<<"--> [MainClient][client] message_type: "<<message->getMessageType()<<" unexpected"<<'\n';

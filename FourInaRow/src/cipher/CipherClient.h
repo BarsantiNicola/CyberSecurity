@@ -4,6 +4,9 @@
 #include "../Logger.h"
 #include "../utility/Message.h"
 #include "../utility/NetMessage.h"
+#include <openssl/evp.h>
+#include <openssl/pem.h>
+#include <openssl/x509_vfy.h>
 using namespace utility; 
 
 namespace cipher
@@ -22,6 +25,7 @@ namespace cipher
       ~CipherClient();
       void newRSAParameter(string username,string password);
       bool toSecureForm( Message* message, SessionKey* aesKey );
+      bool setAdversaryRSAKey( unsigned char* pubKey , int len );
       bool fromSecureForm( Message* message , string username , SessionKey* aesKey,bool serverKeyExchange);
       bool getRSA_is_start();
       //NetMessage* getServerCertificate();//da verificare utilita
