@@ -35,7 +35,7 @@ namespace client
    Message* messRet;
    NetMessage* netRet;
    Converter conv;
-   Message* mess =createMessage(MessageType::CERTIFICATE_REQ, nullptr,nullptr,0,nullptr,MessageGameType::NO_GAME_TYPE_MESSAGE);
+   Message* mess =createMessage(MessageType::CERTIFICATE_REQ, nullptr,nullptr,0,nullptr,MessageGameType::NO_GAME_TYPE_MESSAGE,false);
 
    if(mess==nullptr)
    {
@@ -106,7 +106,7 @@ namespace client
     if(cUsername==nullptr)
       return false;
     std::strcpy(cUsername,username.c_str());
-    Message* message=createMessage(MessageType::LOGIN_REQ, (const char*)cUsername,nullptr,0,nullptr,MessageGameType::NO_GAME_TYPE_MESSAGE);
+    Message* message=createMessage(MessageType::LOGIN_REQ, (const char*)cUsername,nullptr,0,nullptr,MessageGameType::NO_GAME_TYPE_MESSAGE,false);
     if(message==nullptr)
       return false;
     if(message->getMessageType()==LOGIN_REQ)
@@ -150,7 +150,7 @@ namespace client
     
       if(retMess->getMessageType()==LOGIN_OK)
       {
-        sendMess=createMessage(MessageType::KEY_EXCHANGE, nullptr,nullptr,0,nullptr,MessageGameType::NO_GAME_TYPE_MESSAGE);
+        sendMess=createMessage(MessageType::KEY_EXCHANGE, nullptr,nullptr,0,nullptr,MessageGameType::NO_GAME_TYPE_MESSAGE,false);
         if(sendMess==nullptr)
           return false;
         verbose<<"-->[MainClient][loginProtocol] start key exchange protocol"<<'\n';
@@ -194,7 +194,7 @@ namespace client
     bool res;
     bool socketIsClosed=false;
     Message* message;
-    message=createMessage(MessageType::USER_LIST_REQ, nullptr,nullptr,0,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE);
+    message=createMessage(MessageType::USER_LIST_REQ, nullptr,nullptr,0,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE,false);
     if(message==nullptr)
       return false;
     res=connection_manager->sendMessage(*message,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
@@ -277,7 +277,7 @@ namespace client
     bool res;
     bool socketIsClosed=false;
     Message* message;
-    message=createMessage(MessageType::RANK_LIST_REQ, nullptr,nullptr,0,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE);
+    message=createMessage(MessageType::RANK_LIST_REQ, nullptr,nullptr,0,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE,false);
     if(message==nullptr)
       return false;
     res=connection_manager->sendMessage(*message,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
@@ -343,7 +343,7 @@ namespace client
     bool res;
     bool socketIsClosed=false;
     Message* message;
-    message=createMessage(MessageType::LOGOUT_REQ, nullptr,nullptr,0,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE);
+    message=createMessage(MessageType::LOGOUT_REQ, nullptr,nullptr,0,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE,false);
     if(message==nullptr)
       return false;
     res=connection_manager->sendMessage(*message,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
@@ -430,16 +430,53 @@ namespace client
         len=message->getDHkeyLength();
         if(app==nullptr)
           return false;
-        this->aesKeyServer=cipher_client->getSessionKey( app , len );
-        if(this->aesKeyServer==nullptr||this->aesKeyServer->iv==nullptr || this->aesKeyServer->sessionKey==nullptr)
-          return false;
-        vverbose<<"-->[MainClient][keyExchangeReciveProtoco] key iv "<<aesKeyServer->iv<<" session key: "<<aesKeyServer->sessionKey<<'\n';//da eliminare
-        delete nonce_s;
-        return true;
+        if(exchangeWithServer)
+        {
+          this->aesKeyServer=cipher_client->getSessionKey( app , len );
+          if(this->aesKeyServer==nullptr||this->aesKeyServer->iv==nullptr || this->aesKeyServer->sessionKey==nullptr)
+            return false;
+          vverbose<<"-->[MainClient][keyExchangeReciveProtoco] key iv "<<aesKeyServer->iv<<" session key: "<<aesKeyServer->sessionKey<<'\n';//da eliminare
+          delete nonce_s;
+          return true;
+
+       }
+       this->aesKeyClient=cipher_client->getSessionKey( app , len );
+       if(this->aesKeyClient==nullptr||this->aesKeyClient->iv==nullptr || this->aesKeyClient->sessionKey==nullptr)
+         return false;
+       vverbose<<"-->[MainClient][keyExchangeReciveProtoco] key iv "<<aesKeyClient->iv<<" session key: "<<aesKeyClient->sessionKey<<'\n';//da eliminare
+       delete nonce_s;
+       return true;
         
       }
       return false;
   }
+/*
+--------------------------------keyExchangeClientSend-------------------------------
+*/
+
+  bool MainClient::keyExchangeClientSend()
+  {
+    bool res;
+    int* nonce_s;
+    bool connection_res;
+    bool socketIsClosed;
+    Message* retMess;
+    Message* sendMess;
+    sendMess=createMessage(MessageType::KEY_EXCHANGE, nullptr,nullptr,0,nullptr,MessageGameType::NO_GAME_TYPE_MESSAGE,true);
+    if(sendMess==nullptr)
+      return false;
+     verbose<<"-->[MainClient][loginProtocol] start key exchange protocol"<<'\n';
+     res=connection_manager->sendMessage(*sendMess,connection_manager->getserverSocket(),&socketIsClosed,advIP,*advPort); 
+     if(!res)
+    {
+      if(socketIsClosed)
+      notConnected=true;
+      return false;
+    }
+    return true;
+  
+  }
+
 /*
 ----------------------------------sendChallengeProtocol function------------------------------------------------------
 */
@@ -452,7 +489,7 @@ namespace client
      {
        return false;
      }
-     message=createMessage(MessageType::MATCH,(const char*)username.c_str(),(unsigned char*)adversaryUsername,size,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE);
+     message=createMessage(MessageType::MATCH,(const char*)username.c_str(),(unsigned char*)adversaryUsername,size,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE,false);
      if(message==nullptr)
      {
        return false;
@@ -521,7 +558,7 @@ namespace client
      if(!challenge_register->findData(*data))
        return false;
 
-     message=createMessage(MessageType::REJECT,(const char*)username.c_str(),(unsigned char*)usernameAdv,size,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE);
+     message=createMessage(MessageType::REJECT,(const char*)username.c_str(),(unsigned char*)usernameAdv,size,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE,false);
      if(message==nullptr)
      {
        return false;
@@ -591,7 +628,7 @@ namespace client
      if(!challenge_register->findData(*data))
        return false;
 
-     message=createMessage(MessageType::ACCEPT,(const char*)username.c_str(),(unsigned char*)usernameAdv,size,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE);
+     message=createMessage(MessageType::ACCEPT,(const char*)username.c_str(),(unsigned char*)usernameAdv,size,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE,false);
      if(message==nullptr)
      {
        return false;
@@ -708,7 +745,7 @@ namespace client
      if(!challenge_register->findData(*data))
        return false;
 
-     message=createMessage(MessageType::WITHDRAW_REQ,(const char*)username.c_str(),(unsigned char*)challenged_username.c_str(),challenged_username.size(),aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE);
+     message=createMessage(MessageType::WITHDRAW_REQ,(const char*)username.c_str(), (unsigned char*)challenged_username.c_str(), challenged_username.size(),aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE,false);
      if(message==nullptr)
      {
        return false;
@@ -758,7 +795,7 @@ namespace client
  /*
 --------------------------------------createMessage function---------------------------------
 */
-  Message* MainClient::createMessage(MessageType type, const char* param,unsigned char* g_param,int g_paramLen,cipher::SessionKey* aesKey,MessageGameType messageGameType)
+  Message* MainClient::createMessage(MessageType type, const char* param,unsigned char* g_param,int g_paramLen,cipher::SessionKey* aesKey,MessageGameType messageGameType,bool keyExchWithClient)
   {
     NetMessage* partialKey;
     NetMessage* net;
@@ -781,11 +818,22 @@ namespace client
         
       case KEY_EXCHANGE:
         message->setMessageType( KEY_EXCHANGE );
-        message->setNonce(this->nonce);
-        partialKey = this->cipher_client->getPartialKey();
-        message->set_DH_key( partialKey->getMessage(), partialKey->length() );
-        cipherRes=this->cipher_client->toSecureForm( message,aesKey);
-        this->nonce++;
+        if(!keyExchWithClient)
+        {
+          message->setNonce(this->nonce);
+          partialKey = this->cipher_client->getPartialKey();
+          message->set_DH_key( partialKey->getMessage(), partialKey->length() );
+          cipherRes=this->cipher_client->toSecureForm( message,aesKey);
+          this->nonce++;
+        }
+        else
+        {
+          message->setCurrent_Token(this->currentToken);
+          partialKey = this->cipher_client->getPartialKey();
+          message->set_DH_key( partialKey->getMessage(), partialKey->length() );
+          cipherRes=this->cipher_client->toSecureForm( message,aesKey);
+          this->currentToken++;
+       }
         break;
 
       case USER_LIST_REQ:
@@ -793,6 +841,8 @@ namespace client
         message->setNonce(this->nonce);
         cipherRes =this->cipher_client->toSecureForm( message,aesKey);
         this->nonce++;
+        
+
         break;
 
       case RANK_LIST_REQ:
@@ -845,7 +895,13 @@ namespace client
        // message = this->cipher_client->toSecureForm( message,aesKey );
         this->nonce++;
         break;
-
+      case MOVE:
+        message->setMessageType(MOVE);
+        message->setCurrent_Token(this->currentToken);
+        message->setChosenColumn(  g_param,g_paramLen);
+        cipherRes = this->cipher_client->toSecureForm( message,aesKey);
+        this->nonce++;
+        break;
       case DISCONNECT:
         message->setMessageType( DISCONNECT );
         message->setNonce(this->nonce);
@@ -987,9 +1043,94 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
   }
   return res;
 }
+
+/*
+------------------------------MakeAndSendGameMove-------------------------------------
+*/
+  bool MainClient::MakeAndSendGameMove(int column)
+  {
+    bool iWon=false;
+    bool adversaryWon=false;
+    bool tie=false;
+    time_t app;
+    Message* message;
+    StatGame statGame;
+    statGame=game->makeMove(column,&iWon,&adversaryWon,&tie,true);
+    switch(statGame)
+    {
+      case BAD_MOVE:
+        std::cout<<"The collumn selected is full."<<endl;
+        std::cout<<"\t# Insert a command:";
+        cout.flush();
+        break;
+      case NULL_POINTER:
+        verbose<<"-->[MainClient][MakeAndSendGameMove] nullptr as parameter"<<'\n';
+        break;
+      case OUT_OF_BOUND:
+        std::cout<<"The collumn selected doesn't exist."<<endl;
+        std::cout<<"\t# Insert a command:";
+        cout.flush();
+        break;
+      case BAD_TURN:
+        verbose<<"-->[MainClient][MakeAndSendGameMove] error bad turn"<<'\n';
+        break;
+      case MOVE_OK:
+        break;
+        //da continuare 
+       
+    }
+  }
+/*
+----------------------Generate nonceNumber----------------
+*/
+  int MainClient::generateRandomNonce()
+  {
+    unsigned int seed;
+      FILE* randFile = fopen( "/dev/urandom","rb" );
+      struct timespec ts;
+
+      if( !randFile )
+      {
+        verbose<<" [MainClient][generateRandomNonce] Error, unable to locate urandom file"<<'\n';
+        if( timespec_get( &ts, TIME_UTC )==0 )
+        {
+          verbose << "--> [MainClient][generateRandomNonce] Error, unable to use timespec" << '\n';
+          srand( time( nullptr ));
+        }
+        else
+          srand( ts.tv_nsec^ts.tv_sec );
+        return rand();
+      }
+
+      if( fread( &seed, 1, sizeof( seed ),randFile ) != sizeof( seed ))
+      {
+        verbose<<" [MainClient][generateRandomNonce] Error, unable to load enough data to generate seed"<<'\n';
+        if( timespec_get( &ts, TIME_UTC ) == 0 )
+        {
+          verbose << "--> [MainClient][generateRandomNonce] Error, unable to use timespec" << '\n';
+          srand( time( NULL ));
+        }
+        else
+          srand( ts.tv_nsec^ts.tv_sec );
+      }
+      else
+        srand(seed);
+
+      fclose( randFile );
+      return rand();
+
+    }
+/*
+------------------------------ReciveGameMove-------------------------------------
+*/
+
+  bool MainClient::ReciveGameMove(Message* message)
+  {
+    return true;
+     //da fare
+  }
 /*
 ------------------------------function errorHandler----------------------------
-
 */
   bool MainClient::errorHandler(Message* message)
   {
@@ -1111,7 +1252,55 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       
       else if(comand_line.compare(0,9,"challenge")==0)
       {
-      	 
+      	 string app=comand_line.substr(10);
+         if(app.empty())
+         {
+             std::cout<<"failed to send challenge "<<endl;
+             std::cout<<"\t# Insert a command:";
+             cout.flush();
+         }
+         bool res=sendChallengeProtocol(app.c_str(),comand_line.size());
+         if(!res)
+         {
+             std::cout<<"failed to send challenge "<<endl;
+             std::cout<<"\t# Insert a command:";
+             cout.flush();
+         }
+      }
+      else if(comand_line.compare(0,6,"accept")==0)
+      {
+      	 string app=comand_line.substr(7);
+         if(app.empty())
+         {
+             std::cout<<"failed to send challenge "<<endl;
+             std::cout<<"\t# Insert a command:";
+             cout.flush();
+         }
+         bool res=sendAcceptProtocol(app.c_str(),comand_line.size());
+         if(!res)
+         {
+             std::cout<<"failed to send challenge "<<endl;
+             std::cout<<"\t# Insert a command:";
+             cout.flush();
+         }
+      }
+
+      else if(comand_line.compare(0,6,"reject")==0)
+      {
+      	 string app=comand_line.substr(7);
+         if(app.empty())
+         {
+             std::cout<<"failed to send challenge "<<endl;
+             std::cout<<"\t# Insert a command:";
+             cout.flush();
+         }
+         bool res=sendRejectProtocol(adv_username_1.c_str(),comand_line.size());
+         if(!res)
+         {
+             std::cout<<"failed to send challenge "<<endl;
+             std::cout<<"\t# Insert a command:";
+             cout.flush();
+         }
       }
       else if(comand_line.compare(0,6,"logout")==0&&logged==true)
       {
@@ -1120,6 +1309,17 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         if(!ret)
         {
           std::cout<<"logout failed retry"<<endl;
+          std::cout<<"\t# Insert a command:";
+          cout.flush();
+        }
+      }
+      else if(comand_line.compare(0,8,"withdraw")==0&&logged==true && (clientPhase!=INGAME_PHASE||clientPhase!=START_GAME_PHASE))
+      {
+       
+        bool ret=sendWithDrawProtocol();
+        if(!ret)
+        {
+          std::cout<<"withdraw failed retry"<<endl;
           std::cout<<"\t# Insert a command:";
           cout.flush();
         }
@@ -1260,10 +1460,36 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                 res=receiveGameParamProtocol(message);
                 if(res)
                 {
-                  //parto con la key exchange
-                }
-                break;
+                  if(startingMatch)
+                  {
+                    this->currentToken=generateRandomNonce();
+                    keyExchangeClientSend();
+                    this->currTokenChat=this->currentToken+TOKEN_GAP;
+                  }
 
+                }//come gestire un possibile fallimento??
+                break;
+              case KEY_EXCHANGE:
+                    if(keyExchangeReciveProtocol(message,false))
+                    {
+                      clientPhase=INGAME_PHASE;
+                      game=new Game(250,startingMatch);
+                      textual_interface_manager->printGameInterface(startingMatch, std::to_string(timer)," ",game->printGameBoard());
+                      if(!startingMatch)
+                      {
+                        this->currentToken=*message->getCurrent_Token();
+                        this->currTokenChat=this->currentToken+TOKEN_GAP;
+                      }
+                      startingMatch=false;
+                    }
+              case ACCEPT:
+                 res=receiveAcceptProtocol(message);
+                 if(res)
+                   startingMatch=true;
+                 break;
+              case WITHDRAW_OK:
+                receiveWithDrawOkProtocol(message);
+                break;
               case ERROR:
               {
                 res=errorHandler(message);
@@ -1276,6 +1502,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                 }
                 break;
               }
+           
               default:
                  vverbose<<"--> [MainClient][client] message_type: "<<message->getMessageType()<<" unexpected"<<'\n';
                  std::cout<<"\t# Insert a command:";
