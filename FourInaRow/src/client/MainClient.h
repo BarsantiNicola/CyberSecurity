@@ -11,11 +11,13 @@
 #include"ChallengeRegister.h"
 #include"TextualInterfaceManager.h"
 #include"../utility/ConnectionManager.h"
+#include<time.h>
 #include<mutex>
 #include<exception>
 #include<vector>
 #include<sstream>
 #define SLEEP_TIME 1000
+#define TOKEN_GAP 45
 using namespace utility;
 namespace client
 {
@@ -32,6 +34,7 @@ namespace client
     LOGOUT_PHASE,
     REJECT_PHASE,
     ACCEPT_PHASE,
+    INGAME_PHASE,
     USER_LIST_PHASE,
     RANK_LIST_PHASE,
     MATCH_PHASE,
@@ -45,6 +48,8 @@ namespace client
     private:
       long timer=15;
       bool time_expired=false;
+      bool startingMatch=false;
+      bool firstMove=false;
       bool notConnected=true;
       bool startChallenge=false;
       bool implicitUserListReq=false;
@@ -59,8 +64,10 @@ namespace client
       int myPort=1235;
       const char* myIP="127.0.0.1";
       bool sendImplicitUserListReq();
+      double sendStart;
       string username = "";
       string adv_username_1 = "";
+      char* advIP;
       string challenged_username = "";
       Game* game;
       cipher::SessionKey* aesKeyServer;
@@ -85,6 +92,9 @@ namespace client
       bool receiveRankProtocol(Message* message);//ok
       bool certificateProtocol();//ok
       bool keyExchangeReciveProtocol(Message* message,bool exchangeWithServer);//ok
+      bool keyExchangeClientSend();
+      bool MakeAndSendGameMove(int collumn);
+      bool ReciveGameMove(Message* message);
       bool sendReqUserListProtocol();//ok
       bool receiveUserListProtocol(Message* message);//ok
       bool disconnectProtocol(Message message);
@@ -94,11 +104,12 @@ namespace client
       bool receiveLogoutProtocol(Message* message);//ok
       bool receiveGameParamProtocol(Message* message);
       bool gameProtocol(Message message);
+      int generateRandomNonce();
       void timerHandler(long secs);
       bool comand(std::string comand_line);
       bool startConnectionServer(const char* myIP,int myPort);
       int countOccurences(string source,string searchFor);
-      Message* createMessage(MessageType type, const char* param,unsigned char* g_param,int g_paramLen,cipher::SessionKey* aesKey,MessageGameType messageGameType);
+      Message* createMessage(MessageType type, const char* param,unsigned char* g_param,int g_paramLen,cipher::SessionKey* aesKey,MessageGameType messageGameType,bool keyExchWithClient);
       unsigned char* concTwoField(unsigned char* firstField,unsigned int firstFieldSize,unsigned char* secondField,unsigned int secondFieldSize,unsigned char separator,unsigned int numberSeparator);
 
       bool deconcatenateTwoField(unsigned char* originalField,unsigned int originalFieldSize,unsigned char* firsField,unsigned int* firstFieldSize,unsigned char* secondField,unsigned int* secondFieldSize,unsigned char separator,unsigned int numberSeparator);//ok

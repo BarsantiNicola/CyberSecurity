@@ -535,6 +535,17 @@ namespace cipher
      return this->dh->generatePartialKey();
    }
 
+  bool CipherClient::setAdversaryRSAKey( unsigned char* pubKey , int len )
+  {
+    bool res=false;
+    if(this->rsa==nullptr)
+    {
+      return false;
+    }
+    this->rsa->unsetAdversaryKey();
+    res=this->rsa->extractAdversaryKey( pubKey ,len );
+    return res;
+  }
 
   void CipherClient::newRSAParameter(string username,string password)
   {

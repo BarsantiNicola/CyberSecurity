@@ -8,7 +8,7 @@
 using namespace std;
 namespace client
 {
-  enum class StatGame
+  enum StatGame
   {
     MOVE_OK,
     BAD_MOVE,
