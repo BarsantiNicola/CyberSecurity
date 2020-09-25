@@ -40,8 +40,10 @@ namespace server {
             int* verifyMatch( int matchID );                  //  RETURN THE STATUS OF THE MATCH BY THE CHALLENGER POINT OF VIEW(1 WIN, -1 LOSE, 0 TIE)
             string getChallenged( int matchID );
             string getChallenger( int matchID );
-            bool addChallengerMove( int matchID, int chosen_col );
-            bool addChallengedMove( int matchID, int chosen_col );
+            int addChallengerMove( int matchID, int chosen_col );
+            int addChallengedMove( int matchID, int chosen_col );
+            bool verifyToken( int matchID, int token );
+
     };
 
 }

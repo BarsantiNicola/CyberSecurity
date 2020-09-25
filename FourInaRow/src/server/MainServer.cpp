@@ -143,7 +143,7 @@ namespace server {
         }
 
         Message* response;
-        if( message->getMessageType() != CERTIFICATE_REQ ) {
+        if( message->getMessageType() != CERTIFICATE_REQ && message->getMessageType() != GAME ) {
 
             //  verification of nonce presence
             int *nonce = message->getNonce();
@@ -185,8 +185,9 @@ namespace server {
         // pass the message to the higher level handler
         response = this->userManager( message, username, socket );
 
-        //  for next message nonce has to be increased
-        this->clientRegister.updateClientNonce( socket );
+        //  for next message nonce has to be increased(for GAME the nonce needs a different management implemented into MainServer::gameHandler)
+        if( message->getMessageType() != GAME )
+            this->clientRegister.updateClientNonce( socket );
         return response;
 
     }
@@ -1652,6 +1653,27 @@ namespace server {
         }
         Message* response;
         int *nonce = message->getNonce();
+        if( !nonce ){
+            verbose<<"--> [MainServer][gameHandler] Error, Missing Nonce"<<'\n';
+            return this->sendError( string( "Security error, Missing nonce"),nullptr );
+        }
+
+        int matchID = this->matchRegister.getMatchPlay( username );
+        if( matchID == -1 ){
+
+            verbose<<"--> [MainServer][gameHandler] Error unable to find match"<<'\n';
+            response = this->sendError( "Invalid request. Match already closed", nullptr );
+            delete nonce;
+            return response;
+
+        }
+
+        if( !this->matchRegister.verifyToken( matchID, *nonce )){
+
+            verbose<<"--> [MainServer][gameHandler] Security Error, invalid nonce"<<'\n';
+            return this->sendError( "Security Error, Invalid nonce", nullptr );
+
+        }
 
         if( !this->cipherServer.fromSecureForm( message , username, this->userRegister.getSessionKey(username) ) ){
 
@@ -1663,36 +1685,28 @@ namespace server {
 
         }
 
-        int matchID = this->matchRegister.getMatchPlay( username );
-
-        if( matchID == -1 ){
-
-            verbose<<"--> [MainServer][gameHandler] Error unable to find match"<<'\n';
-            response = this->sendError( "Invalid request. Match already closed", nonce );
-            delete nonce;
-            return response;
-
-        }
-
         int col = atoi( (const char*)message->getChosenColumn());
 
-        if( col<0 ){
+        if( col<0 || col>= NUMBER_COLUMN ){
             verbose<<"--> [MainServer][gameHandler] Error invalid message column field"<<'\n';
-            response = this->sendError( "Invalid request. Missing the column field", nonce );
+            response = this->sendError( "Invalid request. Invalid column field", nullptr );
             delete nonce;
             return response;
         }
-
+        int status;
         if( !this->matchRegister.getChallenger(matchID).compare(username))
-            this->matchRegister.addChallengerMove( matchID, col);
+            status = this->matchRegister.addChallengerMove( matchID, col);
         else
-            this->matchRegister.addChallengedMove( matchID, col );
+            status = this->matchRegister.addChallengedMove( matchID, col );
 
         delete nonce;
+
+
         return nullptr;
     }
 
 }
+
 
 int main() {
 

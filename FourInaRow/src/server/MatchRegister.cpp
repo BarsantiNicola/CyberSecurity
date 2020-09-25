@@ -206,24 +206,29 @@ namespace server{
 
     }
 
-    bool MatchRegister::addChallengerMove( int matchID, int chosen_col ){
+    int MatchRegister::addChallengerMove( int matchID, int chosen_col ){
 
-        if( matchID != -1 ) {
-            this->matchRegister[matchID].addChallengerMove(chosen_col);
-            return true;
-        }
-        return false;
+        if( matchID != -1 )
+            return this->matchRegister[matchID].addChallengerMove(chosen_col);
+
+        return -2;
 
     }
 
-    bool MatchRegister::addChallengedMove( int matchID, int chosen_col ){
+    int MatchRegister::addChallengedMove( int matchID, int chosen_col ){
 
-        if( matchID != -1 ) {
-            this->matchRegister[matchID].addChallengedMove(chosen_col);
-            return true;
-        }
+        if( matchID != -1 )
+            return this->matchRegister[matchID].addChallengedMove(chosen_col);
+
+        return -2;
+
+    }
+
+    bool MatchRegister::verifyToken( int matchID, int token ){
+
+        if( matchID != -1 )
+            return this->matchRegister[matchID].verifyToken(token);
         return false;
-
     }
 
 }

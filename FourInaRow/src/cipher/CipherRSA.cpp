@@ -506,6 +506,7 @@ namespace cipher{
         return nullptr;
 
     }
+
     bool CipherRSA::setServerKey( EVP_PKEY* server ){
 
         if( this->pubServerKey ) return false;
@@ -513,6 +514,7 @@ namespace cipher{
         return true;
 
     }
+
     //  CLIENT
     //  Extract the public key from what its textual form given with message
     bool CipherRSA::extractAdversaryKey( unsigned char* pubKey , int len ){

@@ -5,6 +5,8 @@
 #include <iostream>
 #include <vector>
 #include "../Logger.h"
+#define NUMBER_ROW 6
+#define NUMBER_COLUMN 7
 
 using namespace std;
 
@@ -35,10 +37,12 @@ namespace server {
         private:
             string challenger;
             string challenged;
-            vector<int> challengerMoves;
-            vector<int> challengedMoves;
+            int gameBoard[NUMBER_COLUMN][NUMBER_ROW];
+            int nMoves;
+            unsigned int token;
+            bool control;
             MatchStatus status;
-
+            int controlAlignment( int row, int column, bool myMove );
         public:
             MatchInformation( string challenger, string challenged );
 
@@ -48,12 +52,15 @@ namespace server {
 
             bool setStatus( MatchStatus status );
 
-            bool addChallengerMove( int chosen_col );
-            bool addChallengedMove( int chosen_col );
+            int addChallengerMove( int chosen_col );
+            int addChallengedMove( int chosen_col );
             int  verifyMatch();                             //  verify the result of the match(-1 win challenger 1 win challenged 0 tie)
             bool hasUser( string username );               //  verify the presence of a user(-1 challenger 1 challenged 0 no presence)
             bool isChallenger( string username );
-
+            int getTotalMoves();
+            bool hasControl( string username );
+            int verifyGame( int row, int column, string username );
+            bool verifyToken( int token );
     };
 }
 
