@@ -38,7 +38,7 @@ namespace server {
 
         public:
             static string getRankList();                                //  GIVES A FORMATTED STRING OF THE USERS RANKS
-            static bool incrementUserGame(string username, GameResult result );   //  UPDATE THE USER STATISTICS WITH A WON/LOSE MATCH
+            static bool incrementUserGame(string username, GameResult result );   //  UPDATE THE USER STATISTICS WITH A WON/LOSE/TIE MATCH
 
     };
 

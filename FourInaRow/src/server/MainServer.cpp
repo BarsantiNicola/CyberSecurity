@@ -1695,12 +1695,110 @@ namespace server {
         }
         int status;
         if( !this->matchRegister.getChallenger(matchID).compare(username))
-            status = this->matchRegister.addChallengerMove( matchID, col);
+            status = this->matchRegister.addChallengedMove( matchID, col);
         else
-            status = this->matchRegister.addChallengedMove( matchID, col );
+            status = this->matchRegister.addChallengerMove( matchID, col );
 
         delete nonce;
+        string user_2;
+        int* sock;
 
+        switch( status ){
+
+            case -2:case -1:
+                sock = this->userRegister.getSocket(username);
+                if( !sock )
+                    return this->sendError( string( "Server error. Unable to find user"), nullptr );
+
+                nonce = this->clientRegister.getClientNonce(*sock);
+
+                if( !nonce )
+                    response = this->sendError( string( "Server error. Unable to find user'nonce"), nullptr );
+                else
+                    response = this->sendError( string("Invalid message. Bad Column."), nonce );
+
+                this->clientRegister.updateClientNonce(*sock);
+                delete sock;
+                delete nonce;
+                return response;
+
+            case 1:
+                if( !this->matchRegister.getChallenger(matchID).compare(username))
+                    user_2 = this->matchRegister.getChallenged(matchID);
+                else
+                    user_2 = this->matchRegister.getChallenger(matchID);
+
+                SQLConnector::incrementUserGame(user_2 , WIN);
+                SQLConnector::incrementUserGame(username, LOOSE);
+                if( !this->sendDisconnectMessage(user_2)) {
+
+                    verbose << "--> [MainServer][gameHandler] Error, unable to contact the user: " << user_2 << '\n';
+                    int *sock = this->userRegister.getSocket(user_2);
+                    if( sock ) {
+                        this->logoutClient(*sock);
+                        delete sock;
+                    }
+                    return nullptr;
+
+                }
+
+                if( !this->sendDisconnectMessage( username )){
+
+                    verbose << "--> [MainServer][gameHandler] Error, unable to contact the user: " << username << '\n';
+                    sock = this->userRegister.getSocket(username);
+                    if( sock ) {
+                        this->logoutClient(*sock);
+                        delete sock;
+                    }
+                    return nullptr;
+
+                }
+
+                this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
+                this->userRegister.setLogged( user_2, this->userRegister.getSessionKey(user_2));
+                this->matchRegister.removeMatch(matchID);
+                break;
+
+            case 2:
+                if( !this->matchRegister.getChallenger(matchID).compare(username))
+                    user_2 = this->matchRegister.getChallenged(matchID);
+                else
+                    user_2 = this->matchRegister.getChallenger(matchID);
+
+                SQLConnector::incrementUserGame(user_2 , TIE );
+                SQLConnector::incrementUserGame(username, TIE );
+
+                if( !this->sendDisconnectMessage(user_2)) {
+
+                    verbose << "--> [MainServer][gameHandler] Error, unable to contact the user: " << user_2 << '\n';
+                    int *sock = this->userRegister.getSocket(user_2);
+                    if( sock ) {
+                        this->logoutClient(*sock);
+                        delete sock;
+                    }
+                    return nullptr;
+
+                }
+
+                if( !this->sendDisconnectMessage( username )){
+
+                    verbose << "--> [MainServer][gameHandler] Error, unable to contact the user: " << username << '\n';
+                    int *sock = this->userRegister.getSocket(username);
+                    if( sock ) {
+                        this->logoutClient(*sock);
+                        delete sock;
+                    }
+                    return nullptr;
+
+                }
+
+                this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
+                this->userRegister.setLogged( user_2, this->userRegister.getSessionKey(user_2));
+                this->matchRegister.removeMatch(matchID);
+                break;
+
+            default: break;
+        }
 
         return nullptr;
     }
