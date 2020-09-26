@@ -351,7 +351,7 @@ namespace server {
         }
 
         //  if the user which disconnect is the challenged and the match isn't started we send reject
-        if( !challenged.compare(username) && *(this->matchRegister.getMatchStatus( matchID )) == STARTED )
+        if( !challenged.compare(username) && *(this->matchRegister.getMatchStatus( matchID )) == OPENED )
             this->sendRejectMessage( challenger, challenged, this->userRegister.getSocket( challenger ));
         else //  otherwise we send a disconnect to the other client
             if( !challenged.compare(username))

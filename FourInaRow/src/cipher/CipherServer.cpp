@@ -271,9 +271,9 @@ namespace cipher{
                 this->aes->modifyParam( key );
                 app = this->aes->decryptMessage( *message );
 
-                if( !app ){
+                if( !app )
                     return false;
-                }
+
                 message->setChosenColumn( app->getChosenColumn(), app->getChosenColumnLength());
                 delete app;
                 return this->rsa->serverVerifySignature(*message, username );
