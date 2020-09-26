@@ -195,8 +195,8 @@ send a message and return true in case of success and false in case of failure
         verbose<<"-->[ConnectionManager][sendMessage] Error conversion"<<'\n';
         return false;
       }
-      copyBuffer(senderBuffer,netmess->getMessage(),BUFFER_LENGTH,netmess->length());
-      int bufferLength=BUFFER_LENGTH;
+      copyBuffer(senderBuffer,netmess->getMessage(),BUFFER_LENGTH_UDP,netmess->length());
+      int bufferLength=BUFFER_LENGTH_UDP;
       ret=sendto(socket,senderBuffer,bufferLength,0,(struct sockaddr*) &reciver_addr, sizeof(reciver_addr));
       if(ret==0)
       {
@@ -205,7 +205,7 @@ send a message and return true in case of success and false in case of failure
         verbose<<"-->[ConnectionManager][sendMessage] connection closed"<<'\n';
         return false;
       }
-      if(ret<BUFFER_LENGTH)
+      if(ret<BUFFER_LENGTH_UDP)
       {
         verbose<<"-->[ConnectionManager][sendMessage] send message failed"<<'\n';
         return false;
@@ -350,9 +350,9 @@ send a message and return true in case of success and false in case of failure
     else if(socketUDP==socket)
     {
       int len;
-      unsigned char *buffer=new unsigned char[BUFFER_LENGTH];
+      unsigned char *buffer=new unsigned char[BUFFER_LENGTH_UDP];
       
-      len=recvfrom(socket,(void*)buffer,BUFFER_LENGTH,0,(struct sockaddr*)&sender_addr,(socklen_t*)&addrlen);
+      len=recvfrom(socket,(void*)buffer,BUFFER_LENGTH_UDP,0,(struct sockaddr*)&sender_addr,(socklen_t*)&addrlen);
       vverbose<<"-->[ConnectionManager][getMessage] byte recived "<<len<<'\n';
       if(len==0)
       {
@@ -361,13 +361,13 @@ send a message and return true in case of success and false in case of failure
         throw std::runtime_error("the connection is closed");
         return nullptr;
       }
-      if (len<BUFFER_LENGTH)
+      if (len<BUFFER_LENGTH_UDP)
       {
         verbose<<"-->[ConnectionManager][sendMessage] length recived is too short"<<'\n';
         delete[]buffer;
         return nullptr;
       }
-      int messLength = ReturnIndexLastSimbolPosition(buffer,BUFFER_LENGTH,(unsigned char) '#');
+      int messLength = ReturnIndexLastSimbolPosition(buffer,BUFFER_LENGTH_UDP,(unsigned char) '#');
       if(messLength==-1)
       {
         verbose<<"-->[ConnectionManager][sendMessage] the message is nullptr"<<'\n';
@@ -376,7 +376,7 @@ send a message and return true in case of success and false in case of failure
       }
       messLength+=1;
       unsigned char* bufMess=new unsigned char[messLength];
-      copyBuffer(bufMess,buffer,messLength,BUFFER_LENGTH);
+      copyBuffer(bufMess,buffer,messLength,BUFFER_LENGTH_UDP);
       NetMessage netmess(bufMess,messLength);
       Converter* conv=new Converter();
       Message* mess=conv->decodeMessage( netmess);
