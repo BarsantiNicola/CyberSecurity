@@ -496,7 +496,7 @@ namespace cipher
          break;
 */
        case GAME:
-         if(message->getSignatureAES()==nullptr)
+         if(message->getSignatureAES()!=nullptr)
          {
            if(!aesKey)
              return false;

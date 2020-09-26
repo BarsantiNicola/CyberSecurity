@@ -35,7 +35,7 @@ namespace client
    Message* messRet;
    NetMessage* netRet;
    Converter conv;
-   Message* mess =createMessage(MessageType::CERTIFICATE_REQ, nullptr,nullptr,0,nullptr,MessageGameType::NO_GAME_TYPE_MESSAGE,false);
+   Message* mess =createMessage(MessageType::CERTIFICATE_REQ, nullptr,nullptr,0,nullptr,this->nonce,false);
 
    if(mess==nullptr)
    {
@@ -106,7 +106,7 @@ namespace client
     if(cUsername==nullptr)
       return false;
     std::strcpy(cUsername,username.c_str());
-    Message* message=createMessage(MessageType::LOGIN_REQ, (const char*)cUsername,nullptr,0,nullptr,MessageGameType::NO_GAME_TYPE_MESSAGE,false);
+    Message* message=createMessage(MessageType::LOGIN_REQ, (const char*)cUsername,nullptr,0,nullptr,this->nonce,false);
     if(message==nullptr)
       return false;
     if(message->getMessageType()==LOGIN_REQ)
@@ -150,7 +150,7 @@ namespace client
     
       if(retMess->getMessageType()==LOGIN_OK)
       {
-        sendMess=createMessage(MessageType::KEY_EXCHANGE, nullptr,nullptr,0,nullptr,MessageGameType::NO_GAME_TYPE_MESSAGE,false);
+        sendMess=createMessage(MessageType::KEY_EXCHANGE, nullptr,nullptr,0,nullptr,this->nonce,false);
         if(sendMess==nullptr)
           return false;
         verbose<<"-->[MainClient][loginProtocol] start key exchange protocol"<<'\n';
@@ -194,7 +194,7 @@ namespace client
     bool res;
     bool socketIsClosed=false;
     Message* message;
-    message=createMessage(MessageType::USER_LIST_REQ, nullptr,nullptr,0,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE,false);
+    message=createMessage(MessageType::USER_LIST_REQ, nullptr,nullptr,0,aesKeyServer,this->nonce,false);
     if(message==nullptr)
       return false;
     res=connection_manager->sendMessage(*message,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
@@ -268,6 +268,68 @@ namespace client
     res=sendReqUserListProtocol();
     return res;
   }
+
+/*
+-----------------reciveDiconnectProtocol-----------------
+*/
+  bool MainClient::reciveDisconnectProtocol(Message* message)
+  {
+      int* nonce_s;
+      bool res;
+      if(message==nullptr)
+      {
+        verbose<<"--> [MainClient][reciveLogoutProtocol] error the message is null"<<'\n';
+        return false;
+      }
+      nonce_s=message->getNonce();
+      if(*nonce_s!=(this->nonce-1))
+      {
+        verbose<<"--> [MainClient][reciveLogoutProtocol] error the nonce isn't valid"<<'\n';
+        delete nonce_s;
+        //clientPhase=ClientPhase::NO_PHASE;
+        return false;
+      }
+      if(message->getMessageType()!=DISCONNECT)
+      {
+        verbose<<"--> [MainClient][reciveLogoutProtocol] message type not expected"<<'\n';
+        return false;
+      }
+
+      //verbose<<"--> [MainClient][reciveLogoutProtocol] decript start"<<'\n';
+      res=cipher_client->fromSecureForm( message , username ,aesKeyServer,false);
+      if(!res)
+        return false; 
+      clientPhase=ClientPhase::NO_PHASE;
+      sendImplicitUserListReq();
+      return true;
+  }
+/*
+--------------sendDisconnectProtocol---------------------
+*/
+  bool MainClient::sendDisconnectProtocol()
+  {
+    bool res;
+    bool socketIsClosed=false;
+    Message* message;
+    message=createMessage(MessageType::DISCONNECT, nullptr,nullptr,0,aesKeyServer,this->nonce,false);
+    if(message==nullptr)
+      return false;
+    res=connection_manager->sendMessage(*message,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
+    if(socketIsClosed)
+    {
+      vverbose<<"-->[MainClient][sendDisconnectProtocol] error server is offline reconnecting"<<'\n';
+      clientPhase=ClientPhase::NO_PHASE;
+      notConnected=true;
+      return false;
+    }
+    if(res)
+    {
+      clientPhase=ClientPhase::NO_PHASE;
+      sendImplicitUserListReq();
+    }
+     
+    return res;
+  }
 /*
 --------------------sendRankProtocol function----------------------------
 */
@@ -277,7 +339,7 @@ namespace client
     bool res;
     bool socketIsClosed=false;
     Message* message;
-    message=createMessage(MessageType::RANK_LIST_REQ, nullptr,nullptr,0,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE,false);
+    message=createMessage(MessageType::RANK_LIST_REQ, nullptr,nullptr,0,aesKeyServer,this->nonce,false);
     if(message==nullptr)
       return false;
     res=connection_manager->sendMessage(*message,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
@@ -343,7 +405,7 @@ namespace client
     bool res;
     bool socketIsClosed=false;
     Message* message;
-    message=createMessage(MessageType::LOGOUT_REQ, nullptr,nullptr,0,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE,false);
+    message=createMessage(MessageType::LOGOUT_REQ, nullptr,nullptr,0,aesKeyServer,this->nonce,false);
     if(message==nullptr)
       return false;
     res=connection_manager->sendMessage(*message,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
@@ -462,7 +524,7 @@ namespace client
     bool socketIsClosed;
     Message* retMess;
     Message* sendMess;
-    sendMess=createMessage(MessageType::KEY_EXCHANGE, nullptr,nullptr,0,nullptr,MessageGameType::NO_GAME_TYPE_MESSAGE,true);
+    sendMess=createMessage(MessageType::KEY_EXCHANGE, nullptr,nullptr,0,nullptr,this->currentToken,true);
     if(sendMess==nullptr)
       return false;
      verbose<<"-->[MainClient][loginProtocol] start key exchange protocol"<<'\n';
@@ -489,7 +551,7 @@ namespace client
      {
        return false;
      }
-     message=createMessage(MessageType::MATCH,(const char*)username.c_str(),(unsigned char*)adversaryUsername,size,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE,false);
+     message=createMessage(MessageType::MATCH,(const char*)username.c_str(),(unsigned char*)adversaryUsername,size,aesKeyServer,this->nonce,false);
      if(message==nullptr)
      {
        return false;
@@ -538,6 +600,7 @@ namespace client
     if(!res)
       return false;
     advUsername=message->getUsername();
+    this->nonce++;
     data=new ChallengeInformation(advUsername);
     res=challenge_register->addData(*data);
     return res;
@@ -558,7 +621,7 @@ namespace client
      if(!challenge_register->findData(*data))
        return false;
 
-     message=createMessage(MessageType::REJECT,(const char*)username.c_str(),(unsigned char*)usernameAdv,size,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE,false);
+     message=createMessage(MessageType::REJECT,(const char*)username.c_str(),(unsigned char*)usernameAdv,size,aesKeyServer,this->nonce,false);
      if(message==nullptr)
      {
        return false;
@@ -609,6 +672,7 @@ namespace client
     if(!res)
       return false;
     challenged_username = "";
+    this->nonce++;
     startChallenge=false;
     return res;
   }
@@ -628,7 +692,7 @@ namespace client
      if(!challenge_register->findData(*data))
        return false;
 
-     message=createMessage(MessageType::ACCEPT,(const char*)username.c_str(),(unsigned char*)usernameAdv,size,aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE,false);
+     message=createMessage(MessageType::ACCEPT,(const char*)username.c_str(),(unsigned char*)usernameAdv,size,aesKeyServer,this->nonce,false);
      if(message==nullptr)
      {
        return false;
@@ -678,6 +742,7 @@ namespace client
      clientPhase=START_GAME_PHASE;
      adv_username_1 = challenged_username;
      delete challenge_register;
+     this->nonce++;
      challenge_register= nullptr;
      challenge_register = new ChallengeRegister();
      return true;
@@ -712,6 +777,7 @@ namespace client
     res=cipher_client->fromSecureForm( message , username ,aesKeyServer,false);
     if(!res)
       return false;
+    this->nonce++;
     advPort= message->getPort();
     pubKeyAdv=message->getPubKey();
     keyLen=message->getPubKeyLength();
@@ -745,7 +811,7 @@ namespace client
      if(!challenge_register->findData(*data))
        return false;
 
-     message=createMessage(MessageType::WITHDRAW_REQ,(const char*)username.c_str(), (unsigned char*)challenged_username.c_str(), challenged_username.size(),aesKeyServer,MessageGameType::NO_GAME_TYPE_MESSAGE,false);
+     message=createMessage(MessageType::WITHDRAW_REQ,(const char*)username.c_str(), (unsigned char*)challenged_username.c_str(), challenged_username.size(),aesKeyServer,this->nonce,false);
      if(message==nullptr)
      {
        return false;
@@ -795,7 +861,7 @@ namespace client
  /*
 --------------------------------------createMessage function---------------------------------
 */
-  Message* MainClient::createMessage(MessageType type, const char* param,unsigned char* g_param,int g_paramLen,cipher::SessionKey* aesKey,MessageGameType messageGameType,bool keyExchWithClient)
+  Message* MainClient::createMessage(MessageType type, const char* param,unsigned char* g_param,int g_paramLen,cipher::SessionKey* aesKey,int token,bool keyExchWithClient)
   {
     NetMessage* partialKey;
     NetMessage* net;
@@ -900,7 +966,7 @@ namespace client
         message->setCurrent_Token(this->currentToken);
         message->setChosenColumn(  g_param,g_paramLen);
         cipherRes = this->cipher_client->toSecureForm( message,aesKey);
-        this->nonce++;
+        //this->nonce++;
         break;
       case DISCONNECT:
         message->setMessageType( DISCONNECT );
@@ -914,24 +980,8 @@ namespace client
 
       case ACK:
         message->setMessageType(ACK);
-        switch(messageGameType)
-        {
-          case MOVE_TYPE:
-            message->setCurrent_Token(this->currentToken);
-            this->currentToken++;
-            break;
-          
-          case CHAT_TYPE:
-            message->setCurrent_Token(this->currTokenChat);
-            this->currTokenChat++;
-            break;
-
-          case NO_GAME_TYPE_MESSAGE:
-            return nullptr;
-
-        }
+        message->setCurrent_Token(token); 
         cipherRes = this->cipher_client->toSecureForm( message,aesKey);
-        
         break;
 
       case CHAT:
@@ -941,7 +991,7 @@ namespace client
           return nullptr;
         message->setMessage( g_param,g_paramLen );
         cipherRes = this->cipher_client->toSecureForm( message,aesKey);
-        this->currTokenChat++;
+        //this->currTokenChat++;
         break;
 
      case GAME:
@@ -1049,11 +1099,19 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 */
   bool MainClient::MakeAndSendGameMove(int column)
   {
+    bool res=false;
+    time_t start;
+    bool waitForAck=false;
+    vector<int> descrList;
     bool iWon=false;
     bool adversaryWon=false;
     bool tie=false;
-    time_t app;
+    bool socketIsClosed=false;
+    unsigned char* resu;
     Message* message;
+    Message* appMess;
+    Message* retMess;
+    NetMessage* netMess;
     StatGame statGame;
     statGame=game->makeMove(column,&iWon,&adversaryWon,&tie,true);
     switch(statGame)
@@ -1075,10 +1133,82 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         verbose<<"-->[MainClient][MakeAndSendGameMove] error bad turn"<<'\n';
         break;
       case MOVE_OK:
+       case GAME_FINISH://verify if ok
+        std::string app=std::to_string(column);
+        appMess = createMessage(MessageType::GAME,nullptr,(unsigned char*) app.c_str(),app.size(),nullptr,MessageGameType::MOVE_TYPE,false);
+        if(appMess==nullptr)
+          return false;
+        netMess=Converter::encodeMessage(MessageType::GAME , *appMess );
+        if(netMess==nullptr)
+          return false;
+        resu=concTwoField((unsigned char*) app.c_str(),app.size(),netMess->getMessage() ,netMess->length(),'&',NUMBER_SEPARATOR);
+        message=createMessage(MessageType::MOVE,nullptr,resu,app.size() + netMess->length() + NUMBER_SEPARATOR,aesKeyClient,MessageGameType::MOVE_TYPE,false);
+        connection_manager->sendMessage(*message,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
+        time(&start);
+        waitForAck=true;
+        while(waitForAck)
+        {
+          descrList=connection_manager->waitForMessage(nullptr,nullptr);
+          if(!descrList.empty())
+          {        
+            for(int idSock: descrList)
+            {
+              if(idSock!=connection_manager->getstdinDescriptor())
+              {
+                retMess=connection_manager->getMessage(idSock);
+                if(retMess==nullptr)
+                  continue;
+                switch(retMess->getMessageType())
+                {
+                  case ACK:
+                   if(*retMess->getCurrent_Token()!=*message->getCurrent_Token())
+                     continue;
+                   res=cipher_client->fromSecureForm( retMess , username ,aesKeyClient,false); 
+                   if(!res)
+                     continue;
+                  waitForAck=false;
+                  textual_interface_manager->printGameInterface(true, string("15"),game->getChat(),game->printGameBoard());
+                  this->currentToken++;
+                  if(statGame==GAME_FINISH)
+                  {
+                    if(iWon)
+                    {
+                      cout<<"\t you won"<<endl;
+                      cout.flush();
+                    }
+                    else if(adversaryWon)
+                    {
+                      cout<<"\t you lose"<<endl;
+                      cout.flush();                
+                    }
+                    else if(tie)
+                    {
+                      cout<<"\t it's a tie"<<endl;
+                      cout.flush(); 
+                    }
+                  
+                    sleep(3000);
+                    clientPhase= ClientPhase::NO_PHASE;
+                    sendImplicitUserListReq();
+                  }
+                }
+              }
+            }
+            if(waitForAck && difftime(time(NULL),start)>SLEEP_TIME )
+            {
+              connection_manager->sendMessage(*message,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
+              time(&start);
+              waitForAck=true;
+            }
+          }
+        }
+        delete netMess;
+        delete appMess;
         break;
         //da continuare 
        
     }
+    return true;
   }
 /*
 ----------------------Generate nonceNumber----------------
@@ -1124,11 +1254,112 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 ------------------------------ReciveGameMove-------------------------------------
 */
 
-  bool MainClient::ReciveGameMove(Message* message)
+  void MainClient::ReciveGameMove(Message* message)
   {
-    return true;
-     //da fare
+    bool iWon=false;
+    bool adversaryWon=false;
+    bool tie=false;
+    bool res=false;
+    bool socketIsClosed=false;
+    string app;
+    StatGame statGame;
+    unsigned char* chosenColl;
+    unsigned int chosenCollLen=0;
+    int collMove;
+    int collGame;
+    unsigned char* gameMess;
+    NetMessage* netGameMess;
+    Message* messG;
+    unsigned int gameMessLen=0;
+    int* c_token;
+    int appLen;
+    unsigned char* c_app;
+    Message* messageACK;
+    if(message==nullptr)
+      return;
+    if(message->getMessageType()!=MessageType::MOVE)
+      return;
+    c_token=message->getCurrent_Token();
+    res=cipher_client->fromSecureForm( message, username ,aesKeyClient,false); 
+    if(!res)
+    {
+      return;
+    }
+    if(*c_token!=this->currentToken)
+    {
+      messageACK=createMessage(ACK,nullptr,nullptr,0,aesKeyClient,*c_token,false);
+      connection_manager->sendMessage(*messageACK,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
+      return;
+    }
+    c_app=message->getChosenColumn();
+    appLen=message->getChosenColumnLength();
+    deconcatenateTwoField(c_app,appLen,chosenColl,&chosenCollLen,gameMess,&gameMessLen, '&',NUMBER_SEPARATOR);
+    netGameMess=new NetMessage(gameMess , gameMessLen );
+    if(netGameMess)
+    {
+      verbose<<"-->[MainClient][ReceiveGameMove] impossible to extract game message type netMessage"<<'\n';
+      return;
+    }
+   messG= Converter::decodeMessage( *netGameMess );
+   if(messG==nullptr)
+   {
+      verbose<<"-->[MainClient][ReceiveGameMove] impossible to extract game message type Message"<<'\n';
+      return;
+   }
+   app=string((char*)chosenColl);
+   collMove=std::stoi(app,nullptr,10);
+   app=string((char*)message->getChosenColumn());
+   collGame=std::stoi(app,nullptr,10);
+   Message appG=*messG;
+   res=cipher_client->fromSecureForm( &appG, username ,aesKeyClient,false); 
+   if(!res)
+     return;
+   if(*messG->getCurrent_Token()!=*message->getCurrent_Token() ||collMove!=collGame )
+     return;
+   messageACK=createMessage(ACK,nullptr,nullptr,0,aesKeyClient,this->currentToken,false);
+   connection_manager->sendMessage(*messageACK,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
+   if(!cipher_client->toSecureForm( messG, aesKeyServer ))
+     return;
+   statGame=game->makeMove(collMove,&iWon,&adversaryWon,&tie,false);
+   if(statGame!=StatGame::MOVE_OK || statGame!=StatGame::GAME_FINISH)
+   {
+     return;
+   }
+   
+   connection_manager->sendMessage(*messG,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
+   this->currentToken++;
+   textual_interface_manager->printGameInterface(true, string("15"),game->getChat(),game->printGameBoard());
+   if(socketIsClosed)
+   {
+     vverbose<<"-->[MainClient][ReceiveGameMove] error to handle"<<'\n';
+     return;
+   }
+
+   if(statGame==GAME_FINISH)
+   {
+     if(iWon)
+     {
+       cout<<"\t you won"<<endl;
+       cout.flush();
+     }
+     else if(adversaryWon)
+     {
+       cout<<"\t you lose"<<endl;
+       cout.flush();                
+     }
+     else if(tie)
+     {
+       cout<<"\t it's a tie"<<endl;
+       cout.flush(); 
+     }
+       
+      sleep(3000);
+      clientPhase= ClientPhase::NO_PHASE;
+      sendImplicitUserListReq();
+    }         
+     
   }
+
 /*
 ------------------------------function errorHandler----------------------------
 */
@@ -1217,14 +1448,14 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
        }
        else if(comand_line.compare(0,4,"show")==0)
        {
-         if(comand_line.compare(5,7,"[users]")==0)
+         if(comand_line.compare(5,5,"users")==0)
          {
            if(!sendReqUserListProtocol())
            {
              std::cout<<"show user online failed retry \n \t# Insert a command:";
            }
          }
-         else if(comand_line.compare(5,6,"[rank]")==0)
+         else if(comand_line.compare(5,4,"rank")==0)
          {
            if(!sendRankProtocol())
            {
@@ -1233,7 +1464,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
              cout.flush();
            }
          }
-         else if(comand_line.compare(5,9,"[pending]"))
+         else if(comand_line.compare(5,7,"pending")==0)
          {
             string toPrint=challenge_register->printChallengeList();
             if(toPrint.empty())
@@ -1477,7 +1708,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                       textual_interface_manager->printGameInterface(startingMatch, std::to_string(timer)," ",game->printGameBoard());
                       if(!startingMatch)
                       {
-                        this->currentToken=*message->getCurrent_Token();
+                        this->currentToken=*message->getCurrent_Token()+1;
                         this->currTokenChat=this->currentToken+TOKEN_GAP;
                       }
                       startingMatch=false;
@@ -1604,6 +1835,11 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     if(argc==1)
     {
       main_client=new client::MainClient("127.0.0.1",12000);
+      main_client->client();
+    }
+    else
+    {
+      main_client=new client::MainClient("127.0.0.1",atoi(argv[1]));
       main_client->client();
     }
     return 0;

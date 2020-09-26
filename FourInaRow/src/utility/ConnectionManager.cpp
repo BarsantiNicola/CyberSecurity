@@ -260,17 +260,20 @@ send a message and return true in case of success and false in case of failure
             fdmax=newfd;
           }
           vverbose<<"-->[ConnectionManager][waitForMessage] returning parameters"<<'\n';
-          *idsock = newfd;
+          if(idsock!=nullptr && ip!=nullptr)
+          {
+            *idsock = newfd;
           //const char* ipApp=inet_ntoa(cl_addr.sin_addr);
-          char *ipApp=new char[INET_ADDRSTRLEN+1];
+            char *ipApp=new char[INET_ADDRSTRLEN+1];
           
-          inet_ntop(AF_INET,&cl_addr.sin_addr,ipApp,INET_ADDRSTRLEN);
+            inet_ntop(AF_INET,&cl_addr.sin_addr,ipApp,INET_ADDRSTRLEN);
           
-          vverbose<<"-->[ConnectionManager][waitForMessage] first ip char "<<ipApp<<'\n';
-          vverbose<<"-->[ConnectionManager][waitForMessage] obtain address"<<'\n';
-          ip->append(ipApp);
-          //*ip=ipApp;
-          vverbose<<"-->[ConnectionManager][waitForMessage] give address"<<'\n';
+            vverbose<<"-->[ConnectionManager][waitForMessage] first ip char "<<ipApp<<'\n';
+            vverbose<<"-->[ConnectionManager][waitForMessage] obtain address"<<'\n';
+            ip->append(ipApp);
+            //*ip=ipApp;
+            vverbose<<"-->[ConnectionManager][waitForMessage] give address"<<'\n';
+          }
         }          
         else
           descr.push_back(i);

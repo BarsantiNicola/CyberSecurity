@@ -2,6 +2,7 @@
 #include<string>
 #include<thread>
 #include<termios.h>
+#include<stdlib.h>
 #include<unistd.h>
 #include"../cipher/CipherClient.h"
 #include"../utility/Message.h"
@@ -16,8 +17,9 @@
 #include<exception>
 #include<vector>
 #include<sstream>
-#define SLEEP_TIME 1000
+#define SLEEP_TIME 2
 #define TOKEN_GAP 45
+#define NUMBER_SEPARATOR 4
 using namespace utility;
 namespace client
 {
@@ -94,10 +96,11 @@ namespace client
       bool keyExchangeReciveProtocol(Message* message,bool exchangeWithServer);//ok
       bool keyExchangeClientSend();
       bool MakeAndSendGameMove(int collumn);
-      bool ReciveGameMove(Message* message);
+      void ReciveGameMove(Message* message);
       bool sendReqUserListProtocol();//ok
       bool receiveUserListProtocol(Message* message);//ok
-      bool disconnectProtocol(Message message);
+      bool reciveDisconnectProtocol(Message* message);
+      bool sendDisconnectProtocol();
       bool sendWithDrawProtocol();
       bool receiveWithDrawOkProtocol(Message* message);
       bool sendLogoutProtocol();//ok
@@ -109,7 +112,7 @@ namespace client
       bool comand(std::string comand_line);
       bool startConnectionServer(const char* myIP,int myPort);
       int countOccurences(string source,string searchFor);
-      Message* createMessage(MessageType type, const char* param,unsigned char* g_param,int g_paramLen,cipher::SessionKey* aesKey,MessageGameType messageGameType,bool keyExchWithClient);
+      Message* createMessage(MessageType type, const char* param,unsigned char* g_param,int g_paramLen,cipher::SessionKey* aesKey,int token,bool keyExchWithClient);
       unsigned char* concTwoField(unsigned char* firstField,unsigned int firstFieldSize,unsigned char* secondField,unsigned int secondFieldSize,unsigned char separator,unsigned int numberSeparator);
 
       bool deconcatenateTwoField(unsigned char* originalField,unsigned int originalFieldSize,unsigned char* firsField,unsigned int* firstFieldSize,unsigned char* secondField,unsigned int* secondFieldSize,unsigned char separator,unsigned int numberSeparator);//ok

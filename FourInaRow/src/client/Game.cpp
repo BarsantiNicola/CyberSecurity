@@ -313,7 +313,10 @@ return false in case of non autorizate move
       return StatGame::MOVE_OK;
     
   }
-
+  string Game::getChat()
+  {
+    return chat;
+  }
   vector<int> Game::availableColumns()
   {
     vector<int> columnsFree;

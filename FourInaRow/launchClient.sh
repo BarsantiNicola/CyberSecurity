@@ -10,6 +10,8 @@ CLIENT_PACKAGE="src/client/ChallengeInformation.cpp src/client/Game.cpp src/clie
 
 g++ $UTILITY_PACKAGE $CIPHER_PACKAGE $MAIN_PACKAGE $SERVER_PACKAGE $CLIENT_PACKAGE -o program -lssl -lcrypto -lmysqlcppconn
 
-./program
+echo "Insert socket"
+read SOCKET
+./program $SOCKET
 rm program
 

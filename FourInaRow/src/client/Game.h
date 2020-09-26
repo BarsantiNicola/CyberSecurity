@@ -28,7 +28,7 @@ namespace client
    public:
       Game(int chatLen,bool gameControl);
       StatGame makeMove(int column,bool* iWon,bool* adversaryWon,bool* tie,bool myMove);//da fare
-      
+      string getChat();
       void updateTimer();//da revisionare
       bool availableColumn(int column);
       bool myControl();
