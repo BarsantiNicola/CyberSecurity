@@ -1,0 +1,27 @@
+- aggiungere a capo dopo messaggio comando scorretto, al momento è appiccicato al nuovo #insert command
+- aumentare a capo dopo messaggi di login scorretto(username o password scritti male), al momento è appiccicato al nuovo #insert command
+
+USER_LIST/RANK_LIST
+- manca un a capo dopo che mostri la lista, così è appiccicato al nuovo #insert command
+
+  	///////////////////////////////////////////////////////////////////////////////
+  	
+  	     ERROR, MESSAGE, WHATEVER TO SAY TO THE USER.......
+  	    
+  	     #insert command:
+  	     
+  	     
+LOGIN
+
+- effettuare un accesso con un account già collegato(ricezione di un LOGIN_FAIL) porta in uno stato inconsistente la schermata
+- segnalare un errore nel login deve riportare a un interfaccia pulita in cui si segnala l'errore e si richiede nuovo comando, 
+  non scrivere l'errore sotto e richiedere nuovamente username ancora più sotto[VALIDO OGNI VOLTA, SEMPRE RIPULIRE SCHERMATA-> AGGIUNGERE ERRORE -> RICHIEDERE COMANDO]
+- effettuare un logout e successivamente un login scorretto con una username/password non valida crea errore segmentazione nel distruttore di cipherRSA, probabile double delete
+
+
+
+
+
+
+
+ 
