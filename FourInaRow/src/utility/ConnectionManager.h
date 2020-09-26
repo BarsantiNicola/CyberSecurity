@@ -13,6 +13,7 @@
 #include "../Logger.h"
 
 #define BUFFER_LENGTH 32000
+#define BUFFER_LENGTH_UDP 1450
 using namespace std;
 namespace utility
 {

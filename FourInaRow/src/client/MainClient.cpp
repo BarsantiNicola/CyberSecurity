@@ -585,7 +585,7 @@ namespace client
       return false;
     }
     nonce_s=message->getNonce();
-    if(*nonce_s!=(this->nonce-1))
+    if(*nonce_s!=(this->nonce))
     {
       verbose<<"--> [MainClient][reciveChallengeProtocol] error the nonce isn't valid"<<'\n';
       delete nonce_s;
@@ -657,7 +657,7 @@ namespace client
       return false;
     }
     nonce_s=message->getNonce();
-    if(*nonce_s!=(this->nonce-1))
+    if(*nonce_s!=(this->nonce))
     {
       verbose<<"--> [MainClient][reciveChallengeProtocol] error the nonce isn't valid"<<'\n';
       delete nonce_s;
@@ -725,7 +725,7 @@ namespace client
       return false;
     }
     nonce_s=message->getNonce();
-    if(*nonce_s!=(this->nonce-1))
+    if(*nonce_s!=(this->nonce))
     {
       verbose<<"--> [MainClient][reciveAcceptProtocol] error the nonce isn't valid"<<'\n';
       delete nonce_s;
@@ -763,7 +763,7 @@ namespace client
       return false;
     }
     nonce_s=message->getNonce();
-    if(*nonce_s!=(this->nonce-1))
+    if(*nonce_s!=(this->nonce))
     {
       verbose<<"--> [MainClient][receiveGameParamProtocol] error the nonce isn't valid"<<'\n';
       delete nonce_s;
@@ -1372,6 +1372,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     {
       return false;
     }
+    //this->nonce++;
     std::cout<<"error to server request try again."<<endl;
     clientPhase=ClientPhase::NO_PHASE;
     std::cout<<"\t# Insert a command:";
