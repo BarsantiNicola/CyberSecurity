@@ -18,6 +18,10 @@ LOGIN
   non scrivere l'errore sotto e richiedere nuovamente username ancora più sotto[VALIDO OGNI VOLTA, SEMPRE RIPULIRE SCHERMATA-> AGGIUNGERE ERRORE -> RICHIEDERE COMANDO]
 - effettuare un logout e successivamente un login scorretto con una username/password non valida crea errore segmentazione nel distruttore di cipherRSA, probabile double delete
 
+MATCH
+- rimuovere un match non ripristina lo status del chiamante all'interno del server
+- manca controllo utente non contatti se stesso
+
 
 
 
