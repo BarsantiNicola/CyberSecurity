@@ -552,7 +552,7 @@ namespace client
      {
        return false;
      }
-     message=createMessage(MessageType::MATCH,(const char*)username.c_str(),(unsigned char*)adversaryUsername,size,aesKeyServer,this->nonce,false);
+     message=createMessage(MessageType::MATCH,(const char*)adversaryUsername,nullptr,0,aesKeyServer,this->nonce,false);
      if(message==nullptr)
      {
        return false;
@@ -588,7 +588,9 @@ namespace client
     nonce_s=message->getNonce();
     if(*nonce_s!=(this->nonce))
     {
-      verbose<<"--> [MainClient][reciveChallengeProtocol] error the nonce isn't valid"<<'\n';
+      
+      verbose<<"--> [MainClient][reciveChallengeProtocol] error the nonce isn't valid: "<<*nonce_s<<"!="<<this->nonce<<'\n';
+      
       delete nonce_s;
       return false;
       }
@@ -1659,6 +1661,18 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
              cout.flush();
          }
       }
+      
+      else if(comand_line.compare(0,4,"quit")==0)
+      {
+        bool ret=sendDisconnectProtocol();
+        if(!ret)
+        {
+          std::cout<<"quit failed retry"<<endl;
+          std::cout<<"\t# Insert a command:";
+          cout.flush();
+        }
+      }
+     
       else if(comand_line.compare(0,6,"logout")==0&&logged==true)
       {
         //ESEGUO LOGOUT
@@ -1973,7 +1987,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       delete messageChatToACK;
       messageChatToACK=nullptr;
     }
-    
+    clientPhase=ClientPhase::NO_PHASE;
   }
 /*-----------------destructor-----------------------------------
 */
