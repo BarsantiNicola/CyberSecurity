@@ -300,6 +300,7 @@ namespace client
       if(!res)
         return false; 
       clientPhase=ClientPhase::NO_PHASE;
+      clearGameParam();
       sendImplicitUserListReq();
       return true;
   }
@@ -677,6 +678,128 @@ namespace client
     return res;
   }
 /*
+-------------------------sendChatProtocol----------------------
+*/
+  bool MainClient::sendChatProtocol(string chat)
+  {
+     Message* message;
+     bool res=false;
+     bool socketIsClosed=false;
+     if(chat.empty())
+     {
+       verbose<<"--> [MainClient][sendChatProtocol] string empty"<<'\n';
+       return false;
+     } 
+     if( messageChatToACK!=nullptr)
+     {
+       chatWait.emplace_back(chat);
+       return true;
+     }
+     message=createMessage(MessageType::CHAT, nullptr,(unsigned char*)chat.c_str(),chat.size(),aesKeyClient,currTokenChat,false);
+     if(message==nullptr)
+     {
+       verbose<<"--> [MainClient][sendChatProtocol] error to create message"<<'\n';
+       return false;
+     }
+     else
+     {
+       res=connection_manager->sendMessage(*message,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
+       if(!res)
+       {
+         verbose<<"--> [MainClient][sendChatProtocol] error to send message"<<'\n';
+         return false;         
+       }
+       time(&startWaitChatAck);
+       messageChatToACK=message;
+       game->addMessageToChat(chat);
+       textual_interface_manager->printGameInterface(true, string("15"),game->getChat(),game->printGameBoard());
+       return true;
+     }
+  }
+
+/*
+---------------------receiveChatProtocol--------------------------
+*/
+  bool MainClient::reciveChatProtocol(Message* message)
+  {
+    bool res;
+    int* nonce_s;
+    bool socketIsClosed=false;
+    Message* messageACK;
+    string advUsername="";
+    ChallengeInformation *data=nullptr;
+    if(message==nullptr)
+    {
+      return false;
+    }
+    nonce_s=message->getCurrent_Token();
+    if(*nonce_s!=(this->currTokenChatAdv))
+    {
+      //verbose<<"--> [MainClient][reciveChatProtocol] error the nonce isn't valid"<<'\n';
+      res=cipher_client->fromSecureForm( message , username ,aesKeyServer,false);
+      if(!res)
+      {
+        verbose<<"--> [MainClient][reciveChatProtocol] error to decrypt"<<'\n';
+        return false;
+      }
+      messageACK=createMessage(ACK,nullptr,nullptr,0,aesKeyClient,*nonce_s,false);
+      connection_manager->sendMessage(*messageACK,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
+      delete nonce_s;
+      return true;
+      }
+    if(message->getMessageType()!=CHAT)
+    {
+      verbose<<"--> [MainClient][reciveChatProtocol] message type not expected"<<'\n';
+        return false;
+    }
+    res=cipher_client->fromSecureForm( message , username ,aesKeyServer,false);
+    if(!res)
+    {
+      verbose<<"--> [MainClient][reciveChatProtocol] error to decrypt"<<'\n';
+      return false;
+    }
+    messageACK=createMessage(ACK,nullptr,nullptr,0,aesKeyClient,*nonce_s,false);
+    connection_manager->sendMessage(*messageACK,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
+    game->addMessageToChat(printableString(message->getMessage(),message->getMessageLength()));
+    textual_interface_manager->printGameInterface(true, string("15"),game->getChat(),game->printGameBoard());
+    this->currTokenChatAdv+=2;
+    return true;
+  }
+/*
+---------------------receiveACKProtocol-------------------------
+*/
+  bool MainClient::receiveACKChatProtocol(Message* message)
+  {	
+    bool res;
+    if(messageChatToACK)
+      return false;
+    if(message==nullptr)
+      return false;
+    if(message->getMessageType()!=ACK)
+      return false;
+    
+    res=cipher_client->fromSecureForm( message , username ,aesKeyServer,false);
+    if(!res)
+    {
+      verbose<<"--> [MainClient][reciveACKProtocol] error to decrypt"<<'\n';
+      return false;
+    }   
+    if(*message->getCurrent_Token() != *messageChatToACK->getCurrent_Token())
+       return false;
+    delete messageChatToACK;
+    messageChatToACK=nullptr;//verificare funzionamento
+    
+    if(!chatWait.empty())
+    {
+      if(!sendChatProtocol(chatWait[0]))
+      {
+        verbose<<"--> [MainClient][reciveACKProtocol] some problem to send chat"<<'\n';
+      }
+      chatWait.erase(chatWait.begin());
+    }
+    return true;
+  }
+/*
 ---------------------------------------sendAccept------------------------------
 */
    bool MainClient::sendAcceptProtocol(const char* usernameAdv,int size)
@@ -991,7 +1114,7 @@ namespace client
           return nullptr;
         message->setMessage( g_param,g_paramLen );
         cipherRes = this->cipher_client->toSecureForm( message,aesKey);
-        //this->currTokenChat++;
+        this->currTokenChat+=2;
         break;
 
      case GAME:
@@ -1188,6 +1311,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                     }
                   
                     sleep(3000);
+                    adv_username_1 = "";
                     clientPhase= ClientPhase::NO_PHASE;
                     sendImplicitUserListReq();
                   }
@@ -1306,9 +1430,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       verbose<<"-->[MainClient][ReceiveGameMove] impossible to extract game message type Message"<<'\n';
       return;
    }
-   app=string((char*)chosenColl);
+   app=printableString(chosenColl,chosenCollLen);
    collMove=std::stoi(app,nullptr,10);
-   app=string((char*)message->getChosenColumn());
+   app= printableString(message->getChosenColumn(),message->getChosenColumnLength());
    collGame=std::stoi(app,nullptr,10);
    Message appG=*messG;
    res=cipher_client->fromSecureForm( &appG, username ,aesKeyClient,false); 
@@ -1355,6 +1479,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
        
       sleep(3000);
       clientPhase= ClientPhase::NO_PHASE;
+      clearGameParam();
       sendImplicitUserListReq();
     }         
      
@@ -1683,6 +1808,19 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                      cout.flush();
                 }
                 break;
+              case MOVE:
+                ReciveGameMove(message);
+                break;
+              case CHAT:
+                reciveChatProtocol(message);
+                break;
+              case ACK:
+                receiveACKChatProtocol(message);
+                break;
+      
+              case DISCONNECT:
+                reciveDisconnectProtocol(message);
+                break;
 
               case REJECT:
                 receiveRejectProtocol(message);
@@ -1696,7 +1834,11 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                   {
                     this->currentToken=generateRandomNonce();
                     keyExchangeClientSend();
+                   
                     this->currTokenChat=this->currentToken+TOKEN_GAP;
+                    this->currTokenChatAdv=this->currTokenChat+1;
+           
+                    
                   }
 
                 }//come gestire un possibile fallimento??
@@ -1710,10 +1852,17 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                       if(!startingMatch)
                       {
                         this->currentToken=*message->getCurrent_Token()+1;
-                        this->currTokenChat=this->currentToken+TOKEN_GAP;
+                        this->currTokenChatAdv=this->currentToken+TOKEN_GAP;
+                        this->currTokenChat=this->currTokenChatAdv + 1;
+                        
+                      }
+                      if(!chatWait.empty())
+                      {
+                        chatWait.clear();
                       }
                       startingMatch=false;
                     }
+                    break;
               case ACCEPT:
                  res=receiveAcceptProtocol(message);
                  if(res)
@@ -1744,6 +1893,15 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           }
         }
         
+      }
+      if(messageChatToACK!=nullptr)
+      {
+        if(difftime(time(NULL),startWaitChatAck)>SLEEP_TIME)
+        {
+           bool socketIsClosed;
+           connection_manager->sendMessage(*messageChatToACK,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
+          
+        }
       }
     }
   }
@@ -1801,7 +1959,22 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     }
     return count; 
 
-   } 
+  }
+
+
+  void MainClient::clearGameParam()
+  {
+    adv_username_1 = "";
+    delete game;
+    game=nullptr;
+    chatWait.clear();
+    if(messageChatToACK!=nullptr)
+    {
+      delete messageChatToACK;
+      messageChatToACK=nullptr;
+    }
+    
+  }
 /*-----------------destructor-----------------------------------
 */
   MainClient::~MainClient()
@@ -1825,6 +1998,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     }
   }
 }
+  
 /*
 --------------------main function-----------------
 */  

@@ -49,12 +49,17 @@ namespace client
   {
     private:
       long timer=15;
+      vector<string> chatWait;
+      Message* messageChatToACK=nullptr;
       bool time_expired=false;
       bool startingMatch=false;
       bool firstMove=false;
       bool notConnected=true;
       bool startChallenge=false;
       bool implicitUserListReq=false;
+      //bool waitForChatACK=false;
+      int currTokenChatAdv;
+      time_t startWaitChatAck;
       int nonce;
       bool logged=false;
       ClientPhase clientPhase= ClientPhase::NO_PHASE;
@@ -98,6 +103,8 @@ namespace client
       bool MakeAndSendGameMove(int collumn);
       void ReciveGameMove(Message* message);
       bool sendReqUserListProtocol();//ok
+      bool sendChatProtocol(string chat);
+      bool reciveChatProtocol(Message* message);
       bool receiveUserListProtocol(Message* message);//ok
       bool reciveDisconnectProtocol(Message* message);
       bool sendDisconnectProtocol();
@@ -106,15 +113,16 @@ namespace client
       bool sendLogoutProtocol();//ok
       bool receiveLogoutProtocol(Message* message);//ok
       bool receiveGameParamProtocol(Message* message);
-      bool gameProtocol(Message message);
+      //bool gameProtocol(Message message);
       int generateRandomNonce();
       void timerHandler(long secs);
+      void clearGameParam();
       bool comand(std::string comand_line);
       bool startConnectionServer(const char* myIP,int myPort);
       int countOccurences(string source,string searchFor);
       Message* createMessage(MessageType type, const char* param,unsigned char* g_param,int g_paramLen,cipher::SessionKey* aesKey,int token,bool keyExchWithClient);
       unsigned char* concTwoField(unsigned char* firstField,unsigned int firstFieldSize,unsigned char* secondField,unsigned int secondFieldSize,unsigned char separator,unsigned int numberSeparator);
-
+      bool receiveACKChatProtocol(Message* message);
       bool deconcatenateTwoField(unsigned char* originalField,unsigned int originalFieldSize,unsigned char* firsField,unsigned int* firstFieldSize,unsigned char* secondField,unsigned int* secondFieldSize,unsigned char separator,unsigned int numberSeparator);//ok
 
     public:
