@@ -134,6 +134,7 @@ namespace client
         return false;
       }
       nonce_s=message->getNonce();
+      verbose<<"-->[MainClient][loginProtocol] the recived nonce is:"<<*nonce_s<<'\n';
       if(*nonce_s!=(this->nonce-1))
       {
         delete nonce_s;
@@ -223,6 +224,7 @@ namespace client
         return false;
       }
       nonce_s=message->getNonce();
+      verbose<<"-->[MainClient][reciveUserProtocol] the recived nonce is:"<<*nonce_s<<'\n';
       if(*nonce_s!=(this->nonce-1))
       {
         verbose<<"--> [MainClient][reciveUserListProtocol] nonce not valid"<<'\n';
@@ -253,6 +255,7 @@ namespace client
         stringstream sstr;
         sstr<<nUser;
         textual_interface_manager->printMainInterface(this->username,sstr.str(),"online","none","0");
+        std::cout<<"\t# Insert a command:";
         if(!implicitUserListReq)
           std::cout<<app<<endl;
         implicitUserListReq=false;
@@ -282,6 +285,7 @@ namespace client
         return false;
       }
       nonce_s=message->getNonce();
+      verbose<<"-->[MainClient][reciveLogoutProtocol] the recived nonce is:"<<*nonce_s<<'\n';
       if(*nonce_s!=(this->nonce-1))
       {
         verbose<<"--> [MainClient][reciveLogoutProtocol] error the nonce isn't valid"<<'\n';
@@ -368,6 +372,7 @@ namespace client
         return false;
       }
       nonce_s=message->getNonce();
+      verbose<<"-->[MainClient][receiveRankProtocol] the recived nonce is:"<<*nonce_s<<'\n';
       if(*nonce_s!=(this->nonce-1))
       {
         verbose<<"--> [MainClient][receiveRankProtocol] nonce not valid"<<'\n';
@@ -436,6 +441,7 @@ namespace client
         return false;
       }
       nonce_s=message->getNonce();
+      verbose<<"-->[MainClient][receiveLogoutProtocol] the recived nonce is:"<<*nonce_s<<'\n';
       if(*nonce_s!=(this->nonce-1))
       {
         verbose<<"--> [MainClient][reciveLogoutProtocol] error the nonce isn't valid"<<'\n';
@@ -473,10 +479,11 @@ namespace client
       bool res;
       if(message==nullptr)
       {
-        verbose<<"--> [MainClient][keyExchangeReciveProtocol(] error the message is null"<<'\n';
+        verbose<<"--> [MainClient][keyExchangeReciveProtocol] error the message is null"<<'\n';
         return false;
       }
       nonce_s=message->getNonce();
+      verbose<<"-->[MainClient][keyExchangeReciveProtocol] the recived nonce is:"<<*nonce_s<<'\n';
       if(*nonce_s!=(this->nonce-1))
       {
         verbose<<"--> [MainClient][keyExchangeProtocol] nonce not valid"<<'\n';
@@ -586,6 +593,7 @@ namespace client
       return false;
     }
     nonce_s=message->getNonce();
+    verbose<<"-->[MainClient][keyChallengeProtocol] the recived nonce is:"<<*nonce_s<<'\n';
     if(*nonce_s!=(this->nonce))
     {
       
@@ -604,6 +612,7 @@ namespace client
       return false;
     advUsername=message->getUsername();
     this->nonce++;
+    verbose<<"--> [MainClient][reciveChallengeProtocol] the actual nonce is:"<<nonce<<'\n';
     data=new ChallengeInformation(advUsername);
     res=challenge_register->addData(*data);
     return res;
@@ -660,15 +669,16 @@ namespace client
       return false;
     }
     nonce_s=message->getNonce();
+    verbose<<"-->[MainClient][keyRejectProtocol] the recived nonce is:"<<*nonce_s<<'\n';
     if(*nonce_s!=(this->nonce))
     {
-      verbose<<"--> [MainClient][reciveChallengeProtocol] error the nonce isn't valid"<<'\n';
+      verbose<<"--> [MainClient][reciveRejectProtocol] error the nonce isn't valid"<<'\n';
       delete nonce_s;
       return false;
       }
     if(message->getMessageType()!=REJECT)
     {
-      verbose<<"--> [MainClient][reciveChallengeProtocol] message type not expected"<<'\n';
+      verbose<<"--> [MainClient][reciveRejectProtocol] message type not expected"<<'\n';
         return false;
     }
     res=cipher_client->fromSecureForm( message , username ,aesKeyServer,false);
@@ -676,6 +686,7 @@ namespace client
       return false;
     challenged_username = "";
     this->nonce++;
+    verbose<<"--> [MainClient][reciveRejectProtocol] the actual nonce is:"<<nonce<<'\n';
     startChallenge=false;
     return res;
   }
@@ -850,6 +861,7 @@ namespace client
       return false;
     }
     nonce_s=message->getNonce();
+    verbose<<"-->[MainClient][keyAcceptProtocol] the recived nonce is:"<<*nonce_s<<'\n';
     if(*nonce_s!=(this->nonce))
     {
       verbose<<"--> [MainClient][reciveAcceptProtocol] error the nonce isn't valid"<<'\n';
@@ -868,6 +880,7 @@ namespace client
      adv_username_1 = challenged_username;
      delete challenge_register;
      this->nonce++;
+     verbose<<"--> [MainClient][reciveAcceptProtocol] the actual nonce is:"<<nonce<<'\n';
      challenge_register= nullptr;
      challenge_register = new ChallengeRegister();
      return true;
@@ -888,6 +901,7 @@ namespace client
       return false;
     }
     nonce_s=message->getNonce();
+    verbose<<"-->[MainClient][keyGameParamProtocol] the recived nonce is:"<<*nonce_s<<'\n';
     if(*nonce_s!=(this->nonce))
     {
       verbose<<"--> [MainClient][receiveGameParamProtocol] error the nonce isn't valid"<<'\n';
@@ -903,6 +917,7 @@ namespace client
     if(!res)
       return false;
     this->nonce++;
+    verbose<<"--> [MainClient][reciveGameProtocol] the actual nonce is:"<<nonce<<'\n';
     advPort= message->getPort();
     pubKeyAdv=message->getPubKey();
     keyLen=message->getPubKeyLength();
@@ -964,6 +979,7 @@ namespace client
       return false;
     }
     nonce_s=message->getNonce();
+    verbose<<"-->[MainClient][receiveWithDrawOkProtocol] the recived nonce is:"<<*nonce_s<<'\n';
     if(*nonce_s!=(this->nonce-1))
     {
       verbose<<"--> [MainClient][receiveWithDrawOkProtocol] error the nonce isn't valid"<<'\n';
@@ -1005,6 +1021,7 @@ namespace client
         message->setUsername(param );
         cipherRes=cipher_client->toSecureForm( message,aesKey);
         this->nonce++;
+        verbose<<"--> [MainClient][createMessage] the actual nonce is:"<<nonce<<'\n';
         break;
         
       case KEY_EXCHANGE:
@@ -1016,6 +1033,7 @@ namespace client
           message->set_DH_key( partialKey->getMessage(), partialKey->length() );
           cipherRes=this->cipher_client->toSecureForm( message,aesKey);
           this->nonce++;
+          verbose<<"--> [MainClient][createMessage] the actual nonce is:"<<nonce<<'\n';
         }
         else
         {
@@ -1032,7 +1050,7 @@ namespace client
         message->setNonce(this->nonce);
         cipherRes =this->cipher_client->toSecureForm( message,aesKey);
         this->nonce++;
-        
+        verbose<<"--> [MainClient][createMessage] the actual nonce is:"<<nonce<<'\n';
 
         break;
 
@@ -1041,6 +1059,7 @@ namespace client
         message->setNonce(this->nonce);
         cipherRes =this->cipher_client->toSecureForm( message,aesKey );
         this->nonce++;
+        verbose<<"--> [MainClient][createMessage] the actual nonce is:"<<nonce<<'\n';
         break;
 
       case LOGOUT_REQ:
@@ -1049,6 +1068,7 @@ namespace client
         
         cipherRes=this->cipher_client->toSecureForm( message,aesKey);
         this->nonce++;
+        verbose<<"--> [MainClient][createMessage] the actual nonce is:"<<nonce<<'\n';
         break;
 
       case ACCEPT:
@@ -1058,6 +1078,7 @@ namespace client
         message->setAdversary_2(this->username.c_str());
         cipherRes = this->cipher_client->toSecureForm( message,aesKey);
         this->nonce++;
+        verbose<<"--> [MainClient][createMessage] the actual nonce is:"<<nonce<<'\n';
         break;
 
       case REJECT:
@@ -1067,6 +1088,7 @@ namespace client
         message->setAdversary_2(this->username.c_str());
         cipherRes = this->cipher_client->toSecureForm( message,aesKey);
         this->nonce++;
+        verbose<<"--> [MainClient][createMessage] the actual nonce is:"<<nonce<<'\n';
         break;
 
       case WITHDRAW_REQ:
@@ -1075,6 +1097,7 @@ namespace client
         message->setUsername(this->username);
         cipherRes = this->cipher_client->toSecureForm( message,aesKey);
         this->nonce++;
+        verbose<<"--> [MainClient][createMessage] the actual nonce is:"<<nonce<<'\n';
         break;
 
       case MATCH:
@@ -1082,15 +1105,18 @@ namespace client
         message->setNonce(this->nonce);
         message->setUsername(string(param) );
         cipherRes = this->cipher_client->toSecureForm( message,aesKey);
+        
        // net = Converter::encodeMessage(MATCH, *message );                //da vedere l'utilità in caso cancellare
        // message = this->cipher_client->toSecureForm( message,aesKey );
         this->nonce++;
+        verbose<<"--> [MainClient][createMessage] the actual nonce is:"<<nonce<<'\n';
         break;
       case MOVE:
         message->setMessageType(MOVE);
         message->setCurrent_Token(this->currentToken);
         message->setChosenColumn(  g_param,g_paramLen);
         cipherRes = this->cipher_client->toSecureForm( message,aesKey);
+        verbose<<"--> [MainClient][createMessage] the actual nonce is:"<<nonce<<'\n';
         //this->nonce++;
         break;
       case DISCONNECT:
@@ -1101,6 +1127,7 @@ namespace client
         //net = Converter::encodeMessage(MATCH, *message );               //da vedere l'utilità in caso cancellare
         //message = this->cipher_client->toSecureForm( message,aesKey );
         this->nonce++;
+        verbose<<"--> [MainClient][createMessage] the actual nonce is:"<<nonce<<'\n';
         break;
 
       case ACK:
@@ -1242,7 +1269,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     switch(statGame)
     {
       case BAD_MOVE:
-        std::cout<<"The collumn selected is full."<<endl;
+        std::cout<<"The collumn selected is full. \n"<<endl;
         std::cout<<"\t# Insert a command:";
         cout.flush();
         break;
@@ -1250,12 +1277,12 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         verbose<<"-->[MainClient][MakeAndSendGameMove] nullptr as parameter"<<'\n';
         break;
       case OUT_OF_BOUND:
-        std::cout<<"The collumn selected doesn't exist."<<endl;
+        std::cout<<"The collumn selected doesn't exist. \n"<<endl;
         std::cout<<"\t# Insert a command:";
         cout.flush();
         break;
       case BAD_TURN:
-        verbose<<"-->[MainClient][MakeAndSendGameMove] error bad turn"<<'\n';
+        verbose<<"-->[MainClient][MakeAndSendGameMove] error bad turn "<<'\n';
         break;
       case MOVE_OK:
        case GAME_FINISH://verify if ok
@@ -1495,12 +1522,13 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     bool res;         
     res=cipher_client->fromSecureForm( message , username ,aesKeyServer,true);
     int *nonce_s=message->getNonce();
+    verbose<<"-->[MainClient][errorHandler] the recived nonce is:"<<*nonce_s<<'\n';
     if(res==false || *nonce_s!=(this->nonce-1))
     {
       return false;
     }
     //this->nonce++;
-    std::cout<<"error to server request try again."<<endl;
+    std::cout<<"error to server request try again. \n"<<endl;
     clientPhase=ClientPhase::NO_PHASE;
     std::cout<<"\t# Insert a command:";
     cout.flush();
@@ -1525,7 +1553,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       {
         if(logged)
         {
-          std::cout<<"already logged"<<endl;
+          std::cout<<"already logged \n"<<endl;
           std::cout<<"\t# Insert a command:";
           std::cout.flush();
           return true;
@@ -1549,12 +1577,14 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         cout<<'\n';
         if(username.empty()||password.empty())
         {
-          std::cout<<"username or password not valid"<<endl;
+          std::cout<<"username or password not valid \n"<<endl;
+          std::cout<<"\t# Insert a command:";
+          std::cout.flush();
         }
         cipher_client->newRSAParameter(username,password);
         if(!cipher_client->getRSA_is_start())
         {
-          std::cout<<"login failed retry"<<endl;
+          std::cout<<"login failed retry \n"<<endl;
           std::cout<<"\t# Insert a command:";
           cout.flush();
         }
@@ -1744,6 +1774,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
          if(!certificateProtocol())
            exit(1);
          textual_interface_manager->printLoginInterface();
+         std::cout<<"\t# Insert a command:";
+         std::cout.flush();
          notConnected=false;
         }
 
@@ -1779,6 +1811,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                     if(!res)
                       continue;
                     textual_interface_manager->printLoginInterface();
+                    std::cout<<"\t# Insert a command:";
+                    std::cout.flush();
+                    cipher_client->resetRSA_is_start();
 
                 }
                 break;

@@ -577,7 +577,7 @@ namespace cipher
     else 
     {
       RSA_is_start=false;
-      delete rsa; 
+      //delete rsa; 
     }  
     RSA_is_start=res;
   }
@@ -585,5 +585,9 @@ namespace cipher
   bool CipherClient::getRSA_is_start()
   {
     return RSA_is_start;
+  }
+  void CipherClient::resetRSA_is_start()
+  {
+    RSA_is_start=false;
   }
 }

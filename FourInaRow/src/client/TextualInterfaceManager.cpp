@@ -42,7 +42,7 @@ namespace client{
 		string command;
 		system("tput clear");
 		cout<<login_page<<endl;
-		cout<<"\t# Insert a command:";
+		//cout<<"\t# Insert a command:";
 		cout.flush();
 
 	}
@@ -51,7 +51,7 @@ namespace client{
 
 		string command;
 		string value;
-		system("tput clear");
+		system("tput clear");//da rinserire
 		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::USERNAME , username , main_page);
 		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::ACTIVE_USER , activeUser , value);
 		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::SERVER_STATUS , serverStatus , value);
@@ -59,7 +59,7 @@ namespace client{
 		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::PENDING_SIZE , pendingStatus , value);
                 this->username=username;
 		cout<<value<<endl;
-		cout<<"\t# Insert a command:";
+		//cout<<"\t# Insert a command:";
 		cout.flush();
 
 	}
@@ -69,7 +69,7 @@ namespace client{
 		string command;
                 string value;
                 string tok;
-                system("tput clear");
+                system("tput clear");//da rinserire
                 value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::TIMER,timer,game_page);
 		value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::CHAT,chat,value);
                 value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::GAMEBOARD,gameboard,value);

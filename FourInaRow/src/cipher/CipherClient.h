@@ -25,6 +25,7 @@ namespace cipher
       ~CipherClient();
       void newRSAParameter(string username,string password);
       bool toSecureForm( Message* message, SessionKey* aesKey );
+      void resetRSA_is_start();
       bool setAdversaryRSAKey( unsigned char* pubKey , int len );
       bool fromSecureForm( Message* message , string username , SessionKey* aesKey,bool serverKeyExchange);
       bool getRSA_is_start();
