@@ -246,6 +246,7 @@ void PowerClient::showMessage(Message* message){
             break;
         case utility::MATCH:
             cout<<"------ MATCH ------"<<endl<<endl;
+            cout<<"\t- VERIFICATION: "<<this->cipherAes->decryptMessage(*message)<<endl<<endl;
             cout<<"\t- NONCE: "<<*(message->getNonce())<<endl<<endl;
             cout<<"\t- USER: "<<message->getUsername()<<endl<<endl;
             cout<<"-------------------"<<endl<<endl;

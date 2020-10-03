@@ -89,38 +89,87 @@ namespace cipher{
 
             case MATCH:
 
-                if( !this->rsa->sign(message))
+                if( !key ) return false;
+
+                this->aes->modifyParam( key );
+                app = this->aes->encryptMessage(*message);
+                if( app == nullptr )
                     return false;
+
+                message->setSignature( app->getSignature(), app->getSignatureLen() );
+                delete app;
+
                 break;
 
             case GAME_PARAM:
 
-                if( !this->rsa->sign(message))
+                if( !key ) return false;
+
+                this->aes->modifyParam( key );
+                app = this->aes->encryptMessage(*message);
+                if( app == nullptr )
                     return false;
+
+                message->setNetInformations( app->getNetInformations(), app->getNetInformationsLength());
+                message->setSignature( app->getSignature(), app->getSignatureLen() );
+                delete app;
+
                 break;
 
             case ACCEPT:
 
-                if( !this->rsa->sign(message))
+                if( !key ) return false;
+
+                this->aes->modifyParam( key );
+                app = this->aes->encryptMessage(*message);
+                if( app == nullptr )
                     return false;
+
+                message->setSignature( app->getSignature(), app->getSignatureLen() );
+                delete app;
+
                 break;
 
             case REJECT:
 
-                if( !this->rsa->sign(message))
+                if( !key ) return false;
+
+                this->aes->modifyParam( key );
+                app = this->aes->encryptMessage(*message);
+                if( app == nullptr )
                     return false;
+
+                message->setSignature( app->getSignature(), app->getSignatureLen() );
+                delete app;
+
                 break;
 
             case WITHDRAW_OK:
 
-                if( !this->rsa->sign(message))
+                if( !key ) return false;
+
+                this->aes->modifyParam( key );
+                app = this->aes->encryptMessage(*message);
+                if( app == nullptr )
                     return false;
+
+                message->setSignature( app->getSignature(), app->getSignatureLen() );
+                delete app;
+
                 break;
 
             case DISCONNECT:
 
-                if( !this->rsa->sign(message))
+                if( !key ) return false;
+
+                this->aes->modifyParam( key );
+                app = this->aes->encryptMessage(*message);
+                if( app == nullptr )
                     return false;
+
+                message->setSignature( app->getSignature(), app->getSignatureLen() );
+                delete app;
+
                 break;
 
             case LOGOUT_OK:
