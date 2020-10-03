@@ -468,7 +468,7 @@ namespace server {
 
         }
 
-        int* nonce = this->userRegister.getNonce(this->userRegister.getUsername(*socket));
+        int* nonce = this->clientRegister.getClientNonce(*socket);
         if( !nonce ){
 
             verbose<<"--> [MainServer][sendAcceptMessage] Error unable to found user nonce. Operation aborted"<<'\n';
@@ -490,7 +490,7 @@ namespace server {
             return false;
 
         }
-
+        this->clientRegister.updateClientNonce(*socket);
         return this->sendMessage( message, *socket );
 
     }
@@ -505,7 +505,7 @@ namespace server {
 
         }
 
-        int* nonce = this->userRegister.getNonce(this->userRegister.getUsername(*socket));
+        int* nonce = this->clientRegister.getClientNonce(*socket);
         if( !nonce ){
 
             verbose<<"--> [MainServer][sendRejectMessage] Error unable to found user nonce. Operation aborted"<<'\n';
@@ -527,7 +527,7 @@ namespace server {
             return false;
 
         }
-
+        this->clientRegister.updateClientNonce(*socket);
         return this->sendMessage( message, *socket );
 
     }
@@ -542,7 +542,7 @@ namespace server {
 
         }
 
-        int* nonce = this->userRegister.getNonce(username);
+        int* nonce = this->clientRegister.getClientNonce(*socket);
         if( !nonce ){
 
             verbose<<"--> [MainServer][sendRejectMessage] Error unable to found user nonce. Operation aborted"<<'\n';
@@ -563,7 +563,7 @@ namespace server {
             return false;
 
         }
-
+        this->clientRegister.updateClientNonce(*socket);
         return this->sendMessage( message, *socket );
 
     }
@@ -586,7 +586,7 @@ namespace server {
 
         }
 
-        int* nonce = this->userRegister.getNonce(username);
+        int* nonce = this->clientRegister.getClientNonce(*socket);
         if( !nonce ){
 
             verbose<<"--> [MainServer][sendDisconnectMessage] Error unable to find user nonce. Abort operation"<<'\n';
@@ -611,6 +611,7 @@ namespace server {
         }
 
         bool ret = this->sendMessage( message, *socket );
+        this->clientRegister.updateClientNonce(*socket);
         delete socket;
         return ret;
 
@@ -634,7 +635,7 @@ namespace server {
 
         }
 
-        int* nonce = this->userRegister.getNonce(username);
+        int* nonce = this->clientRegister.getClientNonce(*socket);
         if( !nonce ){
 
             verbose<<"--> [MainServer][sendGameParam] Error unable to find user nonce. Abort operation"<<'\n';
@@ -676,6 +677,7 @@ namespace server {
         }
 
         bool ret = this->sendMessage( message, *socket );
+        this->clientRegister.updateClientNonce(*socket);
         delete socket;
         return ret;
 
@@ -1124,7 +1126,28 @@ namespace server {
 
         }
 
-        if( *(this->userRegister.getStatus(message->getUsername()) ) == CONNECTED || *(this->userRegister.getStatus(message->getUsername())) == PLAY ){
+        if( *(this->userRegister.getStatus(username) ) != LOGGED ){
+
+            verbose<<"--> [MainServer][matchHandler] Error, challenger unable to accept match requests"<<'\n';
+            cout<<"---------------"<<username<<"----------"<<*(this->userRegister.getStatus(username) )<<endl;
+            response = new Message();
+            response->setMessageType( REJECT );
+            response->setAdversary_1( username );
+            response->setAdversary_2( message->getUsername() );
+            response->setNonce( *nonce );
+            if( !this->cipherServer.toSecureForm( response , this->userRegister.getSessionKey(username) )){
+
+                verbose<<"--> [MainServer][matchHandler] Error during security conversion"<<'\n';
+                delete response;
+                response = sendError(string("Server error. Service unable to generate the message'signature"), nonce );
+
+            }
+
+            delete nonce;
+            return response;
+
+        }
+        if( *(this->userRegister.getStatus(message->getUsername()) ) == CONNECTED || *(this->userRegister.getStatus(message->getUsername()) ) == PLAY  ){
 
             verbose<<"--> [MainServer][matchHandler] Error, challenged unable to accept match requests"<<'\n';
             response = new Message();
@@ -1144,9 +1167,11 @@ namespace server {
             return response;
 
         }
-
         int* adv_socket = this->userRegister.getSocket( message->getUsername() );
-        int* adv_nonce =  this->userRegister.getNonce( message->getUsername() );
+        int* adv_nonce = nullptr;
+        if( adv_socket )
+            adv_nonce = this->clientRegister.getClientNonce(*adv_socket);
+
         cipher::SessionKey* userKey = this->userRegister.getSessionKey( message->getUsername());
 
         if( !adv_socket || !adv_nonce || !userKey ){
@@ -1265,7 +1290,7 @@ namespace server {
             return response;
 
         }
-
+        this->clientRegister.updateClientNonce(*adv_socket);
         delete adv_socket;
         delete adv_nonce;
         delete userKey;
