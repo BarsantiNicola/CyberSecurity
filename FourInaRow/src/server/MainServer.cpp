@@ -931,7 +931,7 @@ namespace server {
 
         }
 
-        if( *(this->userRegister.getStatus( username )) != LOGGED ){
+        if( *(this->userRegister.getStatus( username )) == CONNECTED || *(this->userRegister.getStatus( username )) == PLAY ){
 
             verbose << "--> [MainServer][userListHandler] Error, user not allowed" << '\n';
             response = this->sendError(string("Invalid request. You aren't in the correct state to make that request" ), nonce );
@@ -997,7 +997,7 @@ namespace server {
         }
 
 
-        if( *(this->userRegister.getStatus(username)) != LOGGED ){
+        if( *(this->userRegister.getStatus( username )) == CONNECTED || *(this->userRegister.getStatus( username )) == PLAY ){
 
             verbose << "--> [MainServer][rankListHandler] Error, user not allowed" << '\n';
             response = this->sendError(string( "Invalid request. You aren't in the correct state to make that request" ), nonce );

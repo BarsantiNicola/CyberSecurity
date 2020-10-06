@@ -29,9 +29,7 @@
   <component name="ChangeListManager">
     <list default="true" id="4cbb8ddf-e807-44fa-ae33-bda27674b47b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/program" beforeDir="false" afterPath="$PROJECT_DIR$/program" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/PowerClient.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/PowerClient.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/cipher/CipherServer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/cipher/CipherServer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/MainServer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MainServer.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -151,7 +149,9 @@
       <workItem from="1601103976909" duration="2584000" />
       <workItem from="1601163908179" duration="264000" />
       <workItem from="1601730936475" duration="4560000" />
-      <workItem from="1601738804938" duration="1057000" />
+      <workItem from="1601738804938" duration="1656000" />
+      <workItem from="1602017208453" duration="599000" />
+      <workItem from="1602018098771" duration="175000" />
     </task>
     <servers />
   </component>
