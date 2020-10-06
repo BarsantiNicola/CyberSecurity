@@ -251,10 +251,13 @@ namespace client
         unsigned char* userList=message->getUserList();
         int userListLen=message->getUserListLen();
         app=printableString(userList,userListLen);
-        int nUser= countOccurences(app,search);
+        nUser= countOccurences(app,search);
         stringstream sstr;
         sstr<<nUser;
-        textual_interface_manager->printMainInterface(this->username,sstr.str(),"online","none","0");
+        stringstream ssreq;
+        int nreq=challenge_register->getDimension();
+        ssreq<<nreq;
+        textual_interface_manager->printMainInterface(this->username,sstr.str(),"online","none",ssreq.str());
         std::cout<<"\t# Insert a command:";
         if(!implicitUserListReq)
           std::cout<<app<<endl;
@@ -684,10 +687,14 @@ namespace client
     res=cipher_client->fromSecureForm( message , username ,aesKeyServer,false);
     if(!res)
       return false;
-    challenged_username = "";
+    
     this->nonce++;
     verbose<<"--> [MainClient][reciveRejectProtocol] the actual nonce is:"<<nonce<<'\n';
     startChallenge=false;
+    cout<<"\n \n the user "<<challenged_username <<" reject your request "<<endl;
+    std::cout<<"\t# Insert a command:";
+    cout.flush();
+    challenged_username = "";
     return res;
   }
 /*
@@ -1361,7 +1368,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         //da continuare 
        
     }
-    return true;
+     return true;
   }
 /*
 ----------------------Generate nonceNumber----------------
@@ -1519,7 +1526,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 */
   bool MainClient::errorHandler(Message* message)
   {
-    bool res;         
+    bool res;  
+           
     res=cipher_client->fromSecureForm( message , username ,aesKeyServer,true);
     int *nonce_s=message->getNonce();
     verbose<<"-->[MainClient][errorHandler] the recived nonce is:"<<*nonce_s<<'\n';
@@ -1529,6 +1537,13 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     }
     //this->nonce++;
     std::cout<<"error to server request try again. \n"<<endl;
+    stringstream sstr;
+    stringstream ssreq;
+    int nreq=challenge_register->getDimension();
+    sstr<<nUser;
+    ssreq<<nreq;
+    
+    textual_interface_manager->printMainInterface(this->username,sstr.str(),"online","none",ssreq.str());
     clientPhase=ClientPhase::NO_PHASE;
     std::cout<<"\t# Insert a command:";
     cout.flush();
@@ -1544,7 +1559,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
   {
     if(comand_line.empty())
     {
-      verbose<<""<<"--> [MainClient][comand] error comand_line is empty"<<'\n';
+      verbose<<"--> [MainClient][comand] error comand_line is empty"<<'\n';
       return false;
     }
     try
@@ -1656,9 +1671,58 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
              cout.flush();
          }
       }
+      else if(comand_line.compare(0,9,"put token")==0 && clientPhase == ClientPhase::INGAME_PHASE )
+      {
+        
+        int column;
+        std::string app=comand_line.substr(10);
+        if(!app.empty())
+        {
+           column=std::stoi(app,nullptr,10);
+           bool res = MakeAndSendGameMove(column);
+           if(!res)
+           {
+              vverbose<<"-->[MainClient][comand]error to send the message"<<'\n';
+           }
+        } 
+        else
+        {
+             std::cout<<"error you can't insert a coin in an empty column "<<endl;
+             std::cout<<"\t# Insert a command:";
+             cout.flush();          
+        }    
+      }
+      else if(comand_line.compare(0,4,"send")==0 && clientPhase == ClientPhase::INGAME_PHASE)
+      {
+        std::string app = comand_line.substr(5);
+        
+        if(app.empty())
+        {
+          std::cout<<"failed to send chat "<<endl;
+          std::cout<<"\t# Insert a command:";
+          cout.flush();
+        } 
+        std::time_t resTime;
+        struct tm* timeinfo;
+        char buffer[80];
+        time(&resTime);
+        timeinfo=std::localtime(&resTime);
+        std::strftime(buffer,80,"%I:%M%p ",timeinfo);
+        std::string stringTime(buffer);
+        
+        std::string chatApp = "[" + username + "]" + "[" + stringTime + "]" + app;
+        bool res=sendChatProtocol(chatApp);
+        //delete buffer;
+        if(!res)
+        {
+          std::cout<<"failed to send chat "<<endl;
+          std::cout<<"\t# Insert a command:";
+          cout.flush();         
+        }
+      }
       else if(comand_line.compare(0,6,"accept")==0)
       {
-      	 string app=comand_line.substr(7);
+      	 std::string app=comand_line.substr(7);
          if(app.empty())
          {
              std::cout<<"failed to send challenge "<<endl;

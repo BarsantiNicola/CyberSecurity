@@ -59,6 +59,7 @@ namespace client
       bool implicitUserListReq=false;
       //bool waitForChatACK=false;
       int currTokenChatAdv;
+      int nUser=0;
       time_t startWaitChatAck;
       int nonce;
       bool logged=false;
@@ -100,7 +101,7 @@ namespace client
       bool certificateProtocol();//ok
       bool keyExchangeReciveProtocol(Message* message,bool exchangeWithServer);//ok
       bool keyExchangeClientSend();
-      bool MakeAndSendGameMove(int collumn);
+      bool MakeAndSendGameMove(int column);
       void ReciveGameMove(Message* message);
       bool sendReqUserListProtocol();//ok
       bool sendChatProtocol(string chat);

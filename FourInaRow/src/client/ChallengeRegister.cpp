@@ -67,6 +67,10 @@ namespace client
    }
    return false;   
  }
+ int ChallengeRegister::getDimension()
+ {
+   return challengeInformationList.size();
+ }
  bool ChallengeRegister::removeData(ChallengeInformation data)
  {
    for(int i=0;i<challengeInformationList.size();i++)
