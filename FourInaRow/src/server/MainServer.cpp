@@ -1116,6 +1116,10 @@ namespace server {
 
         }
 
+        if( !message->getUsername().compare(username)){
+            verbose<<"--> [MainServer][matchHandler] Error invalid user information"<<'\n';
+            return this->sendError( "Invalid Request. You have to send a valid username", nonce );
+        }
         if( this->matchRegister.getMatchID(username) != -1 ){
 
             verbose<<"--> [MainServer][matchHandler] Error, user already has registered a match"<<'\n';

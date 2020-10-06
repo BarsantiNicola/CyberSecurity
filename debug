@@ -20,7 +20,7 @@ LOGIN
 
 MATCH
 - rimuovere un match non ripristina lo status del chiamante all'interno del server
-- manca controllo utente non contatti se stesso
+
 
 
 
