@@ -20,6 +20,7 @@
 #define SLEEP_TIME 2
 #define TOKEN_GAP 45
 #define NUMBER_SEPARATOR 4
+#define MAX_LENGTH_CHAT 200
 using namespace utility;
 namespace client
 {

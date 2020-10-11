@@ -654,7 +654,7 @@ namespace client
       data=new ChallengeInformation(string(usernameAdv));
 
       res=challenge_register->removeData(*data);
-      
+      startChallenge=false;
     }
     return res;
   }
@@ -826,7 +826,7 @@ namespace client
    {
      bool res;
      bool socketIsClosed=false;
-     ChallengeInformation *data=nullptr;
+     ChallengeInformation *data=new ChallengeInformation(string(usernameAdv));
      Message* message=nullptr; 
      if(usernameAdv ==nullptr)
      {
@@ -836,11 +836,13 @@ namespace client
        return false;
 
      message=createMessage(MessageType::ACCEPT,(const char*)username.c_str(),(unsigned char*)usernameAdv,size,aesKeyServer,this->nonce,false);
+     vverbose<<"-->[MainClient][sendAcceptProtocol] message created after find challenge"<<'\n';
      if(message==nullptr)
      {
        return false;
      }
      res=connection_manager->sendMessage(*message,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
+     vverbose<<"-->[MainClient][sendAcceptProtocol] message sended"<<'\n';
      if(socketIsClosed)
      {
        verbose<<"-->[MainClient][sendAcceptProtocol] error server is offline reconnecting"<<'\n';
@@ -903,12 +905,13 @@ namespace client
     string advUsername="";
     ChallengeInformation *data=nullptr;
     unsigned char* pubKeyAdv=nullptr;
+    vverbose<<"-->[MainClient][receiveGameParamProtocol] start function"<<'\n';
     if(message==nullptr)
     {
       return false;
     }
     nonce_s=message->getNonce();
-    verbose<<"-->[MainClient][keyGameParamProtocol] the recived nonce is:"<<*nonce_s<<'\n';
+    verbose<<"-->[MainClient][receiveGameParamProtocol] the recived nonce is:"<<*nonce_s<<'\n';
     if(*nonce_s!=(this->nonce))
     {
       verbose<<"--> [MainClient][receiveGameParamProtocol] error the nonce isn't valid"<<'\n';
@@ -1351,6 +1354,10 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                     clientPhase= ClientPhase::NO_PHASE;
                     sendImplicitUserListReq();
                   }
+                case DISCONNECT:
+                  reciveDisconnectProtocol(message);
+                  waitForAck=false;
+                  break;
                 }
               }
             }
@@ -1365,6 +1372,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         delete netMess;
         delete appMess;
         break;
+        
+
         //da continuare 
        
     }
@@ -1474,7 +1483,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
    res=cipher_client->fromSecureForm( &appG, username ,aesKeyClient,false); 
    if(!res)
      return;
-   if(*messG->getCurrent_Token()!=*message->getCurrent_Token() ||collMove!=collGame )
+   if(*messG->getCurrent_Token()!=*message->getCurrent_Token() || collMove!=collGame )
      return;
    messageACK=createMessage(ACK,nullptr,nullptr,0,aesKeyClient,this->currentToken,false);
    connection_manager->sendMessage(*messageACK,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
@@ -1514,7 +1523,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
      }
        
       sleep(3000);
-      clientPhase= ClientPhase::NO_PHASE;
+      clientPhase = ClientPhase::NO_PHASE;
       clearGameParam();
       sendImplicitUserListReq();
     }         
@@ -1533,7 +1542,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     verbose<<"-->[MainClient][errorHandler] the recived nonce is:"<<*nonce_s<<'\n';
     if(res==false || *nonce_s!=(this->nonce-1))
     {
-      return false;
+      if(res==false || *nonce_s!=(this->nonce))
+        return false;
     }
     //this->nonce++;
     std::cout<<"error to server request try again. \n"<<endl;
@@ -1582,7 +1592,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       
         cout<<"password:";
 
-        termios oldt;
+        termios oldt;//inizialiaze hide input
         tcgetattr(STDIN_FILENO, &oldt);
         termios newt = oldt;
         newt.c_lflag &= ~ECHO;
@@ -1662,6 +1672,21 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
              std::cout<<"failed to send challenge "<<endl;
              std::cout<<"\t# Insert a command:";
              cout.flush();
+             return true;
+         }
+         if(app.compare(username)==0)
+         {
+           std::cout<<"self challenge not permited "<<endl;
+           std::cout<<"\t# Insert a command:";
+           cout.flush();
+           return true;
+         }
+         if(startChallenge)
+         {
+             std::cout<<"already send a pending challenge "<<endl;
+             std::cout<<"\t# Insert a command:";
+             cout.flush();
+             return true;
          }
          bool res=sendChallengeProtocol(app.c_str(),comand_line.size());
          if(!res)
@@ -1669,7 +1694,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
              std::cout<<"failed to send challenge "<<endl;
              std::cout<<"\t# Insert a command:";
              cout.flush();
+             return true;
          }
+         sendImplicitUserListReq();
       }
       else if(comand_line.compare(0,9,"put token")==0 && clientPhase == ClientPhase::INGAME_PHASE )
       {
@@ -1683,24 +1710,33 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
            if(!res)
            {
               vverbose<<"-->[MainClient][comand]error to send the message"<<'\n';
+              return false;
            }
         } 
         else
         {
              std::cout<<"error you can't insert a coin in an empty column "<<endl;
              std::cout<<"\t# Insert a command:";
-             cout.flush();          
+             cout.flush(); 
+             return true;         
         }    
       }
       else if(comand_line.compare(0,4,"send")==0 && clientPhase == ClientPhase::INGAME_PHASE)
       {
         std::string app = comand_line.substr(5);
-        
+        if(app.length()>MAX_LENGTH_CHAT)
+        {
+          std::cout<<"message too long retry "<<endl;
+          std::cout<<"\t# Insert a command:";
+          cout.flush();
+          return true;         
+        }
         if(app.empty())
         {
           std::cout<<"failed to send chat "<<endl;
           std::cout<<"\t# Insert a command:";
           cout.flush();
+          return true;
         } 
         std::time_t resTime;
         struct tm* timeinfo;
@@ -1717,7 +1753,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         {
           std::cout<<"failed to send chat "<<endl;
           std::cout<<"\t# Insert a command:";
-          cout.flush();         
+          cout.flush();
+          return false;         
         }
       }
       else if(comand_line.compare(0,6,"accept")==0)
@@ -1728,13 +1765,16 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
              std::cout<<"failed to send challenge "<<endl;
              std::cout<<"\t# Insert a command:";
              cout.flush();
+             return true;
          }
+         vverbose<<"--> [MainClient][comand] start send challenge"<<'\n';
          bool res=sendAcceptProtocol(app.c_str(),comand_line.size());
          if(!res)
          {
              std::cout<<"failed to send challenge "<<endl;
              std::cout<<"\t# Insert a command:";
              cout.flush();
+             return false;
          }
       }
 
@@ -1746,6 +1786,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
              std::cout<<"failed to send challenge "<<endl;
              std::cout<<"\t# Insert a command:";
              cout.flush();
+             return true;
          }
          bool res=sendRejectProtocol(adv_username_1.c_str(),comand_line.size());
          if(!res)
@@ -1753,6 +1794,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
              std::cout<<"failed to send challenge "<<endl;
              std::cout<<"\t# Insert a command:";
              cout.flush();
+             return false;
          }
       }
       
@@ -1764,6 +1806,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           std::cout<<"quit failed retry"<<endl;
           std::cout<<"\t# Insert a command:";
           cout.flush();
+          return false;
         }
       }
      
@@ -1776,6 +1819,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           std::cout<<"logout failed retry"<<endl;
           std::cout<<"\t# Insert a command:";
           cout.flush();
+          return false;
         }
       }
       else if(comand_line.compare(0,8,"withdraw")==0&&logged==true && (clientPhase!=INGAME_PHASE||clientPhase!=START_GAME_PHASE))
@@ -1787,6 +1831,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           std::cout<<"withdraw failed retry"<<endl;
           std::cout<<"\t# Insert a command:";
           cout.flush();
+          return false;
         }
       }
       else
@@ -1794,6 +1839,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         std::cout<<"\t  comand: "<<comand_line<<" not valid"<<endl;
         std::cout<<"\t# Insert a command:";
         cout.flush();
+        return true;
       }
       
     }
@@ -1920,6 +1966,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                      std::cout<<"\t# Insert a command:";
                      cout.flush();
                 }
+                sendImplicitUserListReq();
                 break;
               case MOVE:
                 ReciveGameMove(message);
