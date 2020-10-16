@@ -105,7 +105,7 @@ namespace client
     char* cUsername=new char[username.size()+1];
     if(cUsername==nullptr)
       return false;
-    std::strcpy(cUsername,username.c_str());
+    username.copy(cUsername,username.size(),0);
     Message* message=createMessage(MessageType::LOGIN_REQ, (const char*)cUsername,nullptr,0,nullptr,this->nonce,false);
     if(message==nullptr)
       return false;

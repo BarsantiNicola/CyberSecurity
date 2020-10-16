@@ -135,13 +135,23 @@ send a message and return true in case of success and false in case of failure
     *socketIsClosed=false;
     int ret;
     uint16_t lmsg;
-    Converter* conv=new Converter();
-    unsigned char* senderBuffer=new unsigned char[BUFFER_LENGTH];
+    Converter* conv;
+    unsigned char* senderBuffer;
+    try
+    {
+      conv=new Converter();
+      senderBuffer=new unsigned char[BUFFER_LENGTH];
+    }
+    catch(std::bad_alloc)
+    {
+      return false;
+    }
     initArray(senderBuffer,(unsigned char) '#',BUFFER_LENGTH);
     NetMessage* netmess=conv->encodeMessage(message.getMessageType(),message );
     if(netmess->length()>BUFFER_LENGTH)
     {
       verbose<<"-->[ConnectionManager][sendMessage] Error Message to long"<<'\n';
+      delete conv;
       delete[]senderBuffer;
       return false;
       }   
@@ -165,6 +175,7 @@ send a message and return true in case of success and false in case of failure
         verbose<<"-->[ConnectionManager][sendMessage] connection closed"<<'\n';
         closeConnection(socket);
         *socketIsClosed=true;
+        delete conv;
         delete[]senderBuffer;
         return false;
       }
@@ -172,8 +183,11 @@ send a message and return true in case of success and false in case of failure
       {
         verbose<<"-->[ConnectionManager][sendMessage] send message failed"<<'\n';
         delete[]senderBuffer;
+        delete conv;
         return false;
       }
+      delete[]senderBuffer;
+      delete conv;
       return true;
     }
     
@@ -187,12 +201,16 @@ send a message and return true in case of success and false in case of failure
       if(ret==-1)
       {
         verbose<<"-->[ConnectionManager][sendMessage] bad reciver address "<<'\n';
+        delete[]senderBuffer;
+        delete conv;
         return false;
       }
       
       if(netmess==nullptr)
       {
         verbose<<"-->[ConnectionManager][sendMessage] Error conversion"<<'\n';
+        delete[]senderBuffer;
+        delete conv;
         return false;
       }
       copyBuffer(senderBuffer,netmess->getMessage(),BUFFER_LENGTH_UDP,netmess->length());
@@ -203,15 +221,23 @@ send a message and return true in case of success and false in case of failure
         closeConnection(socket);
         *socketIsClosed=true;
         verbose<<"-->[ConnectionManager][sendMessage] connection closed"<<'\n';
+        delete[]senderBuffer;
+        delete conv;
         return false;
       }
       if(ret<BUFFER_LENGTH_UDP)
       {
         verbose<<"-->[ConnectionManager][sendMessage] send message failed"<<'\n';
+        delete[]senderBuffer;
+        delete conv;
         return false;
       }
+      delete[]senderBuffer;
+      delete conv;
       return true;
     }
+    delete[]senderBuffer;
+    delete conv;
     return false;
   }
  
@@ -264,8 +290,15 @@ send a message and return true in case of success and false in case of failure
           {
             *idsock = newfd;
           //const char* ipApp=inet_ntoa(cl_addr.sin_addr);
-            char *ipApp=new char[INET_ADDRSTRLEN+1];
-          
+            char *ipApp;
+            try
+            {
+              ipApp=new char[INET_ADDRSTRLEN+1];
+            }
+            catch(std::bad_alloc)
+            {
+              continue;
+            }
             inet_ntop(AF_INET,&cl_addr.sin_addr,ipApp,INET_ADDRSTRLEN);
           
             vverbose<<"-->[ConnectionManager][waitForMessage] first ip char "<<ipApp<<'\n';
@@ -273,6 +306,7 @@ send a message and return true in case of success and false in case of failure
             ip->append(ipApp);
             //*ip=ipApp;
             vverbose<<"-->[ConnectionManager][waitForMessage] give address"<<'\n';
+            delete[] ipApp;
           }
         }          
         else
@@ -299,8 +333,15 @@ send a message and return true in case of success and false in case of failure
     if((isServer&&FD_ISSET(socket,&master))||(!isServer&&serverSocket==socket&&serverSocket!=-2))
     {
       int len;
-      unsigned char *buffer=new unsigned char[BUFFER_LENGTH];
-      
+      unsigned char *buffer;
+      try
+      {
+        buffer=new unsigned char[BUFFER_LENGTH];
+      }
+      catch(std::bad_alloc)
+      {
+        return nullptr;
+      }
       len=recv(socket,(void*)buffer,BUFFER_LENGTH,0);
       vverbose<<"-->[ConnectionManager][getMessage] byte recived "<<len<<'\n';
       if(len==0)
@@ -327,10 +368,21 @@ send a message and return true in case of success and false in case of failure
         return nullptr;
       }
       messLength+=1;//correctLength
-      unsigned char* bufMess=new unsigned char[messLength];
+      unsigned char* bufMess;
+      Converter* conv;
+      try
+      {
+        bufMess=new unsigned char[messLength];
+        conv=new Converter();
+      }
+      catch(std::bad_alloc)
+      {
+        delete[]buffer;
+        return nullptr;
+      }
       copyBuffer(bufMess,buffer,messLength,BUFFER_LENGTH);
       NetMessage netmess(bufMess,messLength);
-      Converter* conv=new Converter();
+      
       Message* mess=conv->decodeMessage(netmess);
       if(mess==nullptr)
       {
@@ -350,8 +402,15 @@ send a message and return true in case of success and false in case of failure
     else if(socketUDP==socket)
     {
       int len;
-      unsigned char *buffer=new unsigned char[BUFFER_LENGTH_UDP];
-      
+      unsigned char *buffer;
+      try
+      {
+        buffer=new unsigned char[BUFFER_LENGTH_UDP];
+      }
+      catch(std::bad_alloc)
+      {
+        return nullptr;
+      }
       len=recvfrom(socket,(void*)buffer,BUFFER_LENGTH_UDP,0,(struct sockaddr*)&sender_addr,(socklen_t*)&addrlen);
       vverbose<<"-->[ConnectionManager][getMessage] byte recived "<<len<<'\n';
       if(len==0)
@@ -375,10 +434,21 @@ send a message and return true in case of success and false in case of failure
         return nullptr;
       }
       messLength+=1;
-      unsigned char* bufMess=new unsigned char[messLength];
+      unsigned char* bufMess;
+      Converter* conv;
+      try
+      {
+        bufMess=new unsigned char[messLength];
+        conv=new Converter();
+      }
+      catch(std::bad_alloc)
+      {
+        delete[]buffer;
+        return nullptr;
+      }
       copyBuffer(bufMess,buffer,messLength,BUFFER_LENGTH_UDP);
       NetMessage netmess(bufMess,messLength);
-      Converter* conv=new Converter();
+      
       Message* mess=conv->decodeMessage( netmess);
       if(mess==nullptr)
       {
