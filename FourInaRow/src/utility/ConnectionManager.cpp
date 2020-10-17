@@ -142,7 +142,7 @@ send a message and return true in case of success and false in case of failure
       conv=new Converter();
       senderBuffer=new unsigned char[BUFFER_LENGTH];
     }
-    catch(std::bad_alloc)
+    catch(std::bad_alloc& e)
     {
       return false;
     }
@@ -295,7 +295,7 @@ send a message and return true in case of success and false in case of failure
             {
               ipApp=new char[INET_ADDRSTRLEN+1];
             }
-            catch(std::bad_alloc)
+            catch(std::bad_alloc& e)
             {
               continue;
             }
@@ -338,7 +338,7 @@ send a message and return true in case of success and false in case of failure
       {
         buffer=new unsigned char[BUFFER_LENGTH];
       }
-      catch(std::bad_alloc)
+      catch(std::bad_alloc& e)
       {
         return nullptr;
       }
@@ -375,7 +375,7 @@ send a message and return true in case of success and false in case of failure
         bufMess=new unsigned char[messLength];
         conv=new Converter();
       }
-      catch(std::bad_alloc)
+      catch(std::bad_alloc& e)
       {
         delete[]buffer;
         return nullptr;
@@ -407,7 +407,7 @@ send a message and return true in case of success and false in case of failure
       {
         buffer=new unsigned char[BUFFER_LENGTH_UDP];
       }
-      catch(std::bad_alloc)
+      catch(std::bad_alloc& e)
       {
         return nullptr;
       }
@@ -441,7 +441,7 @@ send a message and return true in case of success and false in case of failure
         bufMess=new unsigned char[messLength];
         conv=new Converter();
       }
-      catch(std::bad_alloc)
+      catch(std::bad_alloc& e)
       {
         delete[]buffer;
         return nullptr;

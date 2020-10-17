@@ -179,7 +179,7 @@ namespace client
       }
       else if(retMess->getMessageType()==LOGIN_FAIL)
       {  
-        verbose<<"-->[MainClient][loginProtocol] loginFail"<<'\n';   
+        vverbose<<"-->[MainClient][loginProtocol] loginFail"<<'\n';
         return false;
       }
       
@@ -1625,6 +1625,12 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
               implicitUserListReq=false;
             }
            // textual_interface_manager->printMainInterface(this->username," ","online","none","0");
+          }
+          else
+          {
+             std::cout<<"login failed retry"<<endl;
+             std::cout<<"\t# Insert a command:";
+             cout.flush();  
           }
          }
          return true;

@@ -14,8 +14,22 @@ namespace cipher
       res=false;
     }
     RSA_is_start=res;
-    this->dh  = new CipherDH();
-    this->aes = new CipherAES();
+    try
+    {
+      this->dh  = new CipherDH();
+    }
+    catch(std::bad_alloc& e)
+    {
+      exit(1);
+    }
+    try
+    {
+      this->aes = new CipherAES();
+    }
+    catch(std::bad_alloc& e)
+    {
+      exit(1);
+    }
    
     if( !this->rsa || !this->dh || !this->aes )
     {
@@ -25,9 +39,23 @@ namespace cipher
   }
    CipherClient::CipherClient()
    {
-    this->dh  = new CipherDH();
-    this->aes = new CipherAES();
-   
+    try
+    {
+      this->dh  = new CipherDH();
+      
+    }
+    catch(std::bad_alloc& e)
+    {
+      exit(1);
+    }
+    try
+    {
+      this->aes = new CipherAES();
+    }
+    catch(std::bad_alloc& e)
+    {
+       exit(1);
+    }
     if( this->dh==nullptr || this->aes==nullptr )
     {
       verbose<<"-->[CipherClient][Costructor] Fatal error, unable to load cipher suites"<<'\n';

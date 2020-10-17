@@ -206,12 +206,21 @@ This function encryptMessage with AES_256 gcm
     int lengthToCipher=0;
     int ciphertextLength;
     unsigned char* ciphertext;
-    unsigned char* tag=new unsigned char[16];
+    unsigned char* tag;
+    try
+    {
+      tag=new unsigned char[16];
+    }
+    catch(std::bad_alloc& e)
+    {
+      return nullptr;
+    }
     Converter converter;
     NetMessage* netMessage=converter.compactForm( message.getMessageType(),message,&lengthPlaintext );
     if(iv==nullptr || key==nullptr)
     {
        verbose<<"-->[CipherAES][encryptMessage] error key or iv is nullptr"<<'\n';
+       delete[]tag;
        return nullptr;
     } 
     vverbose<<"-->[CipherAES][encryptMessage] key and iv is nullptr"<<'\n';
@@ -227,7 +236,17 @@ This function encryptMessage with AES_256 gcm
     if(lengthToCipher==0)
     {
       unsigned char app[]="";
-      ciphertext=new unsigned char[0];
+      try
+      {
+        ciphertext=new unsigned char[0];
+        
+      }   
+      catch(std::bad_alloc& e)
+      {
+        delete[]tag;
+        return nullptr;
+      }
+
       int ret=gcmEncrypt(app,0,netMessage->getMessage(),lengthPlaintext,ciphertext,tag);
       if(ret==-1)
       {
@@ -242,8 +261,17 @@ This function encryptMessage with AES_256 gcm
     }
     else
     {
-      unsigned char* textToCipher=new unsigned char[lengthToCipher];
-      unsigned char* textInPlain=new unsigned char[lengthPlaintext];
+      unsigned char* textToCipher;
+      unsigned char* textInPlain;
+      try
+      {
+        textToCipher=new unsigned char[lengthToCipher];
+        textInPlain=new unsigned char[lengthPlaintext];
+      }
+      catch(std::bad_alloc& e)
+      {
+        return nullptr;
+      }
       bool res= copyToFrom(0,lengthPlaintext,netMessage->getMessage(),textInPlain);
       if (res==false)
       {
@@ -257,7 +285,15 @@ This function encryptMessage with AES_256 gcm
        delete[]tag;
        return nullptr;
       }
-      ciphertext=new unsigned char[lengthToCipher];
+      try
+      {
+        ciphertext=new unsigned char[lengthToCipher];
+      }
+      catch(std::bad_alloc& e)
+      {
+        delete[]tag;
+        return nullptr;
+      }
       int lengthcipher=gcmEncrypt(textToCipher,lengthToCipher,textInPlain,lengthPlaintext,ciphertext,tag);
       
       if(lengthcipher==-1)
@@ -268,7 +304,17 @@ This function encryptMessage with AES_256 gcm
       }
       vverbose<<"-->[CipherAES][encryptMessage] cipher message created succesfully cipherLength: "<<lengthcipher<<'\n';
 
-      Message *newMessage=new Message(message );
+      Message *newMessage;
+      try
+      {
+        newMessage=new Message(message);
+      }
+      catch(std::bad_alloc& e)
+      {
+        delete[]ciphertext;
+        delete[]tag;
+        return nullptr;
+      }
       if(newMessage->getMessageType()==GAME)
       {
         newMessage->setSignatureAES( tag , 16 );
@@ -297,7 +343,15 @@ This function encryptMessage with AES_256 gcm
     int lengthToDecrypt=0;
     int ciphertextLength;
     unsigned char* plaintext;
-    unsigned char* tag=new unsigned char[16];
+    unsigned char* tag;
+    try
+    {
+      tag=new unsigned char[16];
+    }
+    catch(std::bad_alloc& e)
+    {
+      return nullptr;
+    }
     Converter converter;
 
     NetMessage* netMessage=converter.compactForm( message.getMessageType(),message,&lengthCleareText );
@@ -315,10 +369,27 @@ This function encryptMessage with AES_256 gcm
     lengthToDecrypt=netMessage->length()-lengthCleareText;
     if(lengthToDecrypt==0)
     {
-      Message *newMessage=new Message(message );
+      Message *newMessage;
+      try
+      {
+        newMessage=new Message(message );
+        plaintext=new unsigned char[0];
+      }
+      catch(std::bad_alloc& e)
+      {
+        return nullptr;
+      }
       tag=newMessage->getSignature();
       unsigned char app[]="";
-      plaintext=new unsigned char[0];
+      try
+      {
+        plaintext=new unsigned char[0];
+      }
+      catch(std::bad_alloc& e)
+      {
+        delete[]tag;
+        return nullptr;
+      }
       int res=gcmDecrypt(app,0,netMessage->getMessage(),lengthCleareText,tag,plaintext);
       if(res==-2)
       {
@@ -339,12 +410,24 @@ This function encryptMessage with AES_256 gcm
     else
     {
       vverbose<<"-->[CipherAES][decryptMessage] length to decrypt: "<<lengthToDecrypt<<'\n';
-      unsigned char* textToDecrypt=new unsigned char[lengthToDecrypt];
-      unsigned char* textInPlain=new unsigned char[lengthCleareText];
+      unsigned char* textToDecrypt;
+      unsigned char* textInPlain;
+      try
+      {
+        textToDecrypt=new unsigned char[lengthToDecrypt];
+        textInPlain=new unsigned char[lengthCleareText];
+      }
+      catch(std::bad_alloc& e)
+      {
+        delete[]tag;
+        return nullptr;
+      }
       bool res= copyToFrom(0,lengthCleareText,netMessage->getMessage(),textInPlain);
       if (res==false)
       {
        verbose<<"-->[CipherAES][dencryptMessage] errorTo copy a message"<<'\n';
+       delete[]textToDecrypt;
+       delete[]textInPlain;
        delete[]tag;
        return nullptr;
       }
@@ -352,11 +435,23 @@ This function encryptMessage with AES_256 gcm
       if (res==false)
       {
        verbose<<"-->[CipherAES][dencryptMessage] errorTo copy a message"<<'\n';
+       delete[]textToDecrypt;
+       delete[]textInPlain;
        delete[]tag;
        return nullptr;
       }      
-      Message *newMessage=new Message(message );      
-    
+      Message *newMessage;
+      try
+      {      
+        newMessage=new Message(message );
+      }
+      catch(std::bad_alloc& e)
+      {
+        delete[]textToDecrypt;
+        delete[]textInPlain;
+        delete[]tag;
+        return nullptr;
+      }
       if(newMessage->getMessageType()==GAME)
       {
         tag=newMessage->getSignatureAES();
@@ -365,11 +460,25 @@ This function encryptMessage with AES_256 gcm
       {
         tag=newMessage->getSignature();
       }
-      plaintext=new unsigned char[lengthToDecrypt];
+
+      try
+      {
+        plaintext=new unsigned char[lengthToDecrypt];
+      }
+      catch(std::bad_alloc& e)
+      {
+        delete[]textToDecrypt;
+        delete[]textInPlain;
+        delete newMessage;
+        delete[]tag;
+        return nullptr;
+      }
       int lengthplain=gcmDecrypt(textToDecrypt,lengthToDecrypt,textInPlain,lengthCleareText,tag,plaintext);
       if(lengthplain==-2)
       {
         verbose<<"-->[CipherAES][dencryptMessage] error message not valid"<<'\n';
+        delete[]textToDecrypt;
+        delete[]textInPlain;
         delete[]tag;
         delete[]plaintext;
         return nullptr;
@@ -377,6 +486,8 @@ This function encryptMessage with AES_256 gcm
       if(lengthplain==-1)
       {
         verbose<<"-->[CipherAES][dencryptMessage] error to decrypt the message"<<'\n';
+        delete[]textToDecrypt;
+        delete[]textInPlain;
         delete[]tag;
         delete[]plaintext;
         return nullptr;
@@ -384,10 +495,14 @@ This function encryptMessage with AES_256 gcm
             bool result=insertField(newMessage->getMessageType(),newMessage,plaintext,lengthplain);
       if(result==false)
       {
+        delete[]textToDecrypt;
+        delete[]textInPlain;
         delete[]tag;
         delete[]plaintext;
         return nullptr;
       }
+      delete[]textToDecrypt;
+      delete[]textInPlain;
       delete[]tag;
       delete[]plaintext;
       return newMessage;
