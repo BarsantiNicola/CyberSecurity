@@ -1120,10 +1120,20 @@ namespace server {
             verbose<<"--> [MainServer][matchHandler] Error invalid user information"<<'\n';
             return this->sendError( "Invalid Request. You have to send a valid username", nonce );
         }
+
         if( this->matchRegister.getMatchID(username) != -1 ){
 
             verbose<<"--> [MainServer][matchHandler] Error, user already has registered a match"<<'\n';
             response = this->sendError(string( "Invalid request. You're already registerd a match. Withdraw it before create a new match" ), nonce );
+
+            delete nonce;
+            return response;
+
+        }
+
+        if( !this->userRegister.has(message->getUsername())){
+            verbose<<"--> [MainServer][matchHandler] Error, requested user doesn't exits"<<'\n';
+            response = this->sendError(string( "Invalid request. User doesn't exists" ), nonce );
 
             delete nonce;
             return response;
