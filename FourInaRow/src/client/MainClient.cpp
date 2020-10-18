@@ -102,11 +102,8 @@ namespace client
     {
       return false;
     }
-    char* cUsername=new char[username.size()+1];
-    if(cUsername==nullptr)
-      return false;
-    username.copy(cUsername,username.size(),0);
-    Message* message=createMessage(MessageType::LOGIN_REQ, (const char*)cUsername,nullptr,0,nullptr,this->nonce,false);
+    verbose<<"-->[MainClient][loginProtocol] the username is :  "<<username<<'\n';
+    Message* message=createMessage(MessageType::LOGIN_REQ, username.c_str(),nullptr,0,nullptr,this->nonce,false);
     if(message==nullptr)
       return false;
     if(message->getMessageType()==LOGIN_REQ)
