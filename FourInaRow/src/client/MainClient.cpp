@@ -442,7 +442,7 @@ namespace client
       }
       nonce_s=message->getNonce();
       verbose<<"-->[MainClient][receiveLogoutProtocol] the recived nonce is:"<<*nonce_s<<'\n';
-      if(*nonce_s!=(this->nonce-1))
+      if(*nonce_s!=(this->nonce))
       {
         verbose<<"--> [MainClient][reciveLogoutProtocol] error the nonce isn't valid"<<'\n';
         delete nonce_s;
@@ -460,6 +460,7 @@ namespace client
       if(!res)
         return false; 
       clientPhase=ClientPhase::NO_PHASE;
+      this->nonce++;
       logged=false;
       username="";
       startChallenge=false;
@@ -832,7 +833,7 @@ namespace client
      if(!challenge_register->findData(*data))
        return false;
 
-     message=createMessage(MessageType::ACCEPT,(const char*)username.c_str(),(unsigned char*)usernameAdv,size,aesKeyServer,this->nonce,false);
+     message=createMessage(MessageType::ACCEPT,usernameAdv,nullptr,0,aesKeyServer,this->nonce,false);
      vverbose<<"-->[MainClient][sendAcceptProtocol] message created after find challenge"<<'\n';
      if(message==nullptr)
      {
@@ -1074,7 +1075,7 @@ namespace client
         message->setNonce(this->nonce);
         
         cipherRes=this->cipher_client->toSecureForm( message,aesKey);
-        this->nonce++;
+        //this->nonce++;
         verbose<<"--> [MainClient][createMessage] the actual nonce is:"<<nonce<<'\n';
         break;
 
@@ -1084,7 +1085,7 @@ namespace client
         message->setAdversary_1(param);
         message->setAdversary_2(this->username.c_str());
         cipherRes = this->cipher_client->toSecureForm( message,aesKey);
-        this->nonce++;
+        //this->nonce++;
         verbose<<"--> [MainClient][createMessage] the actual nonce is:"<<nonce<<'\n';
         break;
 
