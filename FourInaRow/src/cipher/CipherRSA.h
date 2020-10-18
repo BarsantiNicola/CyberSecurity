@@ -74,7 +74,7 @@ namespace cipher {
             bool setAdversaryKey( EVP_PKEY* signature );                        //  SET AN ADVERSARY KEY
             void unsetAdversaryKey();                                           //  REMOVE AN ADVERSARY KEY
             static EVP_PKEY* extractServerKey( unsigned char* certificate , int len ); //  EXTRACT A PUBLIC KEY FROM A CERTIFICATE[CERTIFICATE MESSAGE]
-            bool extractAdversaryKey( unsigned char* pubKey , int len );        //  EXTRACT ADVERSARY PUBLIC KEY FROM PUBKEY FIELD[GAME_PARAM MESSAGE]
+            bool extractAdversaryKey( string username, unsigned char* pubKey , int len );        //  EXTRACT ADVERSARY PUBLIC KEY FROM PUBKEY FIELD[GAME_PARAM MESSAGE]
             bool clientVerifySignature( Message message , bool server );        //  VERIFY THE SIGNATURE OF A MESSAGE[CLIENT]
             static bool certificateVerification( Message* message, EVP_PKEY* key );     //  ONLY FOR CERTIFICATE MESSAGE SIGNATURE VERIFICATION
             bool setServerKey( EVP_PKEY* server );                              //  SET SERVER PUBLIC KEY

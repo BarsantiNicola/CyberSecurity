@@ -517,7 +517,7 @@ namespace cipher{
 
     //  CLIENT
     //  Extract the public key from what its textual form given with message
-    bool CipherRSA::extractAdversaryKey( unsigned char* pubKey , int len ){
+    bool CipherRSA::extractAdversaryKey( string username , unsigned char* pubKey , int len ){
 
         if( !pubKey || !len ){
 
@@ -525,21 +525,22 @@ namespace cipher{
             return false;
 
         }
+        string path = "data/temp/";
+        path.append(username).append("advKey.pem");
 
-        std::ofstream pemWrite("data/temp/advKey.pem");
+        std::ofstream pemWrite(path);
         pemWrite.write((char*)pubKey,len);
         pemWrite.close();
+        FILE* f = fopen(path.c_str() , "r");
 
-        FILE* f = fopen("data/temp/advKey.pem" , "r");
         EVP_PKEY* k = PEM_read_PUBKEY( f, nullptr, nullptr, nullptr );
         fclose(f);
-        remove("data/temp/advKey.pem");
 
         if( !k ){
             verbose<<"-->[CipherRSA][extractAdversaryKey] Error, unable to extract adversary public key"<<'\n';
             return false;
         }
-
+        remove( path.c_str() );
         this->advPubKey = k;
         return true;
     }
