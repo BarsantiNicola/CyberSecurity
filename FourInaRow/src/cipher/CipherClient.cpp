@@ -419,10 +419,10 @@ namespace cipher
          }
          message->setNetInformations(app->getNetInformations(),app->getNetInformationsLength());
          delete app;
-         if(!rsa->extractAdversaryKey(message->getNetInformations(),message->getNetInformationsLength()))
+        /* if(!rsa->extractAdversaryKey(message->getNetInformations(),message->getNetInformationsLength()))
          {
            return false;
-         } 
+         } */
          break; 
 
        case MATCH:
@@ -563,7 +563,7 @@ namespace cipher
      return this->dh->generatePartialKey();
    }
 
-  bool CipherClient::setAdversaryRSAKey( unsigned char* pubKey , int len )
+  bool CipherClient::setAdversaryRSAKey( std::string username,unsigned char* pubKey , int len )
   {
     bool res=false;
     if(this->rsa==nullptr)
@@ -571,7 +571,7 @@ namespace cipher
       return false;
     }
     this->rsa->unsetAdversaryKey();
-    res=this->rsa->extractAdversaryKey( pubKey ,len );
+    res=this->rsa->extractAdversaryKey( username,pubKey ,len );
     return res;
   }
 

@@ -900,7 +900,8 @@ namespace client
     bool res;
     int* nonce_s;
     int keyLen;
-    string advUsername="";
+    std::string app;
+    std::string advUsername="";
     ChallengeInformation *data=nullptr;
     unsigned char* pubKeyAdv=nullptr;
     vverbose<<"-->[MainClient][receiveGameParamProtocol] start function"<<'\n';
@@ -926,13 +927,34 @@ namespace client
       return false;
     this->nonce++;
     verbose<<"--> [MainClient][reciveGameProtocol] the actual nonce is:"<<nonce<<'\n';
-    advPort= message->getPort();
+    //advPort= message->getPort();
     pubKeyAdv=message->getPubKey();
     keyLen=message->getPubKeyLength();
-    res=cipher_client->setAdversaryRSAKey( pubKeyAdv , keyLen );
+    res=cipher_client->setAdversaryRSAKey( this->username,pubKeyAdv , keyLen );
+    delete []pubKeyAdv;
     if(!res)
       return false;
-    advIP=(char*)message->getNetInformations();
+    unsigned int ipLength;
+    unsigned int portLength;
+    unsigned char* ipApp;
+    unsigned char* portApp;
+
+    bool cond=deconcatenateTwoField(message->getNetInformations(),message->getNetInformationsLength(),ipApp,&ipLength,portApp,&portLength, (unsigned char)':',(unsigned int) 1);
+
+    if(!cond)
+      return false;
+    if(advIP!=nullptr)
+    {
+      delete advIP;
+    }
+    advIP=(char*)ipApp;
+    string appstr(reinterpret_cast <char*>(portApp));
+    if(advPort!=nullptr)
+    {
+      delete advPort;
+    }
+    advPort=new int(std::stoi(appstr));
+    delete ipApp;
     if(advIP==nullptr)
       return false;
     return true;
@@ -1210,15 +1232,23 @@ namespace client
          {
            firstDimension = (i-(numberSeparator-1));
            secondDimension= originalFieldSize-i;
+           break;
          }
        }
        else
        {
-         --counter;
+         counter=0;
        }
     }
-    firstField=new unsigned char[firstDimension];
-    secondField=new unsigned char[secondDimension];
+    try
+    {
+      firstField=new unsigned char[firstDimension];
+      secondField=new unsigned char[secondDimension];
+    }
+    catch(std::bad_alloc)
+    {
+       return false;
+    }
     for(int i=0;i<firstDimension;++i)
     {
       firstField[i]=originalField[i];      
