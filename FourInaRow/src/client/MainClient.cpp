@@ -936,23 +936,38 @@ namespace client
       return false;
     unsigned int ipLength;
     unsigned int portLength;
-    unsigned char* ipApp;
-    unsigned char* portApp;
-
+    unsigned char* ipApp=nullptr;
+    unsigned char* portApp=nullptr;
+    try
+    {
+      ipApp=new unsigned char[message->getNetInformationsLength()];
+      portApp=new unsigned char[message->getNetInformationsLength()];
+    }
+    catch(std::bad_alloc)
+    {
+       return false;
+    }
     bool cond=deconcatenateTwoField(message->getNetInformations(),message->getNetInformationsLength(),ipApp,&ipLength,portApp,&portLength, (unsigned char)':',(unsigned int) 1);
-
+    vverbose<<"--> [MainClient][reciveGameProtocol] the netInformatino:"<<string((char*)message->getNetInformations(),message->getNetInformationsLength())<<'\n';
     if(!cond)
       return false;
     if(advIP!=nullptr)
     {
       delete advIP;
     }
+
+    if (portApp==nullptr)
+    {
+
+      verbose<<"--> [MainClient][reciveGameProtocol] error ipApp nullptr"<<'\n';
+    }
     advIP=(char*)ipApp;
-    string appstr(reinterpret_cast <char*>(portApp));
+    std::string appstr((char*)portApp,portLength);
     if(advPort!=nullptr)
     {
       delete advPort;
     }
+    vverbose<<"--> [MainClient][reciveGameProtocol] the port is:"<<appstr<<'\n';
     advPort=new int(std::stoi(appstr));
     delete ipApp;
     if(advIP==nullptr)
@@ -1221,7 +1236,7 @@ namespace client
     int counter=0;
     int firstDimension=0;
     int secondDimension=0;
-    if(originalField==nullptr||firstFieldSize==nullptr||secondField==nullptr)
+    if(originalField==nullptr||firstFieldSize==nullptr||secondFieldSize==nullptr||secondField==nullptr||firstField==nullptr)
       return false;
     for(int i=0;i<originalFieldSize;++i)
     {
@@ -1232,6 +1247,7 @@ namespace client
          {
            firstDimension = (i-(numberSeparator-1));
            secondDimension= originalFieldSize-i;
+           vverbose<<"-->[MainClient][deconcatenateTwoField]<<secondDimension:"<<secondDimension<<'\n';
            break;
          }
        }
@@ -1240,25 +1256,27 @@ namespace client
          counter=0;
        }
     }
-    try
+    if(firstDimension==0)
     {
-      firstField=new unsigned char[firstDimension];
-      secondField=new unsigned char[secondDimension];
+      firstDimension=originalFieldSize;
     }
-    catch(std::bad_alloc)
-    {
-       return false;
-    }
+
+    
     for(int i=0;i<firstDimension;++i)
     {
-      firstField[i]=originalField[i];      
+      firstField[i]=originalField[i];  
+          
     }
+    
+    vverbose<<"-->[MainClient][deconcatenateTwoField] ";
     int j=0;
     for(int i=(firstDimension+numberSeparator);i<originalFieldSize;++i)
     {    
       secondField[j]=originalField[i];
+      vverbose<<(char)secondField[j];
       ++j;
     }
+    vverbose<<'\n';
     *firstFieldSize=firstDimension;
     *secondFieldSize=secondDimension;
     return true;
@@ -1490,6 +1508,15 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     }
     c_app=message->getChosenColumn();
     appLen=message->getChosenColumnLength();
+    try
+    {
+      chosenColl=new unsigned char[appLen];
+      gameMess= new unsigned char[appLen];
+    }
+    catch(std::bad_alloc)
+    {
+      return;
+    }
     deconcatenateTwoField(c_app,appLen,chosenColl,&chosenCollLen,gameMess,&gameMessLen, '&',NUMBER_SEPARATOR);
     netGameMess=new NetMessage(gameMess , gameMessLen );
     if(netGameMess)
