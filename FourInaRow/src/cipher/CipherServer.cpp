@@ -33,7 +33,7 @@ namespace cipher{
         }
 
         Message* app;
-
+        unsigned char* net;
         switch( message->getMessageType()){
 
             case CERTIFICATE:
@@ -105,6 +105,11 @@ namespace cipher{
 
                 if( !key ) return false;
 
+                cout<<"-------------------NET--------------------"<<endl;
+                net = message->getNetInformations();
+                for(int a = 0; a<message->getNetInformationsLength(); a++)
+                    cout<<net[a];
+                cout<<endl<<"------------------------------------------"<<endl;
                 this->aes->modifyParam( key );
                 app = this->aes->encryptMessage(*message);
                 if( app == nullptr )

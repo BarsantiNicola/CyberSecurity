@@ -29,9 +29,9 @@
   <component name="ChangeListManager">
     <list default="true" id="4cbb8ddf-e807-44fa-ae33-bda27674b47b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/program" beforeDir="false" afterPath="$PROJECT_DIR$/program" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/cipher/CipherRSA.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/cipher/CipherRSA.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/cipher/CipherRSA.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/cipher/CipherRSA.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/program" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/cipher/CipherServer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/cipher/CipherServer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/ClientInformation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/ClientInformation.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -155,7 +155,10 @@
       <workItem from="1602017208453" duration="599000" />
       <workItem from="1602018098771" duration="428000" />
       <workItem from="1603025683762" duration="830000" />
-      <workItem from="1603051248062" duration="1366000" />
+      <workItem from="1603051248062" duration="1441000" />
+      <workItem from="1603054251126" duration="695000" />
+      <workItem from="1603695733781" duration="395000" />
+      <workItem from="1603833298134" duration="595000" />
     </task>
     <servers />
   </component>

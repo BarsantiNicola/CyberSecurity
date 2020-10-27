@@ -51,7 +51,9 @@ namespace server{
     }
 
     void ClientInformation::updateIP(int port) {
-
+        int pos = this->IPaddress.find(":" );
+        if( pos != std::string::npos )
+            this->IPaddress = this->IPaddress.substr(0,pos);
         this->IPaddress.append(":").append( to_string(port).c_str());
     }
 
