@@ -5,7 +5,12 @@ namespace client{
 	TextualInterfaceManager::TextualInterfaceManager(){
 
 		ifstream myfile;
+		ifstream myconf;
+
 		string line;
+
+		adj_x=-1;
+		adj_y=-1;
 		login_page = "";
 		main_page = "";
 		myfile.open ("src/client/data/login-art.txt", ios::in );
@@ -25,6 +30,25 @@ namespace client{
 			while ( getline (myfile,line) )
 				game_page= game_page+line+"\n";
 		myfile.close();
+
+        myfile.open ("data/screen_size.conf", ios::in );
+
+        if (myfile.is_open()) {
+            while ( getline (myfile,line) ){
+                if( adj_x == -1 )
+                    adj_x = stoi(line);
+                else
+                    adj_y = stoi(line);
+                if(adj_y != -1 )
+                    break;
+                }
+            if( adj_x == -1 || adj_x > 50 || adj_x <0 ) adj_x = 0;
+            if( adj_y == -1 || adj_y > 50 || adj_y < 0 ) adj_y = 0;
+
+        }else
+            exit(1);
+
+        myfile.close();
 	}
 
 
@@ -50,6 +74,9 @@ namespace client{
 	}
 
 	void TextualInterfaceManager::printColoredLogin(){
+
+	    for( int a = 0; a<adj_y; a++ )
+	        cout<<endl;
 
 	    cout<<"\033[0;33m"<<login_page.substr(0,2500)<<"\033[0m";
         cout<<"\033[0;31m"<<login_page.substr(2500,324 )<<"\033[0m"<<login_page.substr( 2824, 114 );
@@ -81,6 +108,9 @@ namespace client{
 
     void TextualInterfaceManager::printColoredMain(string page){
 
+        for( int a = 0; a<adj_y; a++ )
+            cout<<endl;
+        
         cout<<"\033[0;33m"<<page.substr(0,665)<<"\033[0m";
         cout<<"\033[0;34m"<<page.substr(665,678 )<<"\033[0m";
         cout<<page.substr(1343,29)<<"\033[0;34m"<<page.substr(1372,36 )<<"\033[0m"<<page.substr( 1408, 27 )<<"\033[0;34m"<<page.substr(1435, 29 )<<"\033[0m";

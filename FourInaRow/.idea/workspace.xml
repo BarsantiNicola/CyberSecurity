@@ -32,8 +32,6 @@
       <change beforePath="$PROJECT_DIR$/program" beforeDir="false" afterPath="$PROJECT_DIR$/program" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/client/TextualInterfaceManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/TextualInterfaceManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/client/TextualInterfaceManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/TextualInterfaceManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/client/data/login-art.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/data/login-art.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/client/data/main_art.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/data/main_art.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -168,7 +166,7 @@
       <workItem from="1603054251126" duration="695000" />
       <workItem from="1603695733781" duration="395000" />
       <workItem from="1603833298134" duration="798000" />
-      <workItem from="1603986796656" duration="5713000" />
+      <workItem from="1603986796656" duration="7347000" />
     </task>
     <servers />
   </component>

@@ -43,6 +43,8 @@ namespace client{
 		string main_page;
 		string game_page;
                 string username;
+                int adj_x;
+                int adj_y;
 		void* game;
 	
 	public:
