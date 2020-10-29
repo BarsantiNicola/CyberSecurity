@@ -28,7 +28,7 @@
 //  Available commands:                                                                                               //
 //          show [users|rank|pending] : Show all the available users or the game statistics or pending request        //
 //          challenge [user] :  Invite a user to play a match of four in a row                                        //
-//          accept [user] :  Invite a user to play a match of four in a row                                           //                                   
+//          accept [user] :  Invite a user to play a match of four in a row                                           //
 //          logout :            Quit the application and return to the login page                                     //
 //                                                                                                                    //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
