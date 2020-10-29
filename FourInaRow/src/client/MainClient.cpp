@@ -255,7 +255,7 @@ namespace client
         int nreq=challenge_register->getDimension();
         ssreq<<nreq;
         textual_interface_manager->printMainInterface(this->username,sstr.str(),"online","none",ssreq.str());
-        std::cout<<"\t# Insert a command:";
+       // std::cout<<"\t# Insert a command:";
         if(!implicitUserListReq)
           std::cout<<app<<endl;
         implicitUserListReq=false;
@@ -485,12 +485,13 @@ namespace client
       }
       nonce_s=message->getNonce();
       verbose<<"-->[MainClient][keyExchangeReciveProtocol] the recived nonce is:"<<*nonce_s<<'\n';
-      if(*nonce_s!=(this->nonce-1))
+      if((*nonce_s!=(this->nonce-1) && exchangeWithServer) || ( exchangeWithServer && currTokenIninzialized && *nonce_s!=(this->currentToken) ))
       {
         verbose<<"--> [MainClient][keyExchangeProtocol] nonce not valid"<<'\n';
         delete nonce_s;
         return false;
       }
+     
       if(message->getMessageType()==KEY_EXCHANGE)
       {
        
@@ -511,13 +512,17 @@ namespace client
           return true;
 
        }
-       this->aesKeyClient=cipher_client->getSessionKey( app , len );
-       if(this->aesKeyClient==nullptr||this->aesKeyClient->iv==nullptr || this->aesKeyClient->sessionKey==nullptr)
-         return false;
-       vverbose<<"-->[MainClient][keyExchangeReciveProtoco] key iv "<<aesKeyClient->iv<<" session key: "<<aesKeyClient->sessionKey<<'\n';//da eliminare
-       delete nonce_s;
-       return true;
-        
+       else
+       {
+         if(!startChallenge)
+           partialKey = this->cipher_client->getPartialKey();
+        this->aesKeyClient=cipher_client->getSessionKey( app , len );
+        if(this->aesKeyClient==nullptr||this->aesKeyClient->iv==nullptr || this->aesKeyClient->sessionKey==nullptr)
+          return false;
+        vverbose<<"-->[MainClient][keyExchangeReciveProtoco] key iv "<<aesKeyClient->iv<<" session key: "<<aesKeyClient->sessionKey<<'\n';//da eliminare
+        delete nonce_s;
+        return true;
+       } 
       }
       return false;
   }
@@ -536,8 +541,8 @@ namespace client
     sendMess=createMessage(MessageType::KEY_EXCHANGE, nullptr,nullptr,0,nullptr,this->currentToken,true);
     if(sendMess==nullptr)
       return false;
-     verbose<<"-->[MainClient][loginProtocol] start key exchange protocol"<<'\n';
-     res=connection_manager->sendMessage(*sendMess,connection_manager->getserverSocket(),&socketIsClosed,advIP,*advPort); 
+     verbose<<"-->[MainClient][keyExchangeClientSend] start key exchange protocol"<<'\n';
+     res=connection_manager->sendMessage(*sendMess,connection_manager->getsocketUDP(),&socketIsClosed,advIP,*advPort); 
      if(!res)
     {
       if(socketIsClosed)
@@ -606,7 +611,7 @@ namespace client
     if(message->getMessageType()!=MATCH)
     {
       verbose<<"--> [MainClient][reciveChallengeProtocol] message type not expected"<<'\n';
-        return false;
+      return false;
     }
     res=cipher_client->fromSecureForm( message , username ,aesKeyServer,false);
     if(!res)
@@ -1049,7 +1054,7 @@ namespace client
 */
   Message* MainClient::createMessage(MessageType type, const char* param,unsigned char* g_param,int g_paramLen,cipher::SessionKey* aesKey,int token,bool keyExchWithClient)
   {
-    NetMessage* partialKey;
+    
     NetMessage* net;
     bool cipherRes=true;
     Message* message = new Message();
@@ -1082,8 +1087,9 @@ namespace client
         }
         else
         {
-          message->setCurrent_Token(this->currentToken);
-          partialKey = this->cipher_client->getPartialKey();
+          message->setNonce(this->currentToken);
+          if(startChallenge)
+            partialKey = this->cipher_client->getPartialKey();
           message->set_DH_key( partialKey->getMessage(), partialKey->length() );
           cipherRes=this->cipher_client->toSecureForm( message,aesKey);
           this->currentToken++;
@@ -1342,6 +1348,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         break;
       case MOVE_OK:
        case GAME_FINISH://verify if ok
+        currTokenIninzialized=false;
         std::string app=std::to_string(column);
         appMess = createMessage(MessageType::GAME,nullptr,(unsigned char*) app.c_str(),app.size(),nullptr,MessageGameType::MOVE_TYPE,false);
         if(appMess==nullptr)
@@ -1379,6 +1386,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                   this->currentToken++;
                   if(statGame==GAME_FINISH)
                   {
+                    currTokenIninzialized=false;
                     if(iWon)
                     {
                       cout<<"\t you won"<<endl;
@@ -1561,6 +1569,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 
    if(statGame==GAME_FINISH)
    {
+     currTokenIninzialized=false;
      if(iWon)
      {
        cout<<"\t you won"<<endl;
@@ -1607,9 +1616,10 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     int nreq=challenge_register->getDimension();
     sstr<<nUser;
     ssreq<<nreq;
-    
+    string errorMessage((char*)message->getMessage());
     textual_interface_manager->printMainInterface(this->username,sstr.str(),"online","none",ssreq.str());
     clientPhase=ClientPhase::NO_PHASE;
+    std:cout<<errorMessage<<endl;
     std::cout<<"\t# Insert a command:";
     cout.flush();
     return true;
@@ -1956,6 +1966,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       {
         for(int idSock: sock_id_list)
         {
+          vverbose<<"[MainClient][client] descriptor id:"<<idSock<<'\n';
           if(idSock==connection_manager->getstdinDescriptor())
           {
             //buffer=new char[500];
@@ -1967,7 +1978,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           }
           if(idSock==connection_manager->getserverSocket())
           {
-            
+            vverbose<<"[MainClient][client] message from server"<<'\n';
             message=connection_manager->getMessage(connection_manager->getserverSocket());
             if(message==nullptr)
             {
@@ -1991,6 +2002,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
               case USER_LIST:
                if(clientPhase==ClientPhase::USER_LIST_PHASE)
                {
+                 
                  res=receiveUserListProtocol(message);
                  if(!res)
                  {
@@ -2054,36 +2066,17 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                   if(startingMatch)
                   {
                     this->currentToken=generateRandomNonce();
-                    keyExchangeClientSend();
+                    
                    
                     this->currTokenChat=this->currentToken+TOKEN_GAP;
                     this->currTokenChatAdv=this->currTokenChat+1;
-           
+                    keyExchangeClientSend();
                     
                   }
 
                 }//come gestire un possibile fallimento??
                 break;
-              case KEY_EXCHANGE:
-                    if(keyExchangeReciveProtocol(message,false))
-                    {
-                      clientPhase=INGAME_PHASE;
-                      game=new Game(250,startingMatch);
-                      textual_interface_manager->printGameInterface(startingMatch, std::to_string(timer)," ",game->printGameBoard());
-                      if(!startingMatch)
-                      {
-                        this->currentToken=*message->getCurrent_Token()+1;
-                        this->currTokenChatAdv=this->currentToken+TOKEN_GAP;
-                        this->currTokenChat=this->currTokenChatAdv + 1;
-                        
-                      }
-                      if(!chatWait.empty())
-                      {
-                        chatWait.clear();
-                      }
-                      startingMatch=false;
-                    }
-                    break;
+
               case ACCEPT:
                  res=receiveAcceptProtocol(message);
                  if(res)
@@ -2111,6 +2104,45 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                  cout.flush();
             }
             delete message;
+          }
+          else if(idSock==connection_manager->getsocketUDP())
+          {
+             vverbose<<"[MainClient][client] message from client"<<'\n';
+             message=connection_manager->getMessage(connection_manager->getsocketUDP());
+             vverbose<<"[MainClient][client] message type"<<message->getMessageType()<<'\n';
+             switch(message->getMessageType())
+             {
+               case KEY_EXCHANGE:
+                 if(keyExchangeReciveProtocol(message,false))
+                 {
+                   clientPhase=INGAME_PHASE;
+                   game=new Game(250,startingMatch);
+                   textual_interface_manager->printGameInterface(startingMatch, std::to_string(timer)," ",game->printGameBoard());
+                   if(!startingMatch)
+                   {
+                     this->currentToken=*message->getNonce()+1;
+                     this->currTokenChatAdv=this->currentToken+TOKEN_GAP;
+                     this->currTokenChat=this->currTokenChatAdv + 1;
+                     currTokenIninzialized=true;
+                     keyExchangeClientSend();
+                   }
+                   if(!chatWait.empty())
+                   {
+                     chatWait.clear();
+                   }
+                   startingMatch=false;
+                 }
+                 break;
+               case MOVE:
+                 ReciveGameMove(message);
+                 break;
+               case CHAT:
+                 reciveChatProtocol(message);
+                 break;
+               case ACK:
+                 receiveACKChatProtocol(message);
+                 break;
+             }
           }
         }
         

@@ -49,6 +49,7 @@ namespace client
   class MainClient
   {
     private:
+      NetMessage* partialKey;
       long timer=15;
       vector<string> chatWait;
       Message* messageChatToACK=nullptr;
@@ -65,8 +66,9 @@ namespace client
       int nonce;
       bool logged=false;
       ClientPhase clientPhase= ClientPhase::NO_PHASE;
-      int currentToken;//da inizializzare nel main
-      int currTokenChat;//da inizializzare nel main
+      bool currTokenIninzialized=false;
+      unsigned int currentToken;//da inizializzare nel main
+      unsigned int currTokenChat;//da inizializzare nel main
       int* advPort=nullptr;
       const char* serverIP="127.0.0.1";
       int serverPort=12345;
