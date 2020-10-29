@@ -5,7 +5,12 @@ namespace client{
 	TextualInterfaceManager::TextualInterfaceManager(){
 
 		ifstream myfile;
+		ifstream myconf;
+
 		string line;
+
+		adj_x=-1;
+		adj_y=-1;
 		login_page = "";
 		main_page = "";
 		myfile.open ("src/client/data/login-art.txt", ios::in );
@@ -25,6 +30,25 @@ namespace client{
 			while ( getline (myfile,line) )
 				game_page= game_page+line+"\n";
 		myfile.close();
+
+        myfile.open ("data/screen_size.conf", ios::in );
+
+        if (myfile.is_open()) {
+            while ( getline (myfile,line) ){
+                if( adj_x == -1 )
+                    adj_x = stoi(line);
+                else
+                    adj_y = stoi(line);
+                if(adj_y != -1 )
+                    break;
+                }
+            if( adj_x == -1 || adj_x > 50 || adj_x <0 ) adj_x = 0;
+            if( adj_y == -1 || adj_y > 50 || adj_y < 0 ) adj_y = 0;
+
+        }else
+            exit(1);
+
+        myfile.close();
 	}
 
 
@@ -43,9 +67,23 @@ namespace client{
 		//execve("tput clear");//da rinserire
                 std::cout <<"\033[2J\033[1;1H";
                 cout.flush();
-		cout<<login_page<<endl;
+		this->printColoredLogin();
 		//cout<<"\t# Insert a command:";
 		cout.flush();
+
+	}
+
+	void TextualInterfaceManager::printColoredLogin(){
+
+	    for( int a = 0; a<adj_y; a++ )
+	        cout<<endl;
+
+	    cout<<"\033[0;33m"<<login_page.substr(0,2500)<<"\033[0m";
+        cout<<"\033[0;31m"<<login_page.substr(2500,324 )<<"\033[0m"<<login_page.substr( 2824, 114 );
+        cout<<"\033[0;31m"<<login_page.substr(2938,10 )<<"\033[0m"<<login_page.substr( 2948, 110 );
+        cout<<"\033[0;31m"<<login_page.substr(3058 )<<"\033[0m"<<endl;
+	    //cout<<login_page.substr( 2591 );
+	    cout<<endl;
 
 	}
 
@@ -62,11 +100,31 @@ namespace client{
 		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::MATCH_STATUS , matchStatus , value);
 		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::PENDING_SIZE , pendingStatus , value);
                 this->username=username;
-		cout<<value<<endl;
+                this->printColoredMain( value );
 		//cout<<"\t# Insert a command:";
 		cout.flush();
 
 	}
+
+    void TextualInterfaceManager::printColoredMain(string page){
+
+        for( int a = 0; a<adj_y; a++ )
+            cout<<endl;
+        
+        cout<<"\033[0;33m"<<page.substr(0,665)<<"\033[0m";
+        cout<<"\033[0;34m"<<page.substr(665,678 )<<"\033[0m";
+        cout<<page.substr(1343,29)<<"\033[0;34m"<<page.substr(1372,36 )<<"\033[0m"<<page.substr( 1408, 27 )<<"\033[0;34m"<<page.substr(1435, 29 )<<"\033[0m";
+        cout<<page.substr(1464,29)<<"\033[0;34m"<<page.substr(1493,36 )<<"\033[0m"<<page.substr( 1529, 27 )<<"\033[0;34m"<<page.substr(1556, 29 )<<"\033[0m";
+        cout<<page.substr(1585,29)<<"\033[0;34m"<<page.substr(1614,36 )<<"\033[0m"<<page.substr( 1650, 27 )<<"\033[0;34m"<<page.substr(1677, 329 )<<"\033[0m";
+        cout<<"\033[0;31m"<<page.substr(2006,245)<<"\033[0m"<<page.substr(2251,115 )<<"\033[31m"<<page.substr( 2366, 6 ) <<"\033[0m";
+        cout<<page.substr(2372,115 )<<"\033[31m"<<page.substr( 2487, 6 ) <<"\033[0m";
+        cout<<page.substr(2493,115 )<<"\033[31m"<<page.substr( 2608, 6 ) <<"\033[0m";
+        cout<<page.substr(2614,115 )<<"\033[31m"<<page.substr( 2729, 6 ) <<"\033[0m";
+        cout<<page.substr(2735,115 )<<"\033[31m"<<page.substr( 2850 ) <<"\033[0m";
+        //cout<<login_page.substr( 2591 );
+        cout<<endl;
+
+    }
 
 	void TextualInterfaceManager::printGameInterface(bool myMove, string timer,string chat,string gameboard){
 	
@@ -85,6 +143,9 @@ namespace client{
 		cin>>command;
 		//return false;
 	}
+
+	void TextualInterfaceManager::printColoredGame(string page ){}
+
 
 	string TextualInterfaceManager::insertElement( InterfacePage page , InputType input , string elem , string base)
         {

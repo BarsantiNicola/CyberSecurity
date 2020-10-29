@@ -43,14 +43,19 @@ namespace client{
 		string main_page;
 		string game_page;
                 string username;
+                int adj_x;
+                int adj_y;
 		void* game;
 	
 	public:
 		TextualInterfaceManager();
                 string* getUsername();
 		void printLoginInterface();
+		void printColoredLogin();
 		void printMainInterface(string username,string activeUser,string serverStatus,string matchStatus,string pendingStatus);
+        void printColoredMain( string page );
 		void printGameInterface(bool myMove, string timer,string chat,string gameBoard);
+        void printColoredGame( string page );
 		void setGame(void* game);
 		void setUsername(string username);
 		void printRankOrUserList(string message);
