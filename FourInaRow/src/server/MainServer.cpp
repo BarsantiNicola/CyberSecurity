@@ -69,6 +69,7 @@ namespace server {
 
                     base<<"--> [MainServer][server] Client "<<sock<<" disconnected"<<'\n';
                     this->logoutClient( sock );
+                    this->clientRegister.removeClient( sock );
                     continue;
 
                 }
