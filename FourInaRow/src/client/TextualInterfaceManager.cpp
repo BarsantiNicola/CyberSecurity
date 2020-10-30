@@ -129,7 +129,6 @@ namespace client{
 
     void TextualInterfaceManager::printColoredMain(string page){
 
-
         for( int a = 0; a<adj_y; a++ )
             cout<<endl;
 
@@ -186,17 +185,91 @@ namespace client{
                 //execve("tput clear");//da rinserire
                 cout<<"\033[2J\033[1;1H";
                 cout.flush();
-                value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::TIMER,timer,game_page);
-		value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::CHAT,chat,value);
+                //value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::TIMER,timer,game_page);
+		value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::CHAT,chat,game_page );
                 value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::GAMEBOARD,gameboard,value);
-		cout<<value<<endl;
+		this->printColoredGame( value );
 		cout<<"\t# Insert a command:";
 		cout.flush();
 		cin>>command;
 		//return false;
 	}
 
-	void TextualInterfaceManager::printColoredGame(string page ){}
+	void TextualInterfaceManager::printColoredGame(string page ){
+
+        for( int a = 0; a<adj_y; a++ )
+            cout<<endl;
+
+        for( int a = 0; a<35; a++ ) {
+
+            for( int b = 0; b<adj_x; b++)
+                cout<<" ";
+
+            switch (a) {
+
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                case 8:
+                    cout << "\033[0;33m" << page.substr(a * 121, 121) << "\033[0m";
+                    break;
+
+                case 9:
+                    cout<<page.substr(a * 121, 121);
+                    break;
+
+                case 10:
+                    cout << "\033[0;34m" << page.substr(a * 121, 63)<<"\033[0m"<< page.substr(a * 121+63,  58);
+                    break;
+
+                case 11:
+                    cout << "\033[0;34m" << page.substr(a * 121, 9) << "\033[0m"<< page.substr(a * 121+9, 52 );
+                    cout <<"\033[0;34m"<<page.substr(a*121+61,60)<<"\033[0m";
+                    break;
+
+
+                case 23:
+                    cout << "\033[0;34m" << page.substr(a * 121, 121) << "\033[0m";
+                    break;
+
+                case 29:
+                case 30:
+                case 31:
+                case 32:
+                    cout << "\033[0;31m" << page.substr(a * 121, 3) << "\033[0m"
+                         << page.substr(a * 121 + 3, 115) << "\033[0;31m" << page.substr(a * 121 + 118, 3)
+                         << "\033[0m";
+                    break;
+
+                case 27:
+                case 28:
+                case 33:
+                case 34:
+                    cout << "\033[0;31m" << page.substr(a * 121, 121) << "\033[0m";
+                    break;
+
+                default:
+                    cout << "\033[0;34m" << page.substr(a * 121, 9) << "\033[0m"<< /*CHAT ANALYSIS HERE*/ page.substr(a * 121+9, 52 );
+                    cout <<"\033[0;34m"<<page.substr(a*121+61,24)<<"\033[0m";
+                    for( int x = 0;x<33;x++)
+                        switch( page[a*121+85+x]) {
+                            case 'O':
+                                cout << "\033[0;34mO\033[0m";
+                            case 'X':
+                                cout << "\033[0;31mO\033[0m";
+                            default:
+                                cout << page[a * 121 + 85 + x];
+                        }
+                    cout<<"\033[0;34m"<<page.substr(a*121+118,3 )<<"\033[0m";
+                    break;
+       //
+            }
+        }
+        cout<<endl;
+
+	}
 
 
 	string TextualInterfaceManager::insertElement( InterfacePage page , InputType input , string elem , string base)
