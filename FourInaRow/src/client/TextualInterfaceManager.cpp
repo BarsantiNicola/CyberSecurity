@@ -78,12 +78,33 @@ namespace client{
 	    for( int a = 0; a<adj_y; a++ )
 	        cout<<endl;
 
-	    cout<<"\033[0;33m"<<login_page.substr(0,2500)<<"\033[0m";
-        cout<<"\033[0;31m"<<login_page.substr(2500,324 )<<"\033[0m"<<login_page.substr( 2824, 114 );
-        cout<<"\033[0;31m"<<login_page.substr(2938,10 )<<"\033[0m"<<login_page.substr( 2948, 110 );
-        cout<<"\033[0;31m"<<login_page.substr(3058 )<<"\033[0m"<<endl;
-	    //cout<<login_page.substr( 2591 );
-	    cout<<endl;
+	    for( int a = 0; a<36; a++ ) {
+
+	        for( int b = 0; b<adj_x; b++)
+	            cout<<" ";
+            switch (a) {
+
+                case 29:
+                case 35:
+                    cout << "\033[0;31m" << login_page.substr(a * 121, 121) << "\033[0m";
+                    break;
+
+                case 30:
+                case 31:
+                case 32:
+                case 33:
+                case 34:
+                    cout << "\033[0;31m" << login_page.substr(a * 121, 3) << "\033[0m"
+                         << login_page.substr(a * 121 + 3, 115) << "\033[0;31m" << login_page.substr(a * 121 + 118, 3)
+                         << "\033[0m";
+                    break;
+
+                default:
+                    cout << "\033[0;33m" << login_page.substr(a * 121, 121) << "\033[0m";
+                    break;
+            }
+        }
+        cout<<endl;
 
 	}
 
@@ -108,20 +129,51 @@ namespace client{
 
     void TextualInterfaceManager::printColoredMain(string page){
 
+
         for( int a = 0; a<adj_y; a++ )
             cout<<endl;
-        
-        cout<<"\033[0;33m"<<page.substr(0,665)<<"\033[0m";
-        cout<<"\033[0;34m"<<page.substr(665,678 )<<"\033[0m";
-        cout<<page.substr(1343,29)<<"\033[0;34m"<<page.substr(1372,36 )<<"\033[0m"<<page.substr( 1408, 27 )<<"\033[0;34m"<<page.substr(1435, 29 )<<"\033[0m";
-        cout<<page.substr(1464,29)<<"\033[0;34m"<<page.substr(1493,36 )<<"\033[0m"<<page.substr( 1529, 27 )<<"\033[0;34m"<<page.substr(1556, 29 )<<"\033[0m";
-        cout<<page.substr(1585,29)<<"\033[0;34m"<<page.substr(1614,36 )<<"\033[0m"<<page.substr( 1650, 27 )<<"\033[0;34m"<<page.substr(1677, 329 )<<"\033[0m";
-        cout<<"\033[0;31m"<<page.substr(2006,245)<<"\033[0m"<<page.substr(2251,115 )<<"\033[31m"<<page.substr( 2366, 6 ) <<"\033[0m";
-        cout<<page.substr(2372,115 )<<"\033[31m"<<page.substr( 2487, 6 ) <<"\033[0m";
-        cout<<page.substr(2493,115 )<<"\033[31m"<<page.substr( 2608, 6 ) <<"\033[0m";
-        cout<<page.substr(2614,115 )<<"\033[31m"<<page.substr( 2729, 6 ) <<"\033[0m";
-        cout<<page.substr(2735,115 )<<"\033[31m"<<page.substr( 2850 ) <<"\033[0m";
-        //cout<<login_page.substr( 2591 );
+
+        for( int a = 0; a<34; a++ ) {
+
+            for( int b = 0; b<adj_x; b++)
+                cout<<" ";
+            switch (a) {
+
+                case 14:
+                case 15:
+                case 16:
+                    cout << "\033[0;34m" << page.substr(a * 121, 9) << "\033[0m"<< page.substr(a * 121+9, 29 );
+                    cout <<"\033[0;34m"<<page.substr(a*121+38,36)<<"\033[0m"<< page.substr(a * 121+74, 27 )<<"\033[0;34m"<<page.substr(a*121+101,20 )<<"\033[0m";
+                    break;
+                case 12:
+                case 13:
+                case 17:
+                case 18:
+                    cout << "\033[0;34m" << page.substr(a * 121, 121) << "\033[0m";
+                    break;
+
+                case 27:
+                case 28:
+                case 29:
+                case 30:
+                case 31:
+                    cout << "\033[0;31m" << page.substr(a * 121, 3) << "\033[0m"
+                         << page.substr(a * 121 + 3, 115) << "\033[0;31m" << page.substr(a * 121 + 118, 3)
+                         << "\033[0m";
+                    break;
+
+                case 25:
+                case 26:
+                case 32:
+                case 33:
+                    cout << "\033[0;31m" << page.substr(a * 121, 121) << "\033[0m";
+                    break;
+
+                default:
+                    cout << "\033[0;33m" << page.substr(a * 121, 121) << "\033[0m";
+                    break;
+            }
+        }
         cout<<endl;
 
     }
