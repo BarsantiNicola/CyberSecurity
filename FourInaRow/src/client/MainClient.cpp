@@ -1200,6 +1200,7 @@ namespace client
      case GAME:
         message->setMessageType(GAME); 
         message->setCurrent_Token(this->currentToken);
+        vverbose<<"--> [MainClient][createMessage] the actual token is:"<<this->currentToken<<'\n';
         message->setChosenColumn(  g_param,g_paramLen);
         cipherRes=cipher_client->toSecureForm( message,aesKey );
         break;
@@ -1327,6 +1328,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     Message* retMess;
     NetMessage* netMess;
     StatGame statGame;
+    verbose<<"-->[MainClient][MakeAndSendGameMove] start function"<<'\n';
     statGame=game->makeMove(column,&iWon,&adversaryWon,&tie,true);
     switch(statGame)
     {
@@ -1344,10 +1346,12 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         cout.flush();
         break;
       case BAD_TURN:
-        verbose<<"-->[MainClient][MakeAndSendGameMove] error bad turn "<<'\n';
-        break;
+        std::cout<<"It's not your turn wait. \n"<<endl;
+        std::cout<<"\t# Insert a command:";
+        cout.flush();
       case MOVE_OK:
        case GAME_FINISH://verify if ok
+        vverbose<<"-->[MainClient][MakeAndSendGameMove] start game move with column: "<<column<<'\n';
         currTokenIninzialized=false;
         std::string app=std::to_string(column);
         appMess = createMessage(MessageType::GAME,nullptr,(unsigned char*) app.c_str(),app.size(),nullptr,MessageGameType::MOVE_TYPE,false);
@@ -1363,6 +1367,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         waitForAck=true;
         while(waitForAck)
         {
+          vverbose<<"-->[MainClient][MakeAndSendGameMove] start whait for ack message"<<'\n';
           descrList=connection_manager->waitForMessage(nullptr,nullptr);
           if(!descrList.empty())
           {        
@@ -1498,6 +1503,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     int appLen;
     unsigned char* c_app;
     Message* messageACK;
+    vverbose<<"-->[MainClient][ReceiveGameMove] ReceiveGameMoveStart"<<'\n';
     if(message==nullptr)
       return;
     if(message->getMessageType()!=MessageType::MOVE)
@@ -1510,6 +1516,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     }
     if(*c_token!=this->currentToken)
     {
+      vverbose<<"-->[MainClient][ReceiveGameMove] Token not valid"<<'\n';
       messageACK=createMessage(ACK,nullptr,nullptr,0,aesKeyClient,*c_token,false);
       connection_manager->sendMessage(*messageACK,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
       return;
@@ -1776,7 +1783,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         std::string app=comand_line.substr(10);
         if(!app.empty())
         {
+           vverbose<<"-->[MainClient][comand]start make move"<<'\n';
            column=std::stoi(app,nullptr,10);
+           vverbose<<"-->[MainClient][comand]the column is"<<column<<'\n';
            bool res = MakeAndSendGameMove(column);
            if(!res)
            {
@@ -2117,7 +2126,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                  {
                    clientPhase=INGAME_PHASE;
                    game=new Game(250,startingMatch);
-                   textual_interface_manager->printGameInterface(startingMatch, std::to_string(timer)," ",game->printGameBoard());
+                   
                    if(!startingMatch)
                    {
                      this->currentToken=*message->getNonce()+1;
@@ -2131,6 +2140,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                      chatWait.clear();
                    }
                    startingMatch=false;
+                   textual_interface_manager->printGameInterface(startingMatch, std::to_string(timer)," ",game->printGameBoard());
                  }
                  break;
                case MOVE:

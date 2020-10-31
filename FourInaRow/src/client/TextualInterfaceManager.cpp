@@ -325,7 +325,7 @@ namespace client{
                                         if(elem[a]=='\n'&& input==InputType::GAMEBOARD)
 				        {
                                           ++number_game_row;
-                                          position = START_GAMEBOARD_POSITION + LOCAL_GAMEBOARD_POSITION +(number_game_row*NUMBER_COLLUMN_FOR_ROW)-(a+1);
+                                          position = START_GAMEBOARD_POSITION +(NUMBER_COLLUMN_FOR_ROW-LOCAL_GAMEBOARD_POSITION)+LOCAL_GAMEBOARD_POSITION +(number_game_row*NUMBER_COLLUMN_FOR_ROW)-(a+1);
                                         }
                                         else 
                                         { 
