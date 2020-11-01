@@ -191,7 +191,7 @@ namespace client{
 		this->printColoredGame( value );
 		cout<<"\t# Insert a command:";
 		cout.flush();
-		cin>>command;
+		//cin>>command;
 		//return false;
 	}
 

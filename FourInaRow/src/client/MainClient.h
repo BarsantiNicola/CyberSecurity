@@ -51,6 +51,7 @@ namespace client
     private:
       NetMessage* partialKey;
       long timer=15;
+      int nonceAdv=0;
       vector<string> chatWait;
       Message* messageChatToACK=nullptr;
       bool time_expired=false;

@@ -1199,8 +1199,8 @@ namespace client
 
      case GAME:
         message->setMessageType(GAME); 
-        message->setCurrent_Token(this->currentToken);
-        vverbose<<"--> [MainClient][createMessage] the actual token is:"<<this->currentToken<<'\n';
+        message->setNonce(this->nonce);
+        this->nonce++;
         message->setChosenColumn(  g_param,g_paramLen);
         cipherRes=cipher_client->toSecureForm( message,aesKey );
         break;
@@ -1349,6 +1349,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         std::cout<<"It's not your turn wait. \n"<<endl;
         std::cout<<"\t# Insert a command:";
         cout.flush();
+        break;
       case MOVE_OK:
        case GAME_FINISH://verify if ok
         vverbose<<"-->[MainClient][MakeAndSendGameMove] start game move with column: "<<column<<'\n';
@@ -1360,7 +1361,13 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         netMess=Converter::encodeMessage(MessageType::GAME , *appMess );
         if(netMess==nullptr)
           return false;
+        vverbose<<"-->[MainClient][MakeAndSendGameMove] start concatenate two parameter"<<'\n';
         resu=concTwoField((unsigned char*) app.c_str(),app.size(),netMess->getMessage() ,netMess->length(),'&',NUMBER_SEPARATOR);
+        vverbose<<"-->[MainClient][MakeAndSendGameMove] end concatenate two parameter"<<'\n';
+        if(resu==nullptr)
+        {
+          return false;
+        }
         message=createMessage(MessageType::MOVE,nullptr,resu,app.size() + netMess->length() + NUMBER_SEPARATOR,aesKeyClient,MessageGameType::MOVE_TYPE,false);
         connection_manager->sendMessage(*message,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
         time(&start);
@@ -1499,7 +1506,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     NetMessage* netGameMess;
     Message* messG;
     unsigned int gameMessLen=0;
-    int* c_token;
+    int* c_nonce;
     int appLen;
     unsigned char* c_app;
     Message* messageACK;
@@ -1508,19 +1515,22 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       return;
     if(message->getMessageType()!=MessageType::MOVE)
       return;
-    c_token=message->getCurrent_Token();
+    c_nonce=message->getCurrent_Token();
     res=cipher_client->fromSecureForm( message, username ,aesKeyClient,false); 
     if(!res)
     {
       return;
     }
-    if(*c_token!=this->currentToken)
+    if(*c_nonce<this->nonceAdv)
     {
-      vverbose<<"-->[MainClient][ReceiveGameMove] Token not valid"<<'\n';
-      messageACK=createMessage(ACK,nullptr,nullptr,0,aesKeyClient,*c_token,false);
+      vverbose<<"-->[MainClient][ReceiveGameMove] nonce not valid"<<'\n';
+      messageACK=createMessage(ACK,nullptr,nullptr,0,aesKeyClient,*c_nonce,false);
       connection_manager->sendMessage(*messageACK,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
+      delete c_nonce;
       return;
     }
+    nonceAdv=*c_nonce;
+    delete c_nonce;
     c_app=message->getChosenColumn();
     appLen=message->getChosenColumnLength();
     try
@@ -1565,8 +1575,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
      return;
    }
    
-   connection_manager->sendMessage(*messG,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
-   this->currentToken++;
+   //connection_manager->sendMessage(*messG,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
+   //this->currentToken++;
    textual_interface_manager->printGameInterface(true, string("15"),game->getChat(),game->printGameBoard());
    if(socketIsClosed)
    {
@@ -2126,7 +2136,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                  {
                    clientPhase=INGAME_PHASE;
                    game=new Game(250,startingMatch);
-                   
+                   nonceAdv=0;
                    if(!startingMatch)
                    {
                      this->currentToken=*message->getNonce()+1;
@@ -2153,6 +2163,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                  receiveACKChatProtocol(message);
                  break;
              }
+             
           }
         }
         
