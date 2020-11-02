@@ -1357,10 +1357,18 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         std::string app=std::to_string(column);
         appMess = createMessage(MessageType::GAME,nullptr,(unsigned char*) app.c_str(),app.size(),nullptr,MessageGameType::MOVE_TYPE,false);
         if(appMess==nullptr)
+        {
+          verbose<<"-->[MainClient][MakeAndSendGameMove] error to create a message "<<'\n';
           return false;
+        }
+        vverbose<<"-->[MainClient][MakeAndSendGameMove] start convert to netMessage: "<<'\n';
         netMess=Converter::encodeMessage(MessageType::GAME , *appMess );
+        vverbose<<"-->[MainClient][MakeAndSendGameMove] end convert to netMessage: "<<'\n';
         if(netMess==nullptr)
+        {
+          verbose<<"-->[MainClient][MakeAndSendGameMove] error to create a Netmessage "<<'\n';
           return false;
+        }
         vverbose<<"-->[MainClient][MakeAndSendGameMove] start concatenate two parameter"<<'\n';
         resu=concTwoField((unsigned char*) app.c_str(),app.size(),netMess->getMessage() ,netMess->length(),'&',NUMBER_SEPARATOR);
         vverbose<<"-->[MainClient][MakeAndSendGameMove] end concatenate two parameter"<<'\n';

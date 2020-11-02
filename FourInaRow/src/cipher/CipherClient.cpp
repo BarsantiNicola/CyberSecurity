@@ -270,11 +270,17 @@ namespace cipher
         
          if(message->getSignature()==nullptr)
          {
+           vverbose<<"-->[CipherClient][toSecureForm] securing GAME to rsa"<<'\n';
            if( !this->rsa->sign(message))
+           {
+             verbose<<"-->[CipherClient][toSecureForm] failed to secure GAME with rsa"<<'\n';
              return false;
+           }
+           vverbose<<"-->[CipherClient][toSecureForm] secured GAME with rsa"<<'\n';
          }
          else
          {
+           vverbose<<"-->[CipherClient][toSecureForm] securing GAME to AES"<<'\n';
            if(aesKey==nullptr)
              return false;
            correct=this->aes->modifyParam( aesKey );
