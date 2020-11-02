@@ -635,25 +635,16 @@ namespace utility{
                     return false;
                 }
 
-                chat = message.getSignatureAES();
-                if( !chat ){
-                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing AES_Signature"<<'\n';
-                    delete nonce;
-                    delete[] signature;
-                    return false;
-                }
-
-                if( checkField(chat,message.getSignatureAESLen()) || checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length()) || checkField(chosen_column,message.getChosenColumnLength())) {
+                if( checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length()) || checkField(chosen_column,message.getChosenColumnLength())) {
                     verbose<<"--> [Converter][verifyMessage] Verification failure"<<'\n';
                     delete nonce;
-                    delete[] chat;
                     delete[] signature;
                     delete[] chosen_column;
                     return false;
                 }
-                vverbose<<"--> [Converter][verifyMessage] Verification MOVE success"<<'\n';
+                
+                vverbose<<"--> [Converter][verifyMessage] Verification GAME success"<<'\n';
                 delete nonce;
-                delete[] chat;
                 delete[] signature;
                 delete[] chosen_column;
                 break;
@@ -677,22 +668,33 @@ namespace utility{
 
                 chosen_column = message.getChosenColumn();
                 if( !chosen_column ){
-                    verbose<<"--> [Converter][verifyMessage] Verification failure: Misssing Chosen Column"<<'\n';
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Chosen Column"<<'\n';
                     delete nonce;
                     delete[] signature;
                     return false;
                 }
-
+		
+		chat = message.getMessage();
+		if( !chat ){
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Message GAME"<<'\n';
+                    delete nonce;
+                    delete[] signature;
+                    delete[] chat;
+                    return false;
+                }
+		
                 if( checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length()) || checkField(chosen_column,message.getChosenColumnLength())) {
                     verbose<<"--> [Converter][verifyMessage] Verification failure"<<'\n';
                     delete nonce;
                     delete[] signature;
+                    delete[] chat;
                     delete[] chosen_column;
                     return false;
                 }
                 vverbose<<"--> [Converter][verifyMessage] Verification MOVE success"<<'\n';
                 delete nonce;
                 delete[] signature;
+                delete[] chat;
                 delete[] chosen_column;
                 break;
 
@@ -1284,41 +1286,11 @@ namespace utility{
                 break;
 
             case GAME:
-                verbose<<"--> [Converter][verifyMessage] Check GAME"<<'\n';
+                verbose<<"--> [Converter][verifyCompact] Check GAME"<<'\n';
 
                 nonce = message.getNonce();
                 if( !nonce ){
-                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Current Token\""<<'\n';
-                    return false;
-                }
-                nonceString = (unsigned char*)to_string(*nonce).c_str();
-
-                chosen_column = message.getChosenColumn();
-                if( !chosen_column ){
-                    verbose<<"--> [Converter][verifyMessage] Verification failure: Misssing Chosen Column"<<'\n';
-                    delete nonce;
-                    return false;
-                }
-
-                if( checkField(nonceString,to_string(*nonce).length()) || checkField(chosen_column,message.getChosenColumnLength())) {
-                    verbose<<"--> [Converter][verifyMessage] Verification failure"<<'\n';
-                    delete nonce;
-                    delete[] chat;
-                    delete[] chosen_column;
-                    return false;
-                }
-                vverbose<<"--> [Converter][verifyMessage] Verification MOVE success"<<'\n';
-                delete nonce;
-                delete[] chat;
-                delete[] chosen_column;
-                break;
-
-            case MOVE:
-                vverbose<<"--> [Converter][verifyCompact] Check MOVE"<<'\n';
-
-                nonce = message.getCurrent_Token();
-                if( !nonce ){
-                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Current Token"<<'\n';
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Current Token\""<<'\n';
                     return false;
                 }
                 nonceString = (unsigned char*)to_string(*nonce).c_str();
@@ -1336,8 +1308,47 @@ namespace utility{
                     delete[] chosen_column;
                     return false;
                 }
+
+                vverbose<<"--> [Converter][verifyCompact] Verification GAME success"<<'\n';
+                delete nonce;
+                delete[] chosen_column;
+                break;
+
+            case MOVE:
+                vverbose<<"--> [Converter][verifyCompact] Check MOVE"<<'\n';
+
+                nonce = message.getCurrent_Token();
+                if( !nonce ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Current Token"<<'\n';
+                    return false;
+                }
+                nonceString = (unsigned char*)to_string(*nonce).c_str();
+
+                chosen_column = message.getChosenColumn();
+                if( !chosen_column ){
+                    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Chosen Column"<<'\n';
+                    delete nonce;
+                    return false;
+                }
+
+		chat = message.getMessage();
+		
+		if( !chat){
+		    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Message GAME"<<'\n';
+                    delete nonce;
+                    return false;
+		}
+		
+                if( checkField(nonceString,to_string(*nonce).length()) || checkField(chosen_column,message.getChosenColumnLength()) || checkField(chat,message.getMessageLength())) {
+                    verbose<<"--> [Converter][verifyCompact] Verification failure"<<'\n';
+                    delete nonce;
+                    delete[] chat;
+                    delete[] chosen_column;
+                    return false;
+                }
                 vverbose<<"--> [Converter][verifyCompact] Verification MOVE success"<<'\n';
                 delete nonce;
+                delete[] chat;
                 delete[] chosen_column;
                 break;
 
@@ -1457,7 +1468,7 @@ namespace utility{
 
         }
 
-        unsigned char* certificate,*key,*net,*sign;
+        unsigned char* certificate,*key,*net,*sign,*chat;
         int* nonce,*port;
         int pos;
         switch( type ){
@@ -1820,7 +1831,8 @@ namespace utility{
                 pos = writeField(value , 't', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
                 pos = writeField(value , 'v', key,message.getChosenColumnLength(),pos,false  );
                 pos = writeField(value , 's', sign, message.getSignatureLen(), pos,false );
-                pos = writeField(value, 'w' , message.getSignatureAES(), message.getSignatureAESLen(), pos , true );
+                if( message.getSignatureAESLen() != 0 ) 
+                	pos = writeField(value, 'w' , message.getSignatureAES(), message.getSignatureAESLen(), pos , true );
                 delete[] sign;
 
                 delete[] key;
@@ -1831,19 +1843,22 @@ namespace utility{
                 sign = message.getSignature();
                 len = 29+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen()+message.getSignatureAESLen();
                 key = message.getChosenColumn();
+                
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
                     return nullptr;
                 }
+                
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
                 pos = writeField(value , 't', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
                 pos = writeField(value , 'v', key,message.getChosenColumnLength(),pos,false  );
+                pos = writeField(value , 'h', chat, message.getMessageLength(), pos, false );
                 pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
                 delete[] sign;
-
+		delete[] chat;
                 delete[] key;
                 break;
 
@@ -2102,7 +2117,10 @@ namespace utility{
 
         for( int a= 4; a<len;a++)
             if( field[a] == '&'&& field[a-1] == '&' && field[a-2] == '&' && field[a-3] == '&' && field[a-4] == '"' ) {
-                verbose << "--> [Converter][checkField] Error, sequence \"& founded into the field" << '\n';
+                verbose << "--> [Converter][checkField] Error, sequence \"&&&& founded into the field: ";
+                for(int a = 0; a<len;a++)
+                	verbose<<field[a];
+                verbose<< '\n';
                 return true;
             }
 

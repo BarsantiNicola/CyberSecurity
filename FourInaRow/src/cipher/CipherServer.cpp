@@ -195,7 +195,12 @@ namespace cipher{
                 if( !this->rsa->sign(message))
                     return false;
                 break;
-
+                
+            case GAME:
+		if( !this->rsa->sign(message))
+		    return false;
+		break;
+		
             default:
                 vverbose<<"--> [CipherServer][toSecureForm] Error, messageType not supported:"<<message->getMessageType()<<'\n';
                 return false;
