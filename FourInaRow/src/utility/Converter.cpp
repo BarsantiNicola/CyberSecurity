@@ -615,7 +615,7 @@ namespace utility{
 
                 nonce = message.getNonce();
                 if( !nonce ){
-                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Current Token\""<<'\n';
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
                     return false;
                 }
                 nonceString = (unsigned char*)to_string(*nonce).c_str();
@@ -674,8 +674,8 @@ namespace utility{
                     return false;
                 }
 		
-		chat = message.getMessage();
-		if( !chat ){
+		        chat = message.getMessage();
+		        if( !chat ){
                     verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Message GAME"<<'\n';
                     delete nonce;
                     delete[] signature;
@@ -1331,15 +1331,15 @@ namespace utility{
                     return false;
                 }
 
-		chat = message.getMessage();
+		        chat = message.getMessage();
 		
-		if( !chat){
-		    verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Message GAME"<<'\n';
+		        if( !chat){
+		            verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Message GAME"<<'\n';
                     delete nonce;
                     return false;
-		}
+		        }
 		
-                if( checkField(nonceString,to_string(*nonce).length()) || checkField(chosen_column,message.getChosenColumnLength()) || checkField(chat,message.getMessageLength())) {
+                if( checkField(nonceString,to_string(*nonce).length()) || checkField(chosen_column,message.getChosenColumnLength())) {
                     verbose<<"--> [Converter][verifyCompact] Verification failure"<<'\n';
                     delete nonce;
                     delete[] chat;
