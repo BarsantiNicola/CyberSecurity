@@ -324,7 +324,7 @@ This function encryptMessage with AES_256 gcm
         newMessage->setSignature( tag , 16 );
       }
 
-      bool result=insertField(newMessage->getMessageType(),newMessage,ciphertext,lengthcipher);
+      bool result=insertField(newMessage->getMessageType(),newMessage,ciphertext,lengthcipher,false);
       if(result==false)
       {
         delete[]ciphertext;
@@ -492,7 +492,7 @@ This function encryptMessage with AES_256 gcm
         delete[]plaintext;
         return nullptr;
       }
-            bool result=insertField(newMessage->getMessageType(),newMessage,plaintext,lengthplain);
+            bool result=insertField(newMessage->getMessageType(),newMessage,plaintext,lengthplain,true);
       if(result==false)
       {
         delete[]textToDecrypt;
@@ -525,7 +525,7 @@ This function encryptMessage with AES_256 gcm
   } 
  
 
- bool CipherAES::insertField(MessageType type,Message* message,unsigned char* valueField,int valueFieldLength)
+ bool CipherAES::insertField(MessageType type,Message* message,unsigned char* valueField,int valueFieldLength,bool decrypt)
  {
    bool result=false;
    switch(type)
@@ -546,7 +546,50 @@ This function encryptMessage with AES_256 gcm
       break;
 
     case MOVE:
-      message->setChosenColumn(valueField,valueFieldLength);
+      if(decrypt)
+      {
+        unsigned int collSize;
+        unsigned int gameSize;
+        unsigned char* coll=nullptr;
+        unsigned char* game=nullptr;
+        result=getDeconcatenateLength(valueField,valueFieldLength,&collSize,&gameSize,(unsigned char) '&',(unsigned int) 5);
+        if(!result)
+        {
+          return false;
+        }
+        try
+        {
+          coll=new unsigned char[collSize];
+        }
+        catch(std::bad_alloc)
+        {
+          return false;
+        }
+        try
+        {
+          game=new unsigned char[gameSize];
+        }
+        catch(std::bad_alloc)
+        {
+          delete coll;
+          return false;
+        }
+        result=deconcatenateTwoField(valueField,valueFieldLength,coll,&collSize,game,&gameSize,(unsigned char) '&',(unsigned int) 5);
+        if(!result)
+        {
+          return false;
+        }
+        message->setChosenColumn(coll,collSize);
+        message->setMessage(game,gameSize);
+        delete coll;
+        delete game;
+        result=true;
+      }
+      else
+      {
+        message->setChosenColumn(valueField,valueFieldLength);
+        result=true;
+      }
       break;
 
     case CHAT:
@@ -566,6 +609,94 @@ This function encryptMessage with AES_256 gcm
    /*delete[] iv;
    delete[] key;*/
  }
+/*
+  ------------------------------deconcatenateTwoField function----------------------------------
+*/
+  bool CipherAES::deconcatenateTwoField(unsigned char* originalField,unsigned int originalFieldSize,unsigned char* firstField,unsigned int* firstFieldSize,unsigned char* secondField,unsigned int* secondFieldSize, unsigned char separator,unsigned int numberSeparator)
+  {
+    int counter=0;
+    int firstDimension=0;
+    int secondDimension=0;
+    if(originalField==nullptr||firstFieldSize==nullptr||secondFieldSize==nullptr||secondField==nullptr||firstField==nullptr)
+      return false;
+    for(int i=0;i<originalFieldSize;++i)
+    {
+       if(originalField[i]==separator)
+       {
+         ++counter;
+         if(counter==numberSeparator)
+         {
+           firstDimension = (i-(numberSeparator-1));
+           secondDimension= originalFieldSize-i;
+           vverbose<<"-->[MainClient][deconcatenateTwoField]<<secondDimension:"<<secondDimension<<'\n';
+           break;
+         }
+       }
+       else
+       {
+         counter=0;
+       }
+    }
+    if(firstDimension==0)
+    {
+      firstDimension=originalFieldSize;
+    }
 
+    
+    for(int i=0;i<firstDimension;++i)
+    {
+      firstField[i]=originalField[i];  
+          
+    }
+    
+    vverbose<<"-->[MainClient][deconcatenateTwoField] ";
+    int j=0;
+    for(int i=(firstDimension+numberSeparator);i<originalFieldSize;++i)
+    {    
+      secondField[j]=originalField[i];
+      vverbose<<(char)secondField[j];
+      ++j;
+    }
+    vverbose<<'\n';
+    *firstFieldSize=firstDimension;
+    *secondFieldSize=secondDimension;
+    return true;
+  }
+/*
+  ------------------------------getdeconcatenateLength function----------------------------------
+*/
+  bool CipherAES::getDeconcatenateLength(unsigned char* originalField,unsigned int originalFieldSize,unsigned int* firstFieldSize,unsigned int* secondFieldSize,unsigned char separator,unsigned int numberSeparator)
+  {
+    int counter=0;
+    unsigned int firstDimension=0;
+    unsigned int secondDimension=0;
+    if(originalField==nullptr||firstFieldSize==nullptr||secondFieldSize==nullptr)
+      return false;
+    for(int i=0;i<originalFieldSize;++i)
+    {
+       if(originalField[i]==separator)
+       {
+         ++counter;
+         if(counter==numberSeparator)
+         {
+           firstDimension = (i-(numberSeparator-1));
+           secondDimension= originalFieldSize-i;
+           vverbose<<"-->[MainClient][deconcatenateTwoField]<<secondDimension:"<<secondDimension<<'\n';
+           break;
+         }
+       }
+       else
+       {
+         counter=0;
+       }
+    }
+    if(firstDimension==0)
+    {
+      firstDimension=originalFieldSize;
+    }
+    *firstFieldSize=firstDimension;
+    *secondFieldSize=secondDimension;
+    return true;
+  }
 }
  

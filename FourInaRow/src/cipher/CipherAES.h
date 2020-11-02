@@ -37,7 +37,9 @@ namespace cipher
     int gcmEncrypt(unsigned char*,int,unsigned char*,int,unsigned char*,unsigned char*);
     int gcmDecrypt(unsigned char*,int,unsigned char*,int,unsigned char*,unsigned char*);
     bool copyToFrom(int,int,unsigned char*,unsigned char*);
-    bool insertField(MessageType,Message*,unsigned char*,int);
+    bool insertField(MessageType,Message*,unsigned char*,int,bool);
+    bool deconcatenateTwoField(unsigned char* originalField,unsigned int originalFieldSize,unsigned char* firsField,unsigned int* firstFieldSize,unsigned char* secondField,unsigned int* secondFieldSize,unsigned char separator,unsigned int numberSeparator);//ok
+    bool getDeconcatenateLength(unsigned char* originalField,unsigned int originalFieldSize,unsigned int* firstFieldSize,unsigned int* secondFieldSize,unsigned char separator,unsigned int numberSeparator);
   };
 
 }

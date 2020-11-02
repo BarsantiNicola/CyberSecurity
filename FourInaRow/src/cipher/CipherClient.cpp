@@ -485,6 +485,7 @@ namespace cipher
            return false;
          }
          message->setChosenColumn( app->getChosenColumn(), app->getChosenColumnLength());
+         message->setMessage(app->getMessage(),app->getMessageLength());
          delete app;
          break;
 
@@ -624,4 +625,5 @@ namespace cipher
   {
     RSA_is_start=false;
   }
+
 }
