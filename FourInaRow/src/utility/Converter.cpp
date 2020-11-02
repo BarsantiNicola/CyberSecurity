@@ -674,27 +674,16 @@ namespace utility{
                     return false;
                 }
 		
-		        chat = message.getMessage();
-		        if( !chat ){
-                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Message GAME"<<'\n';
-                    delete nonce;
-                    delete[] signature;
-                    delete[] chat;
-                    return false;
-                }
-		
                 if( checkField( signature, message.getSignatureLen())  || checkField(nonceString,to_string(*nonce).length()) || checkField(chosen_column,message.getChosenColumnLength())) {
                     verbose<<"--> [Converter][verifyMessage] Verification failure"<<'\n';
                     delete nonce;
                     delete[] signature;
-                    delete[] chat;
                     delete[] chosen_column;
                     return false;
                 }
                 vverbose<<"--> [Converter][verifyMessage] Verification MOVE success"<<'\n';
                 delete nonce;
                 delete[] signature;
-                delete[] chat;
                 delete[] chosen_column;
                 break;
 
@@ -1330,25 +1319,15 @@ namespace utility{
                     delete nonce;
                     return false;
                 }
-
-		        chat = message.getMessage();
-		
-		        if( !chat){
-		            verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Message GAME"<<'\n';
-                    delete nonce;
-                    return false;
-		        }
 		
                 if( checkField(nonceString,to_string(*nonce).length()) || checkField(chosen_column,message.getChosenColumnLength())) {
                     verbose<<"--> [Converter][verifyCompact] Verification failure"<<'\n';
                     delete nonce;
-                    delete[] chat;
                     delete[] chosen_column;
                     return false;
                 }
                 vverbose<<"--> [Converter][verifyCompact] Verification MOVE success"<<'\n';
                 delete nonce;
-                delete[] chat;
                 delete[] chosen_column;
                 break;
 

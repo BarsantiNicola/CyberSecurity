@@ -42,14 +42,16 @@ namespace client{
 		string login_page;
 		string main_page;
 		string game_page;
-                string username;
-                int adj_x;
-                int adj_y;
+		char chatLines[10][50];
+		bool last;
+		string username;
+		int adj_x;
+        int adj_y;
 		void* game;
 	
 	public:
 		TextualInterfaceManager();
-                string* getUsername();
+		string* getUsername();
 		void printLoginInterface();
 		void printColoredLogin();
 		void printMainInterface(string username,string activeUser,string serverStatus,string matchStatus,string pendingStatus);
@@ -59,6 +61,8 @@ namespace client{
 		void setGame(void* game);
 		void setUsername(string username);
 		void printRankOrUserList(string message);
+		void printLine(int line);
+		bool setChat( string username, char message[], int len );
 
 	private:
 		string insertElement( InterfacePage page , InputType input , string value , string base);

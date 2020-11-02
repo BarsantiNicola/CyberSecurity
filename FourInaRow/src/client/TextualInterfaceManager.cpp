@@ -8,8 +8,11 @@ namespace client{
 		ifstream myconf;
 
 		string line;
-
-		adj_x=-1;
+        for(int a = 0; a<10;a++)
+            for(int b = 0; b<50;b++)
+                chatLines[a][b] = ' ';
+        last = false;
+        adj_x=-1;
 		adj_y=-1;
 		login_page = "";
 		main_page = "";
@@ -52,22 +55,49 @@ namespace client{
 	}
 
 
-       void TextualInterfaceManager::setUsername(string username)
-       {
-         this->username=username;
-       }
-       string* TextualInterfaceManager::getUsername()
-       {
-         return &username;
+	void TextualInterfaceManager::setUsername(string username)
+	{
+	    this->username=username;
+	}
+	string* TextualInterfaceManager::getUsername()
+	{
+        return &username;
 
    
-       }
+    }
+    bool TextualInterfaceManager::setChat( string username, char message[], int len ){
+
+	    if( len > 200 || username.length() > 200 ) return false;
+	    if( !last ){
+	        for( int a = 0; a<5; a++ )
+	            for( int b = 0; b<50; b++ )
+	            chatLines[a][b] = ' ';
+	        for( int a = 0; a<username.length(); a++ )
+	            chatLines[0][a] = username[a];
+	        for( int a = 0; a<len; a++ )
+	            chatLines[1+a/50][a%50] = message[a];
+	        last = true;
+	    }else{
+	        for( int a = 0; a<5; a++ )
+	            for( int b= 0; b<50; b++ )
+	                chatLines[a][b] = chatLines[5+a][b];
+            for( int a = 5; a<10; a++ )
+                for( int b = 0; b<50; b++ )
+                    chatLines[a][b] = ' ';
+            for( int a = 0; a<username.length(); a++ )
+                chatLines[5][a] = username[a];
+            for( int a = 0; a<len; a++ )
+                chatLines[6+a/50][a%50] = message[a];
+	    }
+
+	    return true;
+	}
 	void TextualInterfaceManager::printLoginInterface(){
 		string command;
 		//execve("tput clear");//da rinserire
                 std::cout <<"\033[2J\033[1;1H";
                 cout.flush();
-		this->printColoredLogin();
+		this->printColoredGame(game_page);
 		//cout<<"\t# Insert a command:";
 		cout.flush();
 
@@ -100,6 +130,7 @@ namespace client{
                     break;
 
                 default:
+
                     cout << "\033[0;33m" << login_page.substr(a * 121, 121) << "\033[0m";
                     break;
             }
@@ -249,9 +280,8 @@ namespace client{
                 case 34:
                     cout << "\033[0;31m" << page.substr(a * 121, 121) << "\033[0m";
                     break;
-
-                default:
-                    cout << "\033[0;34m" << page.substr(a * 121, 9) << "\033[0m"<< /*CHAT ANALYSIS HERE*/ page.substr(a * 121+9, 52 );
+                case 12:
+                    cout << "\033[0;34m" << page.substr(a * 121, 9) << "\033[0;36m"; this->printLine(a) /*page.substr(a * 121+9, 52 )*/;
                     cout <<"\033[0;34m"<<page.substr(a*121+61,24)<<"\033[0m";
                     for( int x = 0;x<33;x++)
                         switch( page[a*121+85+x]) {
@@ -264,6 +294,51 @@ namespace client{
                         }
                     cout<<"\033[0;34m"<<page.substr(a*121+118,3 )<<"\033[0m";
                     break;
+                case 17:
+                    cout << "\033[0;34m" << page.substr(a * 121, 9) << "\033[0;36m"; this->printLine(a) /*page.substr(a * 121+9, 52 )*/;
+                    cout <<"\033[0;34m"<<page.substr(a*121+61,24)<<"\033[0m";
+                    for( int x = 0;x<33;x++)
+                        switch( page[a*121+85+x]) {
+                            case 'O':
+                                cout << "\033[0;34mO\033[0m";
+                            case 'X':
+                                cout << "\033[0;31mO\033[0m";
+                            default:
+                                cout << page[a * 121 + 85 + x];
+                        }
+                    cout<<"\033[0;34m"<<page.substr(a*121+118,3 )<<"\033[0m";
+                    break;
+
+                default:
+                    if( a > 12 ) {
+                        cout << "\033[0;34m" << page.substr(a * 121, 9) << "\033[0m";
+                        this->printLine(a) /*page.substr(a * 121+9, 52 )*/;
+                        cout << "\033[0;34m" << page.substr(a * 121 + 61, 24) << "\033[0m";
+                        for (int x = 0; x < 33; x++)
+                            switch (page[a * 121 + 85 + x]) {
+                                case 'O':
+                                    cout << "\033[0;34mO\033[0m";
+                                case 'X':
+                                    cout << "\033[0;31mO\033[0m";
+                                default:
+                                    cout << page[a * 121 + 85 + x];
+                            }
+                        cout << "\033[0;34m" << page.substr(a * 121 + 118, 3) << "\033[0m";
+                    }else{
+                        cout << "\033[0;34m" << page.substr(a * 121, 9) << "\033[0m"<<page.substr(a * 121+9, 52 );
+                        cout << "\033[0;34m" << page.substr(a * 121 + 61, 24) << "\033[0m";
+                        for (int x = 0; x < 33; x++)
+                            switch (page[a * 121 + 85 + x]) {
+                                case 'O':
+                                    cout << "\033[0;34mO\033[0m";
+                                case 'X':
+                                    cout << "\033[0;31mO\033[0m";
+                                default:
+                                    cout << page[a * 121 + 85 + x];
+                            }
+                        cout << "\033[0;34m" << page.substr(a * 121 + 118, 3) << "\033[0m";
+                    }
+                    break;
        //
             }
         }
@@ -271,6 +346,18 @@ namespace client{
 
 	}
 
+	void TextualInterfaceManager::printLine( int line ){
+	    line-=12;
+	    if( line <10 ) {
+            cout << ' ';
+            for (int a = 0; a < 50; a++)
+                cout << chatLines[line][a];
+            cout << ' ';
+        }else
+	        for( int a = 0; a<52; a++ )
+	            cout<<' ';
+
+	}
 
 	string TextualInterfaceManager::insertElement( InterfacePage page , InputType input , string elem , string base)
         {

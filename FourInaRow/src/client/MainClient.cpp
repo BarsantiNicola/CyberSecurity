@@ -2286,7 +2286,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 */  
   int main(int argc, char** argv)
   {
-    Logger::setThreshold(  VERY_VERBOSE );
+    Logger::setThreshold(  NO_VERBOSE );
     //Logger::setThreshold(  VERBOSE );
     client::MainClient* main_client;
     if(argc==1)
