@@ -1163,13 +1163,50 @@ namespace client
         verbose<<"--> [MainClient][createMessage] the actual nonce is:"<<nonce<<'\n';
         break;
       case MOVE:
+      {
+        unsigned int colLength=0;
+        unsigned int messLength=0;
+        cipherRes=getDeconcatenateLength( g_param,g_paramLen,&colLength,&messLength,(unsigned char)'&',(unsigned int) 5);
+        if(!cipherRes)
+        {
+          break;
+        }
+        unsigned char* col;
+        unsigned char* mess;
+        try
+        {
+          col=new unsigned char[colLength];
+        }
+        catch(std::bad_alloc& e)
+        {
+          return nullptr;
+        }
+        try
+        {
+          mess=new unsigned char[messLength];
+          
+        }
+        catch(std::bad_alloc& e)
+        {
+          delete col;
+          return nullptr;
+        }
+        cipherRes=deconcatenateTwoField(g_param,g_paramLen,col,&colLength,mess,&messLength,(unsigned char)'&',(unsigned int) 5);  
+        if(!cipherRes)
+        {
+          return nullptr;
+        }   
         message->setMessageType(MOVE);
         message->setCurrent_Token(this->currentToken);
-        message->setChosenColumn(  g_param,g_paramLen);
+        message->setChosenColumn( col,colLength);
+        message->setMessage(mess,messLength);
+        delete col;
+        delete mess;
         cipherRes = this->cipher_client->toSecureForm( message,aesKey);
         verbose<<"--> [MainClient][createMessage] the actual nonce is:"<<nonce<<'\n';
+      }
         //this->nonce++;
-        break;
+      break;
       case DISCONNECT:
         message->setMessageType( DISCONNECT );
         message->setNonce(this->nonce);
@@ -1284,6 +1321,42 @@ namespace client
       ++j;
     }
     vverbose<<'\n';
+    *firstFieldSize=firstDimension;
+    *secondFieldSize=secondDimension;
+    return true;
+  }
+/*
+  ------------------------------getdeconcatenateLength function----------------------------------
+*/
+  bool MainClient::getDeconcatenateLength(unsigned char* originalField,unsigned int originalFieldSize,unsigned int* firstFieldSize,unsigned int* secondFieldSize,unsigned char separator,unsigned int numberSeparator)
+  {
+    int counter=0;
+    unsigned int firstDimension=0;
+    unsigned int secondDimension=0;
+    if(originalField==nullptr||firstFieldSize==nullptr||secondFieldSize==nullptr)
+      return false;
+    for(int i=0;i<originalFieldSize;++i)
+    {
+       if(originalField[i]==separator)
+       {
+         ++counter;
+         if(counter==numberSeparator)
+         {
+           firstDimension = (i-(numberSeparator-1));
+           secondDimension= originalFieldSize-i;
+           vverbose<<"-->[MainClient][deconcatenateTwoField]<<secondDimension:"<<secondDimension<<'\n';
+           break;
+         }
+       }
+       else
+       {
+         counter=0;
+       }
+    }
+    if(firstDimension==0)
+    {
+      firstDimension=originalFieldSize;
+    }
     *firstFieldSize=firstDimension;
     *secondFieldSize=secondDimension;
     return true;

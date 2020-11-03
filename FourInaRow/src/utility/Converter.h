@@ -26,6 +26,7 @@ class Converter {
         static bool checkField( const unsigned char* field, int len);                                //  verify a field doesn't contain &"
         static int computeNextField( NetMessage message , int position, Message* newMessage );       //  extract a field from the NetMessage string
         static bool setField( char fieldName, unsigned char* fieldValue , int len, Message* msg );   //  set a field extracted from a NetMessage string
+        static unsigned char* concTwoField(unsigned char* firstField,unsigned int firstFieldSize,unsigned char* secondField,unsigned int secondFieldSize,unsigned char separator,unsigned int numberSeparator);
 
     public:
         static NetMessage* encodeMessage(MessageType type , Message message );   //  translate a Message into a NetMessage basing on the given type, return NULL if it doesn't contain all the correct fields

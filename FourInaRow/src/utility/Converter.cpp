@@ -3380,9 +3380,11 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
 
             case MOVE:
                 nonce = message.getCurrent_Token();
-                len = to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength();
-                key = message.getChosenColumn();
-                *lengthPlaintext=len-message.getChosenColumnLength();
+                len = to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getMessageLength()+5;
+                key = concTwoField(message.getChosenColumn(),message.getChosenColumnLength(),message.getMessage(),message.getMessageLength(),(unsigned char)'&',(unsigned int)5);
+                if(key==nullptr)
+                  return nullptr;
+                *lengthPlaintext=len-message.getChosenColumnLength()-message.getMessageLength()-5;
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -3508,7 +3510,31 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
 
         return pos;
     }
-
+/*
+---------------------------concatenateTwoField function--------------------------------------
+*/
+  unsigned char* Converter::concTwoField(unsigned char* firstField,unsigned int firstFieldSize,unsigned char* secondField,unsigned int secondFieldSize,unsigned char separator,unsigned int numberSeparator)
+  {
+    if(firstField==nullptr||secondField==nullptr)
+      return nullptr;
+    int j=0;
+    unsigned char* app=new unsigned char[firstFieldSize+secondFieldSize+numberSeparator];
+    for(int i=0;i<firstFieldSize;++i)
+    {
+      app[i]=firstField[i];
+    }
+    for(int i=firstFieldSize;i<(firstFieldSize+numberSeparator);i++)
+    {
+      app[i]=separator;
+    }
+    for(int i=(firstFieldSize+numberSeparator);i<(firstFieldSize+numberSeparator+secondFieldSize);++i)
+    {
+     
+      app[i]=secondField [j];
+      ++j;
+    }
+    return app;
+  }
 
 
 }
