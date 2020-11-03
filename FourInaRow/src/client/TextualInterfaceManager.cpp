@@ -11,6 +11,10 @@ namespace client{
         for(int a = 0; a<10;a++)
             for(int b = 0; b<50;b++)
                 chatLines[a][b] = ' ';
+        for(int a = 0; a<6; a++ )
+            for( int b = 0; b<7; b++)
+                gameBoard[a][b] = 0;
+
         last = false;
         adj_x=-1;
 		adj_y=-1;
@@ -97,7 +101,7 @@ namespace client{
 		//execve("tput clear");//da rinserire
                 std::cout <<"\033[2J\033[1;1H";
                 cout.flush();
-		this->printColoredGame(game_page);
+		this->printColoredLogin();
 		//cout<<"\t# Insert a command:";
 		cout.flush();
 
@@ -227,12 +231,11 @@ namespace client{
 	}
 
 	void TextualInterfaceManager::printColoredGame(string page ){
-
+        int col = 0;
         for( int a = 0; a<adj_y; a++ )
             cout<<endl;
 
         for( int a = 0; a<35; a++ ) {
-
             for( int b = 0; b<adj_x; b++)
                 cout<<" ";
 
@@ -251,10 +254,6 @@ namespace client{
                     cout<<page.substr(a * 121, 121);
                     break;
 
-                case 10:
-                    cout << "\033[0;34m" << page.substr(a * 121, 63)<<"\033[0m"<< page.substr(a * 121+63,  58);
-                    break;
-
                 case 11:
                     cout << "\033[0;34m" << page.substr(a * 121, 9) << "\033[0m"<< page.substr(a * 121+9, 52 );
                     cout <<"\033[0;34m"<<page.substr(a*121+61,60)<<"\033[0m";
@@ -262,6 +261,8 @@ namespace client{
 
 
                 case 23:
+                case 24:
+                case 10:
                     cout << "\033[0;34m" << page.substr(a * 121, 121) << "\033[0m";
                     break;
 
@@ -285,13 +286,25 @@ namespace client{
                     cout <<"\033[0;34m"<<page.substr(a*121+61,24)<<"\033[0m";
                     for( int x = 0;x<33;x++)
                         switch( page[a*121+85+x]) {
-                            case 'O':
-                                cout << "\033[0;34mO\033[0m";
-                            case 'X':
-                                cout << "\033[0;31mO\033[0m";
+                            case '+':
+                                switch( gameBoard[(a-12)/2][col]){
+                                    case -1:
+                                        cout << "\033[0;34mO\033[0m";
+                                        break;
+                                    case 1:
+                                        cout << "\033[0;31mO\033[0m";
+                                        break;
+                                    default:
+                                        cout<<' ';
+                                        break;
+
+                                }
+                                col++;
+                                break;
                             default:
                                 cout << page[a * 121 + 85 + x];
                         }
+                    col = 0;
                     cout<<"\033[0;34m"<<page.substr(a*121+118,3 )<<"\033[0m";
                     break;
                 case 17:
@@ -299,43 +312,75 @@ namespace client{
                     cout <<"\033[0;34m"<<page.substr(a*121+61,24)<<"\033[0m";
                     for( int x = 0;x<33;x++)
                         switch( page[a*121+85+x]) {
-                            case 'O':
-                                cout << "\033[0;34mO\033[0m";
-                            case 'X':
-                                cout << "\033[0;31mO\033[0m";
+                            case '+':
+                                switch( gameBoard[(a-12)/2][col]){
+                                    case 0:
+                                        cout<< ' ';
+                                        break;
+                                    case -1:
+                                        cout << "\033[0;34mO\033[0m";
+                                        break;
+                                    case 1:
+                                        cout << "\033[0;31mO\033[0m";
+                                }
+                                col++;
+                                break;
                             default:
                                 cout << page[a * 121 + 85 + x];
                         }
+                    col = 0;
                     cout<<"\033[0;34m"<<page.substr(a*121+118,3 )<<"\033[0m";
                     break;
 
                 default:
-                    if( a > 12 ) {
+                    if( a > 10 ) {
                         cout << "\033[0;34m" << page.substr(a * 121, 9) << "\033[0m";
                         this->printLine(a) /*page.substr(a * 121+9, 52 )*/;
                         cout << "\033[0;34m" << page.substr(a * 121 + 61, 24) << "\033[0m";
-                        for (int x = 0; x < 33; x++)
-                            switch (page[a * 121 + 85 + x]) {
-                                case 'O':
-                                    cout << "\033[0;34mO\033[0m";
-                                case 'X':
-                                    cout << "\033[0;31mO\033[0m";
+                        for( int x = 0;x<33;x++)
+                            switch( page[a*121+85+x]) {
+                                case '+':
+                                    switch( gameBoard[(a-12)/2][col]){
+                                        case 0:
+                                            cout<< ' ';
+                                            break;
+                                        case -1:
+                                            cout << "\033[0;34mO\033[0m";
+                                            break;
+                                        case 1:
+                                            cout << "\033[0;31mO\033[0m";
+                                            break;
+                                    }
+                                    col++;
+                                    break;
                                 default:
                                     cout << page[a * 121 + 85 + x];
                             }
+                        col = 0;
                         cout << "\033[0;34m" << page.substr(a * 121 + 118, 3) << "\033[0m";
                     }else{
                         cout << "\033[0;34m" << page.substr(a * 121, 9) << "\033[0m"<<page.substr(a * 121+9, 52 );
                         cout << "\033[0;34m" << page.substr(a * 121 + 61, 24) << "\033[0m";
-                        for (int x = 0; x < 33; x++)
-                            switch (page[a * 121 + 85 + x]) {
-                                case 'O':
-                                    cout << "\033[0;34mO\033[0m";
-                                case 'X':
-                                    cout << "\033[0;31mO\033[0m";
+                        for( int x = 0;x<33;x++)
+                            switch( page[a*121+85+x]) {
+                                case '+':
+                                    switch( gameBoard[(a-12)/2][col]){
+                                        case 0:
+                                            cout<< ' ';
+                                            break;
+                                        case -1:
+                                            cout << "\033[0;34mO\033[0m";
+                                            break;
+                                        case 1:
+                                            cout << "\033[0;31mO\033[0m";
+                                            break;
+                                    }
+                                    col++;
+                                    break;
                                 default:
                                     cout << page[a * 121 + 85 + x];
                             }
+                        col = 0;
                         cout << "\033[0;34m" << page.substr(a * 121 + 118, 3) << "\033[0m";
                     }
                     break;
@@ -356,6 +401,30 @@ namespace client{
         }else
 	        for( int a = 0; a<52; a++ )
 	            cout<<' ';
+
+	}
+
+    void TextualInterfaceManager::resetChat(){
+
+	    for( int a = 0; a<10; a++ )
+	        for( int b=0; b<50; b++ )
+	            chatLines[a][b] = ' ';
+
+	}
+
+    bool TextualInterfaceManager::putToken( int col, int row, bool color ){
+
+	    if( row > 7 || col > 6 || row < 0 || col < 0 ||  gameBoard[row][col] != 0 ) return false;
+
+	    gameBoard[row][col] = color?1:-1;
+	    return true;
+
+	}
+    void TextualInterfaceManager::resetGameboard(){
+
+	    for( int a = 0; a<7; a++ )
+	        for( int b = 0; b<6;b++)
+	            gameBoard[a][b] = 0;
 
 	}
 
