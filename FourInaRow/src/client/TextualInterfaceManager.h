@@ -59,7 +59,7 @@ namespace client{
         void printColoredMain( string page );
 		void printGameInterface(bool myMove, string timer,string chat,string gameBoard);
         void printColoredGame( string page );
-		void setGame(int** game);
+		bool setGame(int** game);
 		void setUsername(string username);
 		void printRankOrUserList(string message);
 		void printLine(int line);

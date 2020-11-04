@@ -29,7 +29,6 @@
   <component name="ChangeListManager">
     <list default="true" id="4cbb8ddf-e807-44fa-ae33-bda27674b47b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/program" beforeDir="false" afterPath="$PROJECT_DIR$/program" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/client/TextualInterfaceManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/TextualInterfaceManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/client/TextualInterfaceManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/TextualInterfaceManager.h" afterDir="false" />
     </list>
@@ -165,7 +164,7 @@
       <workItem from="1604334986967" duration="997000" />
       <workItem from="1604354334601" duration="2485000" />
       <workItem from="1604356849179" duration="6674000" />
-      <workItem from="1604452877956" duration="1314000" />
+      <workItem from="1604452877956" duration="1498000" />
     </task>
     <servers />
   </component>
