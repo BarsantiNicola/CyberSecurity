@@ -11,6 +11,11 @@ namespace client{
         for(int a = 0; a<10;a++)
             for(int b = 0; b<50;b++)
                 chatLines[a][b] = ' ';
+
+        gameBoard = new int*[6];
+        for( int a = 0; a<6; a++ )
+            gameBoard[a] = new int[7];
+
         for(int a = 0; a<6; a++ )
             for( int b = 0; b<7; b++)
                 gameBoard[a][b] = 0;
@@ -65,10 +70,22 @@ namespace client{
 	}
 	string* TextualInterfaceManager::getUsername()
 	{
+
         return &username;
 
    
     }
+
+    void TextualInterfaceManager::setGame(int** game){
+        if( gameBoard ) {
+            for (int a = 0; a < 6; a++)
+                delete[] gameBoard[a];
+            delete[] gameBoard;
+        }
+	    gameBoard = game;
+
+	}
+
     bool TextualInterfaceManager::setChat( string username, char message[], int len ){
 
 	    if( len > 200 || username.length() > 200 ) return false;
@@ -205,7 +222,6 @@ namespace client{
 
                 default:
                     cout << "\033[0;33m" << page.substr(a * 121, 121) << "\033[0m";
-                    break;
             }
         }
         cout<<endl;
@@ -288,15 +304,14 @@ namespace client{
                         switch( page[a*121+85+x]) {
                             case '+':
                                 switch( gameBoard[(a-12)/2][col]){
-                                    case -1:
+                                    case 1:
                                         cout << "\033[0;34mO\033[0m";
                                         break;
-                                    case 1:
+                                    case 2:
                                         cout << "\033[0;31mO\033[0m";
                                         break;
                                     default:
                                         cout<<' ';
-                                        break;
 
                                 }
                                 col++;
@@ -314,14 +329,14 @@ namespace client{
                         switch( page[a*121+85+x]) {
                             case '+':
                                 switch( gameBoard[(a-12)/2][col]){
-                                    case 0:
-                                        cout<< ' ';
-                                        break;
-                                    case -1:
+                                    case 1:
                                         cout << "\033[0;34mO\033[0m";
                                         break;
-                                    case 1:
+                                    case 2:
                                         cout << "\033[0;31mO\033[0m";
+                                        break;
+                                    default:
+                                        cout<<' ';
                                 }
                                 col++;
                                 break;
@@ -341,15 +356,15 @@ namespace client{
                             switch( page[a*121+85+x]) {
                                 case '+':
                                     switch( gameBoard[(a-12)/2][col]){
-                                        case 0:
-                                            cout<< ' ';
-                                            break;
-                                        case -1:
+
+                                        case 1:
                                             cout << "\033[0;34mO\033[0m";
                                             break;
-                                        case 1:
+                                        case 2:
                                             cout << "\033[0;31mO\033[0m";
                                             break;
+                                        default:
+                                            cout<<' ';
                                     }
                                     col++;
                                     break;
@@ -365,15 +380,14 @@ namespace client{
                             switch( page[a*121+85+x]) {
                                 case '+':
                                     switch( gameBoard[(a-12)/2][col]){
-                                        case 0:
-                                            cout<< ' ';
-                                            break;
-                                        case -1:
+                                        case 1:
                                             cout << "\033[0;34mO\033[0m";
                                             break;
-                                        case 1:
+                                        case 2:
                                             cout << "\033[0;31mO\033[0m";
                                             break;
+                                        default:
+                                            cout<<' ';
                                     }
                                     col++;
                                     break;
@@ -383,8 +397,6 @@ namespace client{
                         col = 0;
                         cout << "\033[0;34m" << page.substr(a * 121 + 118, 3) << "\033[0m";
                     }
-                    break;
-       //
             }
         }
         cout<<endl;
@@ -412,14 +424,6 @@ namespace client{
 
 	}
 
-    bool TextualInterfaceManager::putToken( int col, int row, bool color ){
-
-	    if( row > 7 || col > 6 || row < 0 || col < 0 ||  gameBoard[row][col] != 0 ) return false;
-
-	    gameBoard[row][col] = color?1:-1;
-	    return true;
-
-	}
     void TextualInterfaceManager::resetGameboard(){
 
 	    for( int a = 0; a<7; a++ )

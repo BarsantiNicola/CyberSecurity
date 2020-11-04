@@ -43,7 +43,7 @@ namespace client{
 		string main_page;
 		string game_page;
 		char chatLines[10][50];
-		int gameBoard[6][7];
+		int** gameBoard;
 		bool last;
 		string username;
 		int adj_x;
@@ -59,13 +59,12 @@ namespace client{
         void printColoredMain( string page );
 		void printGameInterface(bool myMove, string timer,string chat,string gameBoard);
         void printColoredGame( string page );
-		void setGame(void* game);
+		void setGame(int** game);
 		void setUsername(string username);
 		void printRankOrUserList(string message);
 		void printLine(int line);
 		bool setChat( string username, char message[], int len );
 		void resetChat();
-		bool putToken( int col, int row, bool color );
 		void printGameline( int line );
 		void resetGameboard();
 
