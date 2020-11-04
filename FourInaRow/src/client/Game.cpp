@@ -363,4 +363,8 @@ return false in case of non autorizate move
     }
     return ret;
   }
+  int (*Game::getGameBoard())[NUMBER_COLUMN]
+  {
+    return gameBoard;
+  } 
 }

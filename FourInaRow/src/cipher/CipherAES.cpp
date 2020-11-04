@@ -223,7 +223,7 @@ This function encryptMessage with AES_256 gcm
        delete[]tag;
        return nullptr;
     } 
-    vverbose<<"-->[CipherAES][encryptMessage] key and iv is nullptr"<<'\n';
+    //vverbose<<"-->[CipherAES][encryptMessage] key and iv is nullptr"<<'\n';
     if(netMessage==nullptr)
     {
        verbose<<"-->[CipherAES][encryptMessage] errorTo create a message compact"<<'\n';

@@ -281,12 +281,12 @@ namespace client
       bool res;
       if(message==nullptr)
       {
-        verbose<<"--> [MainClient][reciveLogoutProtocol] error the message is null"<<'\n';
+        verbose<<"--> [MainClient][reciveDiconnectProtocol] error the message is null"<<'\n';
         return false;
       }
       nonce_s=message->getNonce();
-      verbose<<"-->[MainClient][reciveLogoutProtocol] the recived nonce is:"<<*nonce_s<<'\n';
-      if(*nonce_s!=(this->nonce-1))
+      verbose<<"-->[MainClient][reciveDiconnectProtocol the recived nonce is:"<<*nonce_s<<'\n';
+      if(*nonce_s!=(this->nonce))
       {
         verbose<<"--> [MainClient][reciveLogoutProtocol] error the nonce isn't valid"<<'\n';
         delete nonce_s;
@@ -295,10 +295,10 @@ namespace client
       }
       if(message->getMessageType()!=DISCONNECT)
       {
-        verbose<<"--> [MainClient][reciveLogoutProtocol] message type not expected"<<'\n';
+        verbose<<"--> [MainClient][reciveDiconnectProtocol] message type not expected"<<'\n';
         return false;
       }
-
+      this->nonce++;
       //verbose<<"--> [MainClient][reciveLogoutProtocol] decript start"<<'\n';
       res=cipher_client->fromSecureForm( message , username ,aesKeyServer,false);
       if(!res)
@@ -445,6 +445,7 @@ namespace client
       if(*nonce_s!=(this->nonce))
       {
         verbose<<"--> [MainClient][reciveLogoutProtocol] error the nonce isn't valid"<<'\n';
+        verbose<<"--> [MainClient][reciveLogoutProtocol] error the actual nonce is"<<*nonce_s<<'\n';
         delete nonce_s;
         //clientPhase=ClientPhase::NO_PHASE;
         return false;
@@ -1166,7 +1167,7 @@ namespace client
       {
         unsigned int colLength=0;
         unsigned int messLength=0;
-        cipherRes=getDeconcatenateLength( g_param,g_paramLen,&colLength,&messLength,(unsigned char)'&',(unsigned int) 5);
+        cipherRes=getDeconcatenateLength( g_param,g_paramLen,&colLength,&messLength,(unsigned char)'&',(unsigned int) NUMBER_SEPARATOR);
         if(!cipherRes)
         {
           break;
@@ -1191,7 +1192,7 @@ namespace client
           delete col;
           return nullptr;
         }
-        cipherRes=deconcatenateTwoField(g_param,g_paramLen,col,&colLength,mess,&messLength,(unsigned char)'&',(unsigned int) 5);  
+        cipherRes=deconcatenateTwoField(g_param,g_paramLen,col,&colLength,mess,&messLength,(unsigned char)'&',(unsigned int) NUMBER_SEPARATOR);  
         if(!cipherRes)
         {
           return nullptr;
@@ -1214,7 +1215,7 @@ namespace client
         cipherRes = this->cipher_client->toSecureForm( message,aesKey);
         //net = Converter::encodeMessage(MATCH, *message );               //da vedere l'utilità in caso cancellare
         //message = this->cipher_client->toSecureForm( message,aesKey );
-        this->nonce++;
+        //this->nonce++;
         verbose<<"--> [MainClient][createMessage] the actual nonce is:"<<nonce<<'\n';
         break;
 
@@ -1245,6 +1246,7 @@ namespace client
     }
     if(!cipherRes)
       return nullptr;
+    verbose<<"--> [MainClient][createMessage] Message created"<<'\n';
     return message;
   }
 /*
@@ -1450,6 +1452,11 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           return false;
         }
         message=createMessage(MessageType::MOVE,nullptr,resu,app.size() + netMess->length() + NUMBER_SEPARATOR,aesKeyClient,MessageGameType::MOVE_TYPE,false);
+        if(message==nullptr)
+        {
+          verbose<<"-->[MainClient][MakeAndSendGameMove] error to create a message MOVE "<<'\n';
+          return false;
+        }
         connection_manager->sendMessage(*message,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
         time(&start);
         waitForAck=true;
@@ -1612,9 +1619,10 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     }
     nonceAdv=*c_nonce;
     delete c_nonce;
-    c_app=message->getChosenColumn();
+    chosenColl=message->getChosenColumn();
+    chosenCollLen=message->getChosenColumnLength();
     appLen=message->getChosenColumnLength();
-    try
+    /*try
     {
       chosenColl=new unsigned char[appLen];
       gameMess= new unsigned char[appLen];
@@ -1622,8 +1630,10 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     catch(std::bad_alloc)
     {
       return;
-    }
-    deconcatenateTwoField(c_app,appLen,chosenColl,&chosenCollLen,gameMess,&gameMessLen, '&',NUMBER_SEPARATOR);
+    }*/
+    //deconcatenateTwoField(c_app,appLen,chosenColl,&chosenCollLen,gameMess,&gameMessLen, '&',NUMBER_SEPARATOR);
+    gameMess=message->getMessage();
+    gameMessLen=message->getMessageLength();
     netGameMess=new NetMessage(gameMess , gameMessLen );
     if(netGameMess)
     {
@@ -2359,8 +2369,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 */  
   int main(int argc, char** argv)
   {
-    Logger::setThreshold(  NO_VERBOSE );
-    //Logger::setThreshold(  VERBOSE );
+    //Logger::setThreshold(  NO_VERBOSE );
+    Logger::setThreshold(  VERY_VERBOSE );
     client::MainClient* main_client;
     if(argc==1)
     {
