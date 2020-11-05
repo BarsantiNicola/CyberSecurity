@@ -619,7 +619,7 @@ namespace server {
     }
 
     // sends directly a GAME_PARAM message to a client identified by a username with the user information of a source
-    bool MainServer::sendGameParam( string username , string source ){
+    bool MainServer::sendGameParam( string username , string source, bool update ){
 
         if( username.empty() || source.empty()){
 
@@ -678,7 +678,8 @@ namespace server {
         }
 
         bool ret = this->sendMessage( message, *socket );
-        this->clientRegister.updateClientNonce(*socket);
+        if(update)
+            this->clientRegister.updateClientNonce(*socket);
         delete socket;
         return ret;
 
@@ -1422,7 +1423,7 @@ namespace server {
 
         }
 
-        if( !this->sendGameParam( message->getAdversary_1(), message->getAdversary_2())){
+        if( !this->sendGameParam( message->getAdversary_1(), message->getAdversary_2(),true)){
 
 
             int* socket = this->userRegister.getSocket( message->getAdversary_1());
@@ -1458,7 +1459,7 @@ namespace server {
         }
         this->matchRegister.setReady(matchID);
 
-        if( !this->sendGameParam( message->getAdversary_2(), message->getAdversary_1())){
+        if( !this->sendGameParam( message->getAdversary_2(), message->getAdversary_1(),false)){
 
 
             int* socket = this->userRegister.getSocket( message->getAdversary_2());

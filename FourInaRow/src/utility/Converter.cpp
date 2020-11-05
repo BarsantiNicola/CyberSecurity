@@ -681,10 +681,10 @@ namespace utility{
                     delete[] chosen_column;
                     return false;
                 }
-                vverbose<<"--> [Converter][verifyMessage] Verification MOVE success"<<'\n';
                 delete nonce;
                 delete[] signature;
                 delete[] chosen_column;
+                vverbose<<"--> [Converter][verifyMessage] Verification MOVE success"<<'\n';
                 break;
 
             case CHAT:
@@ -1820,9 +1820,10 @@ namespace utility{
             case MOVE:
                 nonce = message.getCurrent_Token();
                 sign = message.getSignature();
+                // CORREGGERE
                 len = 29+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen()+message.getSignatureAESLen();
                 key = message.getChosenColumn();
-                
+                cout<<"ok si parte"<<endl;
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1831,13 +1832,16 @@ namespace utility{
                 
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
+                cout<<"ok si parte2"<<endl;
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
+                cout<<"1e"<<endl;
                 pos = writeField(value , 't', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
+                cout<<"2"<<endl;
                 pos = writeField(value , 'v', key,message.getChosenColumnLength(),pos,false  );
-                pos = writeField(value , 'h', chat, message.getMessageLength(), pos, false );
+                cout<<"3"<<endl;
                 pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
+                cout<<"4"<<endl;
                 delete[] sign;
-		delete[] chat;
                 delete[] key;
                 break;
 
