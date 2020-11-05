@@ -132,6 +132,12 @@ send a message and return true in case of success and false in case of failure
 
   bool ConnectionManager::sendMessage(Message message,int socket,bool*socketIsClosed,const char* recIP=nullptr,int recPort=0)
   {  
+    if(socketIsClosed==nullptr)
+    {
+      verbose<<"-->[ConnectionManager][sendMessage] sochetisClosed nullptr"<<'\n';
+      return false;
+    }
+    vverbose<<"-->[ConnectionManager][sendMessage] start function"<<'\n';
     *socketIsClosed=false;
     int ret;
     uint16_t lmsg;
@@ -146,9 +152,12 @@ send a message and return true in case of success and false in case of failure
     {
       return false;
     }
+    vverbose<<"-->[ConnectionManager][sendMessage] initialize buffer array"<<'\n';
     initArray(senderBuffer,(unsigned char) '#',BUFFER_LENGTH);
+    vverbose<<"-->[ConnectionManager][sendMessage] starting create netMessage"<<'\n';
     NetMessage* netmess=conv->encodeMessage(message.getMessageType(),message );
-    if(netmess->length()>BUFFER_LENGTH)
+    vverbose<<"-->[ConnectionManager][sendMessage] end create netMessage"<<'\n';
+    if(netmess->length()>=BUFFER_LENGTH)
     {
       verbose<<"-->[ConnectionManager][sendMessage] Error Message to long"<<'\n';
       delete conv;
@@ -193,6 +202,19 @@ send a message and return true in case of success and false in case of failure
     
     else if(socketUDP==socket)
     {
+      
+      if(recIP==nullptr)
+      {
+        return false;
+      }
+      if(netmess->length()>=BUFFER_LENGTH_UDP)
+      {
+        verbose<<"-->[ConnectionManager][sendMessage] Error Message to long"<<'\n';
+         delete conv;
+         delete[]senderBuffer;
+         return false;
+      }   
+      verbose<<"-->[ConnectionManager][sendMessage] starting send to client  "<<'\n';
       struct sockaddr_in reciver_addr;
       memset(&reciver_addr,0,sizeof(reciver_addr));
       reciver_addr.sin_family=AF_INET;
@@ -415,21 +437,21 @@ send a message and return true in case of success and false in case of failure
       vverbose<<"-->[ConnectionManager][getMessage] byte recived "<<len<<'\n';
       if(len==0)
       {
-        verbose<<"-->[ConnectionManager][sendMessage] connection closed"<<'\n';
+        verbose<<"-->[ConnectionManager][getMessage] connection closed"<<'\n';
         delete[]buffer;
         throw std::runtime_error("the connection is closed");
         return nullptr;
       }
       if (len<BUFFER_LENGTH_UDP)
       {
-        verbose<<"-->[ConnectionManager][sendMessage] length recived is too short"<<'\n';
+        verbose<<"-->[ConnectionManager][getMessage] length recived is too short"<<'\n';
         delete[]buffer;
         return nullptr;
       }
       int messLength = ReturnIndexLastSimbolPosition(buffer,BUFFER_LENGTH_UDP,(unsigned char) '#');
       if(messLength==-1)
       {
-        verbose<<"-->[ConnectionManager][sendMessage] the message is nullptr"<<'\n';
+        verbose<<"-->[ConnectionManager][getMessage] the message is nullptr"<<'\n';
         delete[]buffer;
         return nullptr;
       }

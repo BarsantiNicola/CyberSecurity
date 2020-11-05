@@ -3057,8 +3057,11 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 nonce = message.getNonce();
                 len = to_string(type).length()+to_string(*nonce).length();
                 *lengthPlaintext=len;
-                value = new unsigned char[len];
-                if( !value ){
+                try
+                {
+                  value = new unsigned char[len];
+                }
+                catch(std::bad_alloc& e){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
                     return nullptr;
                 }
@@ -3072,8 +3075,11 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 nonce = message.getNonce();
                 len = to_string(type).length()+to_string(*nonce).length() + message.getServerCertificateLength();
                 *lengthPlaintext=len;
-                value = new unsigned char[len];
-                if( !value ){
+                try
+                {
+                  value = new unsigned char[len];
+                }
+                catch(std::bad_alloc& e){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
                     return nullptr;
                 }
@@ -3091,8 +3097,11 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 nonce = message.getNonce();
                 len = to_string(type).length()+to_string(*nonce).length()+message.getUsername().length();
                 *lengthPlaintext=len;
-                value = new unsigned char[len];
-                if( !value ){
+                try
+                {
+                  value = new unsigned char[len];
+                }
+                catch(std::bad_alloc& e){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
                     return nullptr;
                 }
@@ -3108,8 +3117,11 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 nonce = message.getNonce();
                 len = 1+to_string(type).length()+to_string(*nonce).length();
                 *lengthPlaintext=len;
-                value = new unsigned char[len];
-                if( !value ){
+                try
+                {
+                  value = new unsigned char[len];
+                }
+                catch(std::bad_alloc& e){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
                     return nullptr;
                 }
@@ -3124,8 +3136,11 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 nonce = message.getNonce();
                 len = 1+to_string(type).length()+to_string(*nonce).length();
                 *lengthPlaintext=len;
-                value = new unsigned char[len];
-                if( !value ){
+                try
+                {
+                  value = new unsigned char[len];
+                }
+                catch(std::bad_alloc& e){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
                     return nullptr;
                 }
@@ -3141,8 +3156,11 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 key = message.getDHkey();
                 len = to_string(type).length()+to_string(*nonce).length()+message.getDHkeyLength();
                 *lengthPlaintext=len;
-                value = new unsigned char[len];
-                if( !value ){
+                try
+                {
+                  value = new unsigned char[len];
+                }
+                catch(std::bad_alloc& e){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
                     return nullptr;
                 }
@@ -3159,8 +3177,11 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 nonce = message.getNonce();
                 len = to_string(type).length()+to_string(*nonce).length();
                 *lengthPlaintext=len;
-                value = new unsigned char[len];
-                if( !value ){
+                try
+                {
+                  value = new unsigned char[len];
+                }
+                catch(std::bad_alloc& e){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
                     return nullptr;
                 }
@@ -3175,8 +3196,11 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 nonce = message.getNonce();
                 len = to_string(type).length()+to_string(*nonce).length()+message.getUserListLen();
                 *lengthPlaintext=len-message.getUserListLen();
-                value = new unsigned char[len];
-                if( !value ){
+                try
+                {
+                  value = new unsigned char[len];
+                }
+                catch(std::bad_alloc& e){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
                     return nullptr;
                 }
@@ -3192,8 +3216,11 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 nonce = message.getNonce();
                 len = to_string(type).length()+to_string(*nonce).length();
                 *lengthPlaintext=len;
-                value = new unsigned char[len];
-                if( !value ){
+                try
+                {
+                  value = new unsigned char[len];
+                }
+                catch(std::bad_alloc& e){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
                     return nullptr;
                 }
@@ -3208,8 +3235,11 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 nonce = message.getNonce();
                 len = to_string(type).length()+to_string(*nonce).length()+message.getRankListLen();
                 *lengthPlaintext=len-message.getRankListLen();
-                value = new unsigned char[len];
-                if( !value ){
+                try
+                {
+                  value = new unsigned char[len];
+                }
+                catch(std::bad_alloc& e){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
                     return nullptr;
                 }
@@ -3224,8 +3254,11 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 nonce = message.getNonce();
                 len = to_string(type).length()+to_string(*nonce).length()+message.getUsername().length();
                 *lengthPlaintext=len;
-                value = new unsigned char[len];
-                if( !value ){
+                try
+                {
+                  value = new unsigned char[len];
+                }
+                catch(std::bad_alloc& e){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
                     return nullptr;
                 }
@@ -3241,8 +3274,11 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 nonce = message.getNonce();
                 len = to_string(type).length()+to_string(*nonce).length()+message.getAdversary_1().length()+message.getAdversary_2().length();
                 *lengthPlaintext=len;
-                value = new unsigned char[len];
-                if( !value ){
+                try
+                {
+                  value = new unsigned char[len];
+                }
+                catch(std::bad_alloc& e){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
                     return nullptr;
                 }
@@ -3259,8 +3295,11 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 nonce = message.getNonce();
                 len = to_string(type).length()+to_string(*nonce).length()+message.getAdversary_1().length()+message.getAdversary_2().length();
                 *lengthPlaintext=len;
-                value = new unsigned char[len];
-                if( !value ){
+                try
+                {
+                  value = new unsigned char[len];
+                }
+                catch(std::bad_alloc& e){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
                     return nullptr;
                 }
@@ -3277,8 +3316,11 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 nonce = message.getNonce();
                 len = to_string(type).length()+to_string(*nonce).length()+message.getUsername().length();
                 *lengthPlaintext=len;
-                value = new unsigned char[len];
-                if( !value ){
+                try
+                {
+                  value = new unsigned char[len];
+                }
+                catch(std::bad_alloc& e){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
                     return nullptr;
                 }
@@ -3294,8 +3336,11 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 nonce = message.getNonce();
                 len = to_string(type).length()+to_string(*nonce).length();
                 *lengthPlaintext=len;
-                value = new unsigned char[len];
-                if( !value ){
+                try
+                {
+                  value = new unsigned char[len];
+                }
+                catch(std::bad_alloc& e){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
                     return nullptr;
                 }
@@ -3310,8 +3355,11 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 nonce = message.getNonce();
                 len = to_string(type).length()+to_string(*nonce).length();
                 *lengthPlaintext=len;
-                value = new unsigned char[len];
-                if( !value ){
+                try
+                {
+                  value = new unsigned char[len];
+                }
+                catch(std::bad_alloc& e){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
                     return nullptr;
                 }
@@ -3326,8 +3374,11 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 nonce = message.getNonce();
                 len = to_string(type).length()+to_string(*nonce).length();
                 *lengthPlaintext=len;
-                value = new unsigned char[len];
-                if( !value ){
+                try
+                {
+                  value = new unsigned char[len];
+                }
+                catch(std::bad_alloc& e){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
                     return nullptr;
                 }
@@ -3342,8 +3393,11 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 nonce = message.getNonce();
                 len = to_string(type).length()+to_string(*nonce).length()+message.getPubKeyLength()+message.getNetInformationsLength();
                 *lengthPlaintext=len-message.getNetInformationsLength();
-                value = new unsigned char[len];
-                if( !value ){
+                try
+                {
+                  value = new unsigned char[len];
+                }
+                catch(std::bad_alloc& e){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
                     return nullptr;
                 }
@@ -3365,9 +3419,11 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 len = 1+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen();
                 key = message.getChosenColumn();
                 *lengthPlaintext=len-message.getChosenColumnLength();
-               
-                value = new unsigned char[len];
-                if( !value ){
+                try
+                {
+                  value = new unsigned char[len];
+                }
+                catch(std::bad_alloc& e){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
                     return nullptr;
                 }
@@ -3384,13 +3440,26 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
 
             case MOVE:
                 nonce = message.getCurrent_Token();
-                len = to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getMessageLength()+5;
-                key = concTwoField(message.getChosenColumn(),message.getChosenColumnLength(),message.getMessage(),message.getMessageLength(),(unsigned char)'&',(unsigned int)5);
+                if(message.getSignatureAES()==nullptr)
+                {
+                  len = to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getMessageLength()+5;
+                  key = concTwoField(message.getChosenColumn(),message.getChosenColumnLength(),message.getMessage(),message.getMessageLength(),(unsigned char)'&',(unsigned int)5);
+                  *lengthPlaintext=len-message.getChosenColumnLength()-message.getMessageLength()-5;
+                }
+                else
+                {
+                   len = to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength();
+                   key = message.getChosenColumn();
+                   *lengthPlaintext=len-message.getChosenColumnLength();
+                }
                 if(key==nullptr)
                   return nullptr;
-                *lengthPlaintext=len-message.getChosenColumnLength()-message.getMessageLength()-5;
-                value = new unsigned char[len];
-                if( !value ){
+                try
+                {
+                  value = new unsigned char[len];
+                }
+                catch(std::bad_alloc& e)
+                {
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
                     return nullptr;
                 }
@@ -3406,8 +3475,12 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 nonce = message.getCurrent_Token();
                 len = to_string(type).length()+to_string(*nonce).length()+message.getMessageLength();
                 *lengthPlaintext=len-message.getMessageLength();
-                value = new unsigned char[len];
-                if( !value ){
+                try
+                {
+                  value = new unsigned char[len];
+                }
+                catch( std::bad_alloc& e )
+                {
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
                     return nullptr;
                 }
@@ -3425,8 +3498,11 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 nonce = message.getCurrent_Token();
                 len = to_string(type).length()+to_string(*nonce).length();
                 *lengthPlaintext=len;
-                value = new unsigned char[len];
-                if( !value ){
+                try
+                {
+                  value = new unsigned char[len];
+                }
+                catch(std::bad_alloc& e){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
                     return nullptr;
                 }
@@ -3441,8 +3517,11 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 nonce = message.getNonce();
                 len = to_string(type).length()+to_string(*nonce).length();
                 *lengthPlaintext=len;
-                value = new unsigned char[len];
-                if( !value ){
+                try
+                {
+                  value = new unsigned char[len];
+                }
+                catch(std::bad_alloc& e){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
                     return nullptr;
                 }
@@ -3456,8 +3535,11 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 nonce = message.getNonce();
                 len = to_string(type).length()+to_string(*nonce).length()+message.getMessageLength();
                 *lengthPlaintext=len;
-                value = new unsigned char[len];
-                if( !value ){
+                try
+                {
+                  value = new unsigned char[len];
+                }
+                catch(std::bad_alloc& e){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
                     return nullptr;
                 }

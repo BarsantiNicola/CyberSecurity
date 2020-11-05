@@ -289,6 +289,7 @@ namespace client
       if(*nonce_s!=(this->nonce))
       {
         verbose<<"--> [MainClient][reciveLogoutProtocol] error the nonce isn't valid"<<'\n';
+        vverbose<<"-->[MainClient][reciveDiconnectProtocol] the actual nonce is:"<<this->nonce<<'\n';
         delete nonce_s;
         //clientPhase=ClientPhase::NO_PHASE;
         return false;
@@ -1457,7 +1458,14 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           verbose<<"-->[MainClient][MakeAndSendGameMove] error to create a message MOVE "<<'\n';
           return false;
         }
+        vverbose<<"-->[MainClient][MakeAndSendGameMove] sending message MOVE "<<'\n';
+        if(advIP==nullptr)
+        {
+          verbose<<"-->[MainClient][MakeAndSendGameMove] error ipadv is nullptr"<<'\n';
+          return false;
+        }
         connection_manager->sendMessage(*message,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
+        vverbose<<"-->[MainClient][MakeAndSendGameMove] message MOVE sended"<<'\n';
         time(&start);
         waitForAck=true;
         while(waitForAck)
