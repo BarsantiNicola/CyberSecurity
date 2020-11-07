@@ -3553,6 +3553,7 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 delete[] key;
                 break;
             default:
+                verbose<<"--> [Converter][encodeMessage] No option for this type of message"<<'\n';
                 return nullptr;
         }
         delete nonce;

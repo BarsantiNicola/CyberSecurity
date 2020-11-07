@@ -630,6 +630,7 @@ namespace client
 */
   bool MainClient::sendRejectProtocol(const char* usernameAdv,int size)
   {
+     vverbose<<"-->[MainClient][sendRejectProtocol] starting function"<<'\n';
      bool res;
      bool socketIsClosed=false;
      ChallengeInformation *data=nullptr;
@@ -638,29 +639,49 @@ namespace client
      {
        return false;
      }
-     if(!challenge_register->findData(*data))
+     vverbose<<"-->[MainClient][sendRejectProtocol] data username Value: "<<usernameAdv<<'\n';
+     try
+     {
+       data=new ChallengeInformation(std::string(usernameAdv));
+       
+     }
+     catch(std::bad_alloc& e)
+     {
        return false;
-
+     }
+     vverbose<<"-->[MainClient][sendRejectProtocol] finding data username Value: "<<data->getUserName()<<'\n';
+     vverbose<<"-->[MainClient][sendRejectProtocol] finding data register size: "<<challenge_register->getDimension()<<'\n';
+     if(!challenge_register->findData(*data))
+     {
+       delete data;
+       return false;
+     }
+     vverbose<<"-->[MainClient][sendRejectProtocol] creating message"<<'\n';
      message=createMessage(MessageType::REJECT,(const char*)username.c_str(),(unsigned char*)usernameAdv,size,aesKeyServer,this->nonce,false);
+     vverbose<<"-->[MainClient][sendRejectProtocol] message created"<<'\n';
      if(message==nullptr)
      {
+       verbose<<"-->[MainClient][sendRejectProtocol] error message not created"<<'\n';
+       delete data;
        return false;
      }
     res=connection_manager->sendMessage(*message,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
     if(socketIsClosed)
     {
-      verbose<<"-->[MainClient][sendChallengeProtocol] error server is offline reconnecting"<<'\n';
+      verbose<<"-->[MainClient][sendRejectProtocol] error server is offline reconnecting"<<'\n';
       notConnected=true;
+      delete data;
       return false;
     }
     if(res)
     {
-      vverbose<<"-->[MainClient][sendChallengeProtocol]start a challenge";
+      vverbose<<"-->[MainClient][sendRejectProtocol]remove a challenge"<<'\n';
       data=new ChallengeInformation(string(usernameAdv));
 
       res=challenge_register->removeData(*data);
       startChallenge=false;
     }
+    delete data;
     return res;
   }
 /*
@@ -950,7 +971,7 @@ namespace client
       ipApp=new unsigned char[message->getNetInformationsLength()];
       portApp=new unsigned char[message->getNetInformationsLength()];
     }
-    catch(std::bad_alloc)
+    catch(std::bad_alloc& e)
     {
        return false;
     }
@@ -996,13 +1017,13 @@ namespace client
      bool socketIsClosed=false;
      ChallengeInformation *data=nullptr;
      Message* message=nullptr; 
-    /* if(adversaryUsername.empty())
+     if(challenged_username.empty())
      {
        return false;
-     }*/ 
-     if(!challenge_register->findData(*data))
-       return false;
-
+     }
+     /*if(!challenge_register->findData(*data))
+       return false;    
+     */
      message=createMessage(MessageType::WITHDRAW_REQ,(const char*)username.c_str(), (unsigned char*)challenged_username.c_str(), challenged_username.size(),aesKeyServer,this->nonce,false);
      if(message==nullptr)
      {
@@ -1102,6 +1123,14 @@ namespace client
         message->setMessageType(USER_LIST_REQ);
         message->setNonce(this->nonce);
         cipherRes =this->cipher_client->toSecureForm( message,aesKey);
+        if(cipherRes)
+        {
+           vverbose<<"--> [MainClient][createMessage] cipherRes is true:";
+        }
+        else
+        {
+          vverbose<<"--> [MainClient][createMessage] cipherRes is false";
+        }
         this->nonce++;
         verbose<<"--> [MainClient][createMessage] the actual nonce is:"<<nonce<<'\n';
 
@@ -1140,6 +1169,14 @@ namespace client
         message->setAdversary_1(param );
         message->setAdversary_2(this->username.c_str());
         cipherRes = this->cipher_client->toSecureForm( message,aesKey);
+        if(cipherRes)
+        {
+           vverbose<<"--> [MainClient][createMessage] cipherRes is true:";
+        }
+        else
+        {
+          vverbose<<"--> [MainClient][createMessage] cipherRes is false";
+        }
         this->nonce++;
         verbose<<"--> [MainClient][createMessage] the actual nonce is:"<<nonce<<'\n';
         break;
@@ -1750,7 +1787,11 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
   {
     if(comand_line.empty())
     {
-      verbose<<"--> [MainClient][comand] error comand_line is empty"<<'\n';
+      vverbose<<"--> [MainClient][comand] error comand_line is empty"<<'\n';
+      std::cout<<"\t comand line is empty \n"<<endl;
+      std::cout<<"\t# Insert a command:";
+      std::cout.flush();
+     
       return false;
     }
     try
@@ -1970,6 +2011,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       else if(comand_line.compare(0,6,"reject")==0)
       {
       	 string app=comand_line.substr(7);
+         vverbose<<"-->[MainClient][comand]"<<app<<'\n';
          if(app.empty())
          {
              std::cout<<"failed to send challenge "<<endl;
@@ -1977,10 +2019,10 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
              cout.flush();
              return true;
          }
-         bool res=sendRejectProtocol(adv_username_1.c_str(),comand_line.size());
+         bool res=sendRejectProtocol(app.c_str(),comand_line.size());
          if(!res)
          {
-             std::cout<<"failed to send challenge "<<endl;
+             std::cout<<"failed to send reject "<<endl;
              std::cout<<"\t# Insert a command:";
              cout.flush();
              return false;

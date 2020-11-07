@@ -178,7 +178,7 @@ send a message and return true in case of success and false in case of failure
       copyBuffer(senderBuffer,netmess->getMessage(),BUFFER_LENGTH,netmess->length());
       
       ret=send(socket,(void*)senderBuffer,BUFFER_LENGTH,0);
-      vverbose<<"-->[ConnectionManager][sendMessage] Bit sended"<<ret<<'\n';
+      vverbose<<"-->[ConnectionManager][sendMessage] Bit sended "<<ret<<'\n';
       if(ret==0)
       {
         verbose<<"-->[ConnectionManager][sendMessage] connection closed"<<'\n';

@@ -7,7 +7,7 @@ namespace client
   ChallengeInformation::ChallengeInformation(string username,int totalMatch,double wonPercent)
   {
     if(!username.empty())
-      this->username=username;
+      this->username=username + '\0';
     this->totalMatch=totalMatch;
     this->wonPercent=wonPercent;
   }
@@ -33,7 +33,11 @@ namespace client
   }
   bool ChallengeInformation::equals(ChallengeInformation* data)
   {
-    return (this->username==data->username && this->totalMatch==data->totalMatch && this->wonPercent==data->wonPercent);
+    //return (this->username==data->username && this->totalMatch==data->totalMatch && this->wonPercent==data->wonPercent);
+    if(this->username.compare(data->username)==0)
+      return true;
+    else
+      return false;
   }
 /*
  -----------------------------------------get methods-------------------------------------

@@ -168,14 +168,21 @@ namespace cipher
          break;
 
        case REJECT:
-         if(aesKey=nullptr)
+         if(aesKey==nullptr)
+         {
+           verbose<<"-->[CipherClient][toSecureForm] aesKey is nullptr"<<'\n';
            return false;
+         }
          correct=this->aes->modifyParam( aesKey );
          if(!correct)
+         {
+           verbose<<"-->[CipherClient][toSecureForm] failed to modify"<<'\n';
            return false;
+         }
          app = this->aes->encryptMessage(*message);
          if(app == nullptr)
          {
+           verbose<<"-->[CipherClient][toSecureForm] encript no good"<<'\n';
            return false;
          }
          message->setSignature(app->getSignature(),app->getSignatureLen());

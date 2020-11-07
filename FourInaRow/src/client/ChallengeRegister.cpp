@@ -51,6 +51,7 @@ namespace client
  }
  bool ChallengeRegister::findData(ChallengeInformation data)
  {
+   
    for(int i=0;i<challengeInformationList.size();i++)
    {
      try
