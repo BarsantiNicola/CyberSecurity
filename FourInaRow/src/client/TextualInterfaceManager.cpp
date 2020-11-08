@@ -89,6 +89,25 @@ namespace client{
 
 	}
 
+    void TextualInterfaceManager::showTimer( int time ){
+
+        resetTimer();
+        printf("\033[s");
+        printf("\033[%d;%dH",10+adj_y,89+adj_x);
+        cout<<time<<endl;
+        printf("\033[u");
+
+    }
+
+    void TextualInterfaceManager::resetTimer(){
+
+        printf("\033[s");
+        printf("\033[%d;%dH",10+adj_y,89+adj_x);
+        cout<<"             "<<endl;
+        printf("\033[u");
+
+    }
+
     bool TextualInterfaceManager::setChat( string username, char message[], int len ){
 
 	    if( len > 200 || username.length() > 200 ) return false;
