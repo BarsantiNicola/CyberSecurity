@@ -627,7 +627,7 @@ This function encryptMessage with AES_256 gcm
          if(counter==numberSeparator)
          {
            firstDimension = (i-(numberSeparator-1));
-           secondDimension= originalFieldSize-i;
+           secondDimension= (originalFieldSize-i)-1;
            vverbose<<"-->[MainClient][deconcatenateTwoField]<<secondDimension:"<<secondDimension<<'\n';
            break;
          }
@@ -646,10 +646,10 @@ This function encryptMessage with AES_256 gcm
     for(int i=0;i<firstDimension;++i)
     {
       firstField[i]=originalField[i];  
-          
+         
     }
     
-    vverbose<<"-->[MainClient][deconcatenateTwoField] ";
+    vverbose<<"-->[MainClient][deconcatenateTwoField] "<<'\n';
     int j=0;
     for(int i=(firstDimension+numberSeparator);i<originalFieldSize;++i)
     {    
@@ -680,8 +680,8 @@ This function encryptMessage with AES_256 gcm
          if(counter==numberSeparator)
          {
            firstDimension = (i-(numberSeparator-1));
-           secondDimension= originalFieldSize-i;
-           vverbose<<"-->[MainClient][deconcatenateTwoField]<<secondDimension:"<<secondDimension<<'\n';
+           secondDimension= (originalFieldSize-i)-1;
+           vverbose<<"-->[CipherAES][deconcatenateTwoFieldLength]<<secondDimension:"<<secondDimension<<'\n';
            break;
          }
        }
