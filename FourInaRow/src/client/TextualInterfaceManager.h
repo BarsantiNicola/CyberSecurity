@@ -61,6 +61,7 @@ namespace client{
 		void printGameInterface(bool myMove, string timer,string chat,string gameBoard);
         void printColoredGame( string page );
 		bool setGame(int** game);
+        int getXTranslation();
 		void setUsername(string username);
 		void printRankOrUserList(string message);
 		void printLine(int line);
