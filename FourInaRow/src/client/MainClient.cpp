@@ -657,7 +657,7 @@ namespace client
        return false;
      }
      vverbose<<"-->[MainClient][sendRejectProtocol] creating message"<<'\n';
-     message=createMessage(MessageType::REJECT,(const char*)username.c_str(),(unsigned char*)usernameAdv,size,aesKeyServer,this->nonce,false);
+     message=createMessage(MessageType::REJECT,usernameAdv,(unsigned char*)username.c_str(),username.length(),aesKeyServer,this->nonce,false);
      vverbose<<"-->[MainClient][sendRejectProtocol] message created"<<'\n';
      if(message==nullptr)
      {
@@ -1469,6 +1469,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         currTokenIninzialized=false;
         std::string app=std::to_string(column);
         appMess = createMessage(MessageType::GAME,nullptr,(unsigned char*) app.c_str(),app.size(),nullptr,MessageGameType::MOVE_TYPE,false);
+        
         if(appMess==nullptr)
         {
           verbose<<"-->[MainClient][MakeAndSendGameMove] error to create a message "<<'\n';
@@ -1500,6 +1501,10 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         {
           verbose<<"-->[MainClient][MakeAndSendGameMove] error ipadv is nullptr"<<'\n';
           return false;
+        }
+        if(message->getChosenColumn()==nullptr)
+        {
+            verbose<<"-->[MainClient][MakeAndSendGameMove] error the chosenCollumn field is nullptr"<<'\n';
         }
         connection_manager->sendMessage(*message,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
         vverbose<<"-->[MainClient][MakeAndSendGameMove] message MOVE sended"<<'\n';
@@ -2105,6 +2110,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
      bool res;
     while(true)
     {
+      try{
        if(notConnected==true)
        {
          res=startConnectionServer(this->myIP,this->myPort);
@@ -2318,6 +2324,17 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           
         }
       }
+     }
+     catch(exception& e )
+     {
+       time_expired=false;
+       startingMatch=false;
+       clientPhase= ClientPhase::NO_PHASE;
+       firstMove=false;
+       notConnected=true;
+       startChallenge=false;
+       implicitUserListReq=false;
+     }
     }
   }
 /*

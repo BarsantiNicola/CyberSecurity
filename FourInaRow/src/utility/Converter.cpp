@@ -3037,6 +3037,7 @@ compact function for AES
 NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengthPlaintext) {
 
         int len;
+        
         unsigned char *value;
 
         vverbose << "--> [Converter][compactForm] Starting encoding of Message" << '\n';
@@ -3440,20 +3441,27 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
 
             case MOVE:
                 nonce = message.getCurrent_Token();
+                int key_size;
+                key_size=0;
                 if(message.getSignatureAES()==nullptr)
                 {
                   len = to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getMessageLength()+5;
                   key = concTwoField(message.getChosenColumn(),message.getChosenColumnLength(),message.getMessage(),message.getMessageLength(),(unsigned char)'&',(unsigned int)5);
                   *lengthPlaintext=len-message.getChosenColumnLength()-message.getMessageLength()-5;
+                  key_size=message.getChosenColumnLength()+message.getMessageLength()+5;
                 }
                 else
                 {
                    len = to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength();
                    key = message.getChosenColumn();
                    *lengthPlaintext=len-message.getChosenColumnLength();
+                   key_size=message.getChosenColumnLength();
                 }
                 if(key==nullptr)
+                {
+                   verbose<<"--> [Converter][encodeMessage] Error, the key is nullptr"<<'\n';
                   return nullptr;
+                }
                 try
                 {
                   value = new unsigned char[len];
@@ -3467,7 +3475,7 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                     value[a] = '\0';
                 pos = writeCompactField(value , (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
                 pos = writeCompactField(value , (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
-                pos = writeCompactField(value , key,message.getChosenColumnLength(),pos,false  );
+                pos = writeCompactField(value , key,key_size ,pos,false  );
 
                 delete[] key;
                 break;
