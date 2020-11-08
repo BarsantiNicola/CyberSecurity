@@ -116,7 +116,7 @@ namespace client{
 
         printf("\033[s");
         printf("\033[%d;%dH",10+adj_y,89+adj_x);
-        cout<<"             "<<endl;
+        cout<<"   "<<endl;
         printf("\033[u");
 
     }

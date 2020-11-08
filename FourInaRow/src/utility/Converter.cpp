@@ -1795,7 +1795,7 @@ namespace utility{
                 break;
 
             case GAME:
-                nonce = message.getNonce();
+                nonce = message.getCurrent_Token();
                 sign = message.getSignature();
                 len = 29+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen()+message.getSignatureAESLen();
                 key = message.getChosenColumn();
@@ -1820,10 +1820,9 @@ namespace utility{
             case MOVE:
                 nonce = message.getCurrent_Token();
                 sign = message.getSignature();
-                // CORREGGERE
                 len = 29+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen()+message.getSignatureAESLen();
                 key = message.getChosenColumn();
-                cout<<"ok si parte"<<endl;
+
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1832,15 +1831,10 @@ namespace utility{
                 
                 for( int a = 0; a<len;a++)
                     value[a] = '\0';
-                cout<<"ok si parte2"<<endl;
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
-                cout<<"1e"<<endl;
                 pos = writeField(value , 't', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
-                cout<<"2"<<endl;
                 pos = writeField(value , 'v', key,message.getChosenColumnLength(),pos,false  );
-                cout<<"3"<<endl;
                 pos = writeField(value , 's', sign, message.getSignatureLen(), pos,true  );
-                cout<<"4"<<endl;
                 delete[] sign;
                 delete[] key;
                 break;
