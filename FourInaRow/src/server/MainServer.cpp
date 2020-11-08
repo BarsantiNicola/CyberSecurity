@@ -352,9 +352,10 @@ namespace server {
         }
 
         //  if the user which disconnect is the challenged and the match isn't started we send reject
-        if( !challenged.compare(username) && *(this->matchRegister.getMatchStatus( matchID )) == OPENED )
-            this->sendRejectMessage( challenger, challenged, this->userRegister.getSocket( challenger ));
-        else //  otherwise we send a disconnect to the other client
+        if( !challenged.compare(username) && *(this->matchRegister.getMatchStatus( matchID )) == OPENED ) {
+            this->userRegister.setLogged( challenger, this->userRegister.getSessionKey( challenger ));
+            this->sendRejectMessage(challenger, challenged, this->userRegister.getSocket(challenger));
+        }else //  otherwise we send a disconnect to the other client
             if( !challenged.compare(username))
                 this->sendDisconnectMessage( challenger );
             else
@@ -1514,16 +1515,15 @@ namespace server {
             return response;
 
         }
-
+        //cout<<"challenger: "<<message->getAdversary_1()<<" challenged: "<<message->getAdversary_2()<<endl;
         if( message->getAdversary_1().empty() || message->getAdversary_2().empty()){
 
             verbose<< "--> [MainServer][acceptHandler] Error, Missing usernames"<<'\n';
             response = this->sendError( "Invalid request. You have to specify the challenger and challenged usernames" , nonce );
 
         }
-
         int matchID = this->matchRegister.getMatchID( message->getAdversary_1() );
-
+        //cout<<"matchID: "<<matchID<<endl;
         if( matchID == -1 )
             return nullptr;
 
