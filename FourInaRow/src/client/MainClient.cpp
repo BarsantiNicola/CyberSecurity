@@ -1275,7 +1275,7 @@ namespace client
 
      case GAME:
         message->setMessageType(GAME); 
-        message->setNonce(this->nonce);
+        message->setCurrent_Token(this->nonce);
         this->nonce++;
         message->setChosenColumn(  g_param,g_paramLen);
         cipherRes=cipher_client->toSecureForm( message,aesKey );
@@ -1659,7 +1659,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     {
       return;
     }
-    if(*c_nonce<this->nonceAdv)
+    if(*c_nonce!=this->currentToken)
     {
       vverbose<<"-->[MainClient][ReceiveGameMove] nonce not valid"<<'\n';
       messageACK=createMessage(ACK,nullptr,nullptr,0,aesKeyClient,*c_nonce,false);
@@ -1667,7 +1667,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       delete c_nonce;
       return;
     }
-    nonceAdv=*c_nonce;
+    //nonceAdv=*c_nonce;
     delete c_nonce;
     chosenColl=message->getChosenColumn();
     chosenCollLen=message->getChosenColumnLength();
@@ -1696,6 +1696,10 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       verbose<<"-->[MainClient][ReceiveGameMove] impossible to extract game message type Message"<<'\n';
       return;
    }
+   
+   
+
+
    app=printableString(chosenColl,chosenCollLen);
    collMove=std::stoi(app,nullptr,10);
    app= printableString(message->getChosenColumn(),message->getChosenColumnLength());
@@ -1704,8 +1708,10 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
    res=cipher_client->fromSecureForm( &appG, username ,aesKeyClient,false); 
    if(!res)
      return;
-   if(*messG->getCurrent_Token()!=*message->getCurrent_Token() || collMove!=collGame )
+   if(*messG->getCurrent_Token() < nonceAdv || collMove!=collGame )
      return;
+
+   nonceAdv=*c_nonce; 
    messageACK=createMessage(ACK,nullptr,nullptr,0,aesKeyClient,this->currentToken,false);
    connection_manager->sendMessage(*messageACK,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
    if(!cipher_client->toSecureForm( messG, aesKeyServer ))
@@ -1717,7 +1723,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
    }
    
    //connection_manager->sendMessage(*messG,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
-   //this->currentToken++;
+   this->currentToken++;
    textual_interface_manager->printGameInterface(true, string("15"),game->getChat(),game->printGameBoard());
    if(socketIsClosed)
    {
