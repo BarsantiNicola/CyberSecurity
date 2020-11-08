@@ -89,6 +89,38 @@ namespace client{
 
 	}
 
+    int TextualInterfaceManager::getXTranslation() {
+        return adj_x;
+    }
+
+    void TextualInterfaceManager::showTimer( int time ){
+
+	    if( time > 15 || time < 0 ) return;
+
+        resetTimer();
+        printf("\033[s");
+        printf("\033[%d;%dH",10+adj_y,89+adj_x);
+        if( time > 10 )
+            cout<<time<<endl;
+        else {
+            if (time > 5)
+                cout << "\033[0;33m" << time << "\033[0m";
+            else
+                cout << "\033[0;31m" << time << "\033[0m";
+        }
+        printf("\033[u");
+
+    }
+
+    void TextualInterfaceManager::resetTimer(){
+
+        printf("\033[s");
+        printf("\033[%d;%dH",10+adj_y,89+adj_x);
+        cout<<"             "<<endl;
+        printf("\033[u");
+
+    }
+
     bool TextualInterfaceManager::setChat( string username, char message[], int len ){
 
 	    if( len > 200 || username.length() > 200 ) return false;
@@ -126,6 +158,8 @@ namespace client{
 		cout.flush();
 
 	}
+
+
 
 	void TextualInterfaceManager::printColoredLogin(){
 

@@ -3,6 +3,7 @@
 #define TEXTUAL_INTERFACE_MANAGER
 #include <iostream>
 #include <fstream>
+
 #define USERNAME_POSITION 1712
 #define SERVERSTATUS_POSITION 1842
 #define PENDING_LIST_SIZE_POSITION 1789
@@ -60,6 +61,7 @@ namespace client{
 		void printGameInterface(bool myMove, string timer,string chat,string gameBoard);
         void printColoredGame( string page );
 		bool setGame(int** game);
+        int getXTranslation();
 		void setUsername(string username);
 		void printRankOrUserList(string message);
 		void printLine(int line);
@@ -67,6 +69,8 @@ namespace client{
 		void resetChat();
 		void printGameline( int line );
 		void resetGameboard();
+		void showTimer( int time );
+		void resetTimer();
 
 	private:
 		string insertElement( InterfacePage page , InputType input , string value , string base);
