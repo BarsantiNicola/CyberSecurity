@@ -2915,7 +2915,7 @@ namespace utility{
                 break;
 
             case GAME:
-                nonce = message.getNonce();
+                nonce = message.getCurrent_Token();
                 len = 1+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength();
                 key = message.getChosenColumn();
                 value = new unsigned char[len];
