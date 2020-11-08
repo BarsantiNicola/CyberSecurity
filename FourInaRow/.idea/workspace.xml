@@ -44,7 +44,9 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="ProjectId" id="1g05kKUP9A4Jaah9eVLwf0OBMuE" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <OptionsSetting value="false" id="Update" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -169,7 +171,7 @@
       <workItem from="1604798966038" duration="359000" />
       <workItem from="1604829875511" duration="3187000" />
       <workItem from="1604834227267" duration="175000" />
-      <workItem from="1604874079940" duration="1002000" />
+      <workItem from="1604874079940" duration="1890000" />
     </task>
     <servers />
   </component>
@@ -201,6 +203,10 @@
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state x="485" y="188" width="1022" height="737" key="SettingsEditor/72.27.1848.1053@72.27.1848.1053" timestamp="1598555051503" />
+    <state x="777" y="468" width="428" height="184" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1604875649544">
+      <screen x="72" y="27" width="1848" height="1053" />
+    </state>
+    <state x="777" y="468" width="428" height="184" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/72.27.1848.1053@72.27.1848.1053" timestamp="1604875649544" />
     <state x="660" y="252" key="run.anything.popup" timestamp="1598477713107">
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
