@@ -613,7 +613,7 @@ namespace utility{
             case GAME:
                 verbose<<"--> [Converter][verifyMessage] Check GAME"<<'\n';
 
-                nonce = message.getNonce();
+                nonce = message.getCurrent_Token()
                 if( !nonce ){
                     verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Nonce"<<'\n';
                     return false;
@@ -1277,7 +1277,7 @@ namespace utility{
             case GAME:
                 verbose<<"--> [Converter][verifyCompact] Check GAME"<<'\n';
 
-                nonce = message.getNonce();
+                nonce = message.getCurrent_Token();
                 if( !nonce ){
                     verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Current Token\""<<'\n';
                     return false;
