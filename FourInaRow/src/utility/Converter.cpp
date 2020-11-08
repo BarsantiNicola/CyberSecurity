@@ -3443,7 +3443,7 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 nonce = message.getCurrent_Token();
                 int key_size;
                 key_size=0;
-                if(message.getSignatureAES()==nullptr)
+                if(message.getSignature()==nullptr)
                 {
                   len = to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getMessageLength()+5;
                   key = concTwoField(message.getChosenColumn(),message.getChosenColumnLength(),message.getMessage(),message.getMessageLength(),(unsigned char)'&',(unsigned int)5);
@@ -3452,6 +3452,7 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
                 }
                 else
                 {
+                   verbose<<"--> [Converter][encodeMessage] we are in decrypt mode."<<'\n';
                    len = to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength();
                    key = message.getChosenColumn();
                    *lengthPlaintext=len-message.getChosenColumnLength();

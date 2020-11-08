@@ -1330,7 +1330,7 @@ namespace client
          if(counter==numberSeparator)
          {
            firstDimension = (i-(numberSeparator-1));
-           secondDimension= originalFieldSize-i;
+           secondDimension= (originalFieldSize-i)-1;
            vverbose<<"-->[MainClient][deconcatenateTwoField]<<secondDimension:"<<secondDimension<<'\n';
            break;
          }
@@ -1383,7 +1383,7 @@ namespace client
          if(counter==numberSeparator)
          {
            firstDimension = (i-(numberSeparator-1));
-           secondDimension= originalFieldSize-i;
+           secondDimension= (originalFieldSize-i)-1;
            vverbose<<"-->[MainClient][deconcatenateTwoField]<<secondDimension:"<<secondDimension<<'\n';
            break;
          }
@@ -1685,7 +1685,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     gameMess=message->getMessage();
     gameMessLen=message->getMessageLength();
     netGameMess=new NetMessage(gameMess , gameMessLen );
-    if(netGameMess)
+    if(netGameMess==nullptr)
     {
       verbose<<"-->[MainClient][ReceiveGameMove] impossible to extract game message type netMessage"<<'\n';
       return;
