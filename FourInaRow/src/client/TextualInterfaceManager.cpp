@@ -148,12 +148,9 @@ namespace client{
 	    return true;
 	}
 	void TextualInterfaceManager::printLoginInterface(){
-		string command;
-		//execve("tput clear");//da rinserire
-                std::cout <<"\033[2J\033[1;1H";
-                cout.flush();
+
+        execCommand( CLEAR );
 		this->printColoredLogin();
-		//cout<<"\t# Insert a command:";
 		cout.flush();
 
 	}
@@ -198,19 +195,15 @@ namespace client{
 
 	void TextualInterfaceManager::printMainInterface(string username,string activeUser,string serverStatus,string matchStatus,string pendingStatus){
 
-		string command;
 		string value;
-		//execve("tput clear");//da rinserire
-                cout<<"\033[2J\033[1;1H";
-                cout.flush();
+        execCommand( CLEAR );
 		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::USERNAME , username , main_page);
 		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::ACTIVE_USER , activeUser , value);
 		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::SERVER_STATUS , serverStatus , value);
 		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::MATCH_STATUS , matchStatus , value);
 		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::PENDING_SIZE , pendingStatus , value);
-                this->username=username;
-                this->printColoredMain( value );
-		//cout<<"\t# Insert a command:";
+		this->username=username;
+		this->printColoredMain( value );
 		cout.flush();
 
 	}
@@ -265,21 +258,17 @@ namespace client{
     }
 
 	void TextualInterfaceManager::printGameInterface(bool myMove, string timer,string chat,string gameboard){
-	
-		string command;
-                string value;
-                string tok;
-                //execve("tput clear");//da rinserire
-                cout<<"\033[2J\033[1;1H";
-                cout.flush();
-                //value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::TIMER,timer,game_page);
+
+	    string value;
+        execCommand(CLEAR);
+
+        //value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::TIMER,timer,game_page);
 		value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::CHAT,chat,game_page );
-                value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::GAMEBOARD,gameboard,value);
+		value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::GAMEBOARD,gameboard,value);
 		this->printColoredGame( value );
 		cout<<"\t# Insert a command:";
 		cout.flush();
-		//cin>>command;
-		//return false;
+
 	}
 
 	void TextualInterfaceManager::printColoredGame(string page ){

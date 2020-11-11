@@ -29,11 +29,7 @@
   <component name="ChangeListManager">
     <list default="true" id="4cbb8ddf-e807-44fa-ae33-bda27674b47b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/screen_size.conf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/client/MainClient.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/MainClient.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/client/MainClient.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/MainClient.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/client/TextualInterfaceManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/TextualInterfaceManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/client/TextualInterfaceManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/TextualInterfaceManager.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -179,7 +175,7 @@
       <workItem from="1604834227267" duration="175000" />
       <workItem from="1604874079940" duration="3559000" />
       <workItem from="1605055313463" duration="4319000" />
-      <workItem from="1605134423003" duration="1801000" />
+      <workItem from="1605134423003" duration="2576000" />
     </task>
     <servers />
   </component>
