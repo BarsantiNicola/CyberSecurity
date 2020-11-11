@@ -363,8 +363,22 @@ return false in case of non autorizate move
     }
     return ret;
   }
-  int (*Game::getGameBoard())[NUMBER_COLUMN]
+  /*int (*Game::getGameBoard())[NUMBER_COLUMN]
   {
     return gameBoard;
-  } 
+  } */
+  int ** Game::getGameBoard()
+  {
+    return (int**)gameBoard;//controllare sicurezza
+  }
+ /* Game::~Game()
+  {
+   
+    for(int i=0;i<NUMBER_ROW;i++)
+    {
+      delete []gameBoard[i];
+    }
+    delete []gameBoard;
+   
+  }*/
 }

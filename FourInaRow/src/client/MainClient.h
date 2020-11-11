@@ -73,6 +73,7 @@ namespace client
       int* advPort=nullptr;
       const char* serverIP="127.0.0.1";
       int serverPort=12345;
+      int numberToTraslate=0;
       int myPort=1235;
       const char* myIP="127.0.0.1";
       bool sendImplicitUserListReq();
@@ -130,7 +131,7 @@ namespace client
       bool receiveACKChatProtocol(Message* message);
       bool deconcatenateTwoField(unsigned char* originalField,unsigned int originalFieldSize,unsigned char* firsField,unsigned int* firstFieldSize,unsigned char* secondField,unsigned int* secondFieldSize,unsigned char separator,unsigned int numberSeparator);//ok
       bool getDeconcatenateLength(unsigned char* originalField,unsigned int originalFieldSize,unsigned int* firstFieldSize,unsigned int* secondFieldSize,unsigned char separator,unsigned int numberSeparator);
-
+       void PrintWhiteSpace();
     public:
       MainClient(const char* ipAddr , int port ); 
       ~MainClient();
