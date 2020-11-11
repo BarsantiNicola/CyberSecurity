@@ -2520,6 +2520,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     delete[] app;
     return res;
   }
+
 /*
 -----------------------------countOccurences ---------------------------------
 */

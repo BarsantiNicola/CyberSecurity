@@ -540,16 +540,19 @@ namespace client{
         }
 
     bool TextualInterfaceManager::setter(){
-        system("/bin/clear");
+	    execCommand(CLEAR);
+       // system("/bin/clear");
 	    ofstream out;
 	    printColoredLogin();
 	    for( int a = 0; a<adj_x; a++ )
 	        cout<<' ';
 	    cout<<"Use the arrows to center the page or press Enter to complete the interface setting"<<endl;
-        system("/bin/stty raw");
+        //system("/bin/stty raw");
+        execCommand(RAW);
         char input = getchar();
         // Reset terminal to normal "cooked" mode
-        system("/bin/stty cooked");
+        execCommand(COOKED);
+        //system("/bin/stty cooked");
 	    switch(input){
 	        case 13:
 
@@ -578,4 +581,37 @@ namespace client{
 	    }
 	    return false;
 	}
+
+    void TextualInterfaceManager::execCommand( Command command ){
+
+        int ret;
+        char **args = new char*[3];
+        for( int a = 0; a<3; a++ )
+            args[a] = nullptr;
+
+        switch( command ){
+            case CLEAR:
+                args[0] = (char*)"/bin/clear";
+                break;
+            case RAW:
+                args[0] = (char*)"/bin/stty";
+                args[1] = (char*)"raw";
+                break;
+            case COOKED:
+                args[0] = (char*)"/bin/stty";
+                args[1] = (char*)"cooked";
+                break;
+            default:
+                return;
+
+        }
+
+        if (fork())
+            wait(&ret);
+        else {
+            execv( args[0], args );
+            exit(1);
+        }
+    }
+
 }

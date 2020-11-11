@@ -17,6 +17,7 @@
 #include<exception>
 #include<vector>
 #include<sstream>
+
 #define SLEEP_TIME 2
 #define TOKEN_GAP 45
 #define NUMBER_SEPARATOR 4
@@ -29,7 +30,9 @@ namespace client
         MOVE_TYPE,
         CHAT_TYPE
     };
-  
+
+
+
   enum ClientPhase
   {
     MAIN_INTERFACE_PHASE,
@@ -136,6 +139,7 @@ namespace client
       MainClient(const char* ipAddr , int port ); 
       ~MainClient();
       void client();//ok
+
   };
 
 

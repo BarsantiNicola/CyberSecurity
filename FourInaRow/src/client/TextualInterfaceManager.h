@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <unistd.h>
+#include <sys/wait.h>
 #define USERNAME_POSITION 1712
 #define SERVERSTATUS_POSITION 1842
 #define PENDING_LIST_SIZE_POSITION 1789
@@ -25,6 +26,12 @@ namespace client{
                 LOGIN_PAGE_0,
                 MATCH_PAGE_0
 	};
+
+    enum Command{
+        CLEAR,
+        RAW,
+        COOKED
+    };
 
 	enum class InputType{
 		USERNAME,
@@ -73,8 +80,10 @@ namespace client{
 		void resetTimer();
 		bool setter();
 
+
 	private:
 		string insertElement( InterfacePage page , InputType input , string value , string base);
+        void execCommand( Command command );
 	};
 
 }

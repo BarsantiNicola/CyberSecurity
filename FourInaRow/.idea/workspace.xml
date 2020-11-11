@@ -29,12 +29,11 @@
   <component name="ChangeListManager">
     <list default="true" id="4cbb8ddf-e807-44fa-ae33-bda27674b47b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/screen_size.conf" beforeDir="false" afterPath="$PROJECT_DIR$/data/screen_size.conf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/program" beforeDir="false" afterPath="$PROJECT_DIR$/program" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/screen_size.conf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/client/MainClient.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/MainClient.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/client/MainClient.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/MainClient.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/client/TextualInterfaceManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/TextualInterfaceManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/client/TextualInterfaceManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/TextualInterfaceManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/client/data/login-art.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/data/login-art.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/client/data/main_art.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/data/main_art.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -70,13 +69,6 @@
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="settings.editor.selected.configurable" value="org.jetbrains.plugins.github.ui.GithubSettingsConfigurable" />
-  </component>
-  <component name="RunManager">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -186,7 +178,8 @@
       <workItem from="1604829875511" duration="3187000" />
       <workItem from="1604834227267" duration="175000" />
       <workItem from="1604874079940" duration="3559000" />
-      <workItem from="1605055313463" duration="3973000" />
+      <workItem from="1605055313463" duration="4319000" />
+      <workItem from="1605134423003" duration="1801000" />
     </task>
     <servers />
   </component>
