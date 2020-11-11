@@ -258,9 +258,11 @@ namespace client
        // std::cout<<"\t# Insert a command:";
         if(!implicitUserListReq)
         {
+          printWhiteSpace();
           std::cout<<app<<endl;
         }
         implicitUserListReq=false;
+        printWhiteSpace();
         std::cout<<"\t# Insert a command:";
         cout.flush();
         return true;
@@ -399,7 +401,9 @@ namespace client
         unsigned char* userList=message->getRankList();
         int userListLen=message->getRankListLen();
         app=printableString(userList,userListLen);
-        std::cout<<app<<endl;
+        printWhiteSpace();
+        std::cout<<app<<'\n';
+        printWhiteSpace();
         std::cout<<"\t# Insert a command:";
         cout.flush();
         return true;
@@ -719,7 +723,10 @@ namespace client
     this->nonce++;
     verbose<<"--> [MainClient][reciveRejectProtocol] the actual nonce is:"<<nonce<<'\n';
     startChallenge=false;
-    cout<<"\n \n the user "<<challenged_username <<" reject your request "<<endl;
+    cout<<"\n \n";
+    printWhiteSpace();
+    cout<<"the user "<<challenged_username <<" reject your request "<<'\n';
+    printWhiteSpace();
     std::cout<<"\t# Insert a command:";
     cout.flush();
     challenged_username = "";
@@ -1448,7 +1455,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     switch(statGame)
     {
       case BAD_MOVE:
-        std::cout<<"The collumn selected is full. \n"<<endl;
+        printWhiteSpace();
+        std::cout<<"The collumn selected is full. \n";
+        printWhiteSpace();
         std::cout<<"\t# Insert a command:";
         cout.flush();
         break;
@@ -1456,12 +1465,16 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         verbose<<"-->[MainClient][MakeAndSendGameMove] nullptr as parameter"<<'\n';
         break;
       case OUT_OF_BOUND:
-        std::cout<<"The collumn selected doesn't exist. \n"<<endl;
+        printWhiteSpace();
+        std::cout<<"The collumn selected doesn't exist. \n";
+        printWhiteSpace();
         std::cout<<"\t# Insert a command:";
         cout.flush();
         break;
       case BAD_TURN:
-        std::cout<<"It's not your turn wait. \n"<<endl;
+        printWhiteSpace();
+        std::cout<<"It's not your turn wait. \n";
+        printWhiteSpace();
         std::cout<<"\t# Insert a command:";
         cout.flush();
         break;
@@ -1543,16 +1556,19 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                     currTokenIninzialized=false;
                     if(iWon)
                     {
+                      printWhiteSpace();
                       cout<<"\t you won"<<endl;
                       cout.flush();
                     }
                     else if(adversaryWon)
                     {
+                      printWhiteSpace();
                       cout<<"\t you lose"<<endl;
                       cout.flush();                
                     }
                     else if(tie)
                     {
+                      printWhiteSpace();
                       cout<<"\t it's a tie"<<endl;
                       cout.flush(); 
                     }
@@ -1749,16 +1765,19 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
      currTokenIninzialized=false;
      if(iWon)
      {
+       printWhiteSpace();
        cout<<"\t you won"<<endl;
        cout.flush();
      }
      else if(adversaryWon)
      {
+       printWhiteSpace();
        cout<<"\t you lose"<<endl;
        cout.flush();                
      }
      else if(tie)
      {
+       printWhiteSpace();
        cout<<"\t it's a tie"<<endl;
        cout.flush(); 
      }
@@ -1787,6 +1806,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         return false;
     }
     //this->nonce++;
+    printWhiteSpace();
     std::cout<<"error to server request try again. \n"<<endl;
     stringstream sstr;
     stringstream ssreq;
@@ -1796,7 +1816,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     string errorMessage((char*)message->getMessage());
     textual_interface_manager->printMainInterface(this->username,sstr.str(),"online","none",ssreq.str());
     clientPhase=ClientPhase::NO_PHASE;
-    std:cout<<errorMessage<<endl;
+    printWhiteSpace();
+    std:cout<<errorMessage<<'\n';
+    printWhiteSpace();
     std::cout<<"\t# Insert a command:";
     cout.flush();
     return true;
@@ -1812,7 +1834,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     if(comand_line.empty())
     {
       vverbose<<"--> [MainClient][comand] error comand_line is empty"<<'\n';
-      std::cout<<"\t comand line is empty \n"<<endl;
+      printWhiteSpace();
+      std::cout<<"\t comand line is empty \n";
+      printWhiteSpace();
       std::cout<<"\t# Insert a command:";
       std::cout.flush();
      
@@ -1824,7 +1848,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       {
         if(logged)
         {
-          std::cout<<"you can't exit the application when you are logged \n"<<endl;
+          printWhiteSpace();
+          std::cout<<"you can't exit the application when you are logged \n";
+          printWhiteSpace();
           std::cout<<"\t# Insert a command:";
           std::cout.flush();
           return true;
@@ -1846,6 +1872,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           connection_manager->closeConnection(connection_manager->getserverSocket());
           delete connection_manager;
         }
+        printWhiteSpace();
         cout<<"bye bye!!"<<endl;
         exit(0);
       }
@@ -1853,18 +1880,21 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       {
         if(logged)
         {
+          printWhiteSpace();
           std::cout<<"already logged \n"<<endl;
+          printWhiteSpace();
           std::cout<<"\t# Insert a command:";
           std::cout.flush();
           return true;
         }
         string password;
         string username;
+        printWhiteSpace();
         cout<<"username:";
         cin>>username;
         cout<<'\n';
       
-      
+        printWhiteSpace();
         cout<<"password:";
 
         termios oldt;//inizialiaze hide input
@@ -1877,14 +1907,18 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         cout<<'\n';
         if(username.empty()||password.empty())
         {
-          std::cout<<"username or password not valid \n"<<endl;
+          printWhiteSpace();
+          std::cout<<"username or password not valid \n";
+          printWhiteSpace();
           std::cout<<"\t# Insert a command:";
           std::cout.flush();
         }
         cipher_client->newRSAParameter(username,password);
         if(!cipher_client->getRSA_is_start())
         {
-          std::cout<<"login failed retry \n"<<endl;
+          printWhiteSpace();
+          std::cout<<"login failed retry \n";
+          printWhiteSpace();
           std::cout<<"\t# Insert a command:";
           cout.flush();
         }
@@ -1903,7 +1937,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           }
           else
           {
-             std::cout<<"login failed retry"<<endl;
+             printWhiteSpace();
+             std::cout<<"login failed retry"<<'\n';
+             printWhiteSpace();
              std::cout<<"\t# Insert a command:";
              cout.flush();  
           }
@@ -1916,6 +1952,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
          {
            if(!sendReqUserListProtocol())
            {
+             printWhiteSpace();
              std::cout<<"show user online failed retry \n \t# Insert a command:";
            }
          }
@@ -1923,7 +1960,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
          {
            if(!sendRankProtocol())
            {
-             std::cout<<"show user online failed retry"<<endl;
+             printWhiteSpace();
+             std::cout<<"show user online failed retry"<<'\n';
+             printWhiteSpace();
              std::cout<<"\t# Insert a command:";
              cout.flush();
            }
@@ -1933,13 +1972,17 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
             string toPrint=challenge_register->printChallengeList();
             if(toPrint.empty())
             {
+              printWhiteSpace();
               std::cout<<"no active request game"<<endl;
             }
             else
             {
+              printWhiteSpace();
               std::cout<<"challenger list:"<<endl;
+              printWhiteSpace();
               std::cout<<toPrint<<endl;
             }
+            printWhiteSpace();
             std::cout<<"\t# Insert a command:";
             cout.flush();
          }
@@ -1950,21 +1993,27 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       	 string app=comand_line.substr(10);
          if(app.empty())
          {
-             std::cout<<"failed to send challenge "<<endl;
+             printWhiteSpace();
+             std::cout<<"failed to send challenge "<<'\n';
+             printWhiteSpace();
              std::cout<<"\t# Insert a command:";
              cout.flush();
              return true;
          }
          if(app.compare(username)==0)
          {
+           printWhiteSpace();
            std::cout<<"self challenge not permited "<<endl;
+           printWhiteSpace();
            std::cout<<"\t# Insert a command:";
            cout.flush();
            return true;
          }
          if(startChallenge)
          {
-             std::cout<<"already send a pending challenge "<<endl;
+             printWhiteSpace();
+             std::cout<<"already send a pending challenge "<<'\n';
+             printWhiteSpace();
              std::cout<<"\t# Insert a command:";
              cout.flush();
              return true;
@@ -1972,7 +2021,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
          bool res=sendChallengeProtocol(app.c_str(),comand_line.size());
          if(!res)
          {
-             std::cout<<"failed to send challenge "<<endl;
+             printWhiteSpace();
+             std::cout<<"failed to send challenge "<<'\n';
+             printWhiteSpace();
              std::cout<<"\t# Insert a command:";
              cout.flush();
              return true;
@@ -1998,7 +2049,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         } 
         else
         {
-             std::cout<<"error you can't insert a coin in an empty column "<<endl;
+             printWhiteSpace();
+             std::cout<<"error you can't insert a coin in an empty column "<<'\n';
+             printWhiteSpace();
              std::cout<<"\t# Insert a command:";
              cout.flush(); 
              return true;         
@@ -2009,14 +2062,18 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         std::string app = comand_line.substr(5);
         if(app.length()>MAX_LENGTH_CHAT)
         {
-          std::cout<<"message too long retry "<<endl;
+          printWhiteSpace();
+          std::cout<<"message too long retry "<<'\n';
+          printWhiteSpace();
           std::cout<<"\t# Insert a command:";
           cout.flush();
           return true;         
         }
         if(app.empty())
         {
-          std::cout<<"failed to send chat "<<endl;
+          printWhiteSpace();
+          std::cout<<"failed to send chat "<<'\n';
+          printWhiteSpace();
           std::cout<<"\t# Insert a command:";
           cout.flush();
           return true;
@@ -2034,7 +2091,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         //delete buffer;
         if(!res)
         {
-          std::cout<<"failed to send chat "<<endl;
+          printWhiteSpace();
+          std::cout<<"failed to send chat "<<'\n';
+          printWhiteSpace();
           std::cout<<"\t# Insert a command:";
           cout.flush();
           return false;         
@@ -2045,7 +2104,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       	 std::string app=comand_line.substr(7);
          if(app.empty())
          {
-             std::cout<<"failed to send challenge "<<endl;
+             printWhiteSpace();
+             std::cout<<"failed to send challenge "<<'\n';
+             printWhiteSpace();
              std::cout<<"\t# Insert a command:";
              cout.flush();
              return true;
@@ -2054,7 +2115,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
          bool res=sendAcceptProtocol(app.c_str(),comand_line.size());
          if(!res)
          {
-             std::cout<<"failed to send challenge "<<endl;
+             printWhiteSpace();
+             std::cout<<"failed to send challenge "<<'\n';
+             printWhiteSpace();
              std::cout<<"\t# Insert a command:";
              cout.flush();
              return false;
@@ -2067,7 +2130,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
          vverbose<<"-->[MainClient][comand]"<<app<<'\n';
          if(app.empty())
          {
-             std::cout<<"failed to send challenge "<<endl;
+             printWhiteSpace();
+             std::cout<<"failed to send challenge "<<'\n';
+             printWhiteSpace();
              std::cout<<"\t# Insert a command:";
              cout.flush();
              return true;
@@ -2075,7 +2140,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
          bool res=sendRejectProtocol(app.c_str(),comand_line.size());
          if(!res)
          {
-             std::cout<<"failed to send reject "<<endl;
+             printWhiteSpace();
+             std::cout<<"failed to send reject "<<'\n';
+             printWhiteSpace();
              std::cout<<"\t# Insert a command:";
              cout.flush();
              return false;
@@ -2087,7 +2154,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         bool ret=sendDisconnectProtocol();
         if(!ret)
         {
-          std::cout<<"quit failed retry"<<endl;
+          printWhiteSpace();
+          std::cout<<"quit failed retry"<<'\n';
+          printWhiteSpace();
           std::cout<<"\t# Insert a command:";
           cout.flush();
           return false;
@@ -2100,7 +2169,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         bool ret=sendLogoutProtocol();
         if(!ret)
         {
-          std::cout<<"logout failed retry"<<endl;
+          printWhiteSpace();
+          std::cout<<"logout failed retry"<<'\n';
+          printWhiteSpace();
           std::cout<<"\t# Insert a command:";
           cout.flush();
           return false;
@@ -2112,7 +2183,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         bool ret=sendWithDrawProtocol();
         if(!ret)
         {
+          printWhiteSpace();
           std::cout<<"withdraw failed retry"<<endl;
+          printWhiteSpace();
           std::cout<<"\t# Insert a command:";
           cout.flush();
           return false;
@@ -2120,7 +2193,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       }
       else
       {
+        printWhiteSpace();
         std::cout<<"\t  comand: "<<comand_line<<" not valid"<<endl;
+        printWhiteSpace();
         std::cout<<"\t# Insert a command:";
         cout.flush();
         return true;
@@ -2129,7 +2204,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     }
       catch(exception e)
       {
+          printWhiteSpace();
           std::cout<<"comand not valid"<<endl;
+          printWhiteSpace();
           std::cout<<"\t# Insert a command:";
           cout.flush();
       }
@@ -2170,6 +2247,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
          if(!certificateProtocol())
            exit(1);
          textual_interface_manager->printLoginInterface();
+         printWhiteSpace();
          std::cout<<"\t# Insert a command:";
          std::cout.flush();
          notConnected=false;
@@ -2208,6 +2286,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                     if(!res)
                       continue;
                     textual_interface_manager->printLoginInterface();
+                    printWhiteSpace();
                     std::cout<<"\t# Insert a command:";
                     std::cout.flush();
                     cipher_client->resetRSA_is_start();
@@ -2223,7 +2302,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                  {
                    if(clientPhase==ClientPhase::NO_PHASE)
                    {
-                     cout<<"error to show the online users list"<<endl;
+                     printWhiteSpace();
+                     cout<<"error to show the online users list"<<'\n';
+                     printWhiteSpace();
                      std::cout<<"\t# Insert a command:";
                      cout.flush();
                    }
@@ -2239,7 +2320,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                  {
                    if(clientPhase==ClientPhase::NO_PHASE)
                    {
-                     cout<<"error to show the rank users list"<<endl;
+                     printWhiteSpace();
+                     cout<<"error to show the rank users list"<<'\n';
+                     printWhiteSpace();
                      std::cout<<"\t# Insert a command:";
                      cout.flush();
                    }
@@ -2250,7 +2333,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                 res=receiveChallengeProtocol(message);
                 if(!res)
                 {
-                     cout<<"error to recive challengeProtocol"<<endl;
+                     printWhiteSpace();
+                     cout<<"error to recive challengeProtocol"<<'\n';
+                     printWhiteSpace();
                      std::cout<<"\t# Insert a command:";
                      cout.flush();
                 }
@@ -2305,7 +2390,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                 res=errorHandler(message);
                 if(res)
                 {
-                  cout<<"an error occured"<<endl;
+                  printWhiteSpace();
+                  cout<<"an error occured"<<'\n';
+                  printWhiteSpace();
                   std::cout<<"\t# Insert a command:";
                   cout.flush();
                   
@@ -2315,6 +2402,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
            
               default:
                  vverbose<<"--> [MainClient][client] message_type: "<<message->getMessageType()<<" unexpected"<<'\n';
+                 printWhiteSpace();
                  std::cout<<"\t# Insert a command:";
                  cout.flush();
             }
@@ -2462,11 +2550,11 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     }
     clientPhase=ClientPhase::NO_PHASE;
   }
-  void MainClient::PrintWhiteSpace()
+  void MainClient::printWhiteSpace()
   {
     for(int i=0;i<numberToTraslate;++i)
     {
-      cout<<' ';
+      std::cout<<' ';
     }
   }
 /*-----------------destructor-----------------------------------
