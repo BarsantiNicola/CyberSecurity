@@ -82,12 +82,12 @@ namespace client
       string adv_username_1 = "";
       char* advIP;
       string challenged_username = "";
-      Game* game;
-      cipher::SessionKey* aesKeyServer;
-      cipher::SessionKey* aesKeyClient;
+      Game* game=nullptr;
+      cipher::SessionKey* aesKeyServer=nullptr;
+      cipher::SessionKey* aesKeyClient=nullptr;
       ChallengeRegister* challenge_register=new ChallengeRegister();
       ConnectionManager* connection_manager;//da inizializzare nel main
-      TextualInterfaceManager* textual_interface_manager;
+      TextualInterfaceManager* textual_interface_manager=nullptr;
       cipher::CipherClient* cipher_client;
       std::mutex mtx_time;
       std::unique_lock<std::mutex>* lck_time;//(mtx_time,std::defer_lock);//da inizializzare nel main

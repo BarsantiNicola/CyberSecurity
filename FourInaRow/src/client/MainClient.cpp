@@ -1855,20 +1855,38 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           std::cout.flush();
           return true;
         }
-        if(serverIP!=nullptr)
+        vverbose<<"-->[MainClient][comand] start deleting"<<'\n';
+        /*if(serverIP!=nullptr)
+        {
           delete[] serverIP;
-        if(myIP!=nullptr)
+          vverbose<<"-->[MainClient][comand] server IP deleted"<<'\n';
+        }*/
+        /*if(myIP!=nullptr)
+        {
           delete[]myIP;
+           vverbose<<"-->[MainClient][comand] myIP deleted"<<'\n';
+        }*/
         if(game!=nullptr)
+        {
           delete game;
+           vverbose<<"-->[MainClient][comand] game deleted"<<'\n';
+        }
         if(aesKeyServer!=nullptr)
+        {
           delete aesKeyServer;
+           vverbose<<"-->[MainClient][comand] aesKeyServer deleted"<<'\n';
+        }
         if(aesKeyClient!=nullptr)
+        {
+           
           delete aesKeyClient;
+          vverbose<<"-->[MainClient][comand] aeskeyClient deleted"<<'\n';
+        }
         if(textual_interface_manager!=nullptr)
           delete textual_interface_manager;
         if(connection_manager!=nullptr)
         {
+          vverbose<<"-->[MainClient][comand] start close socket"<<'\n';
           connection_manager->closeConnection(connection_manager->getserverSocket());
           delete connection_manager;
         }
@@ -2561,10 +2579,10 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 */
   MainClient::~MainClient()
   {
-    if(serverIP!=nullptr)
-      delete[] serverIP;
-    if(myIP!=nullptr)
-      delete[]myIP;
+    /*if(serverIP!=nullptr)
+      delete[] serverIP;*/
+    /*if(myIP!=nullptr)
+      delete[]myIP;*/
     if(game!=nullptr)
       delete game;
     if(aesKeyServer!=nullptr)
