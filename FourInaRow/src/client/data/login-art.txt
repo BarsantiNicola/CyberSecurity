@@ -31,6 +31,6 @@
 //                                                                                                                    //
 //  Available commands:                                                                                               //
 //            login : Permits to login to the application                                                             //
-//                                                                                                                    //
+//            exit: Close the application                                                                                                       //
 //                                                                                                                    //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

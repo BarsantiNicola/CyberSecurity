@@ -257,7 +257,9 @@ namespace client
         textual_interface_manager->printMainInterface(this->username,sstr.str(),"online","none",ssreq.str());
        // std::cout<<"\t# Insert a command:";
         if(!implicitUserListReq)
+        {
           std::cout<<app<<endl;
+        }
         implicitUserListReq=false;
         std::cout<<"\t# Insert a command:";
         cout.flush();
@@ -1534,8 +1536,10 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                   waitForAck=false;
                   textual_interface_manager->printGameInterface(true, string("15"),game->getChat(),game->printGameBoard());
                   this->currentToken++;
+                  vverbose<<'\n'<<"-->[MainClient][MakeAndSendGameMove] current token incremented"<<'\n';
                   if(statGame==GAME_FINISH)
                   {
+                    vverbose<<"-->[MainClient][MakeAndSendGameMove] game finish path"<<'\n';
                     currTokenIninzialized=false;
                     if(iWon)
                     {
@@ -1558,6 +1562,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                     clientPhase= ClientPhase::NO_PHASE;
                     sendImplicitUserListReq();
                   }
+                  break;
                 case DISCONNECT:
                   reciveDisconnectProtocol(message);
                   waitForAck=false;
@@ -1565,22 +1570,30 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                 }
               }
             }
-            if(waitForAck && difftime(time(NULL),start)>SLEEP_TIME )
-            {
-              connection_manager->sendMessage(*message,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
-              time(&start);
-              waitForAck=true;
-            }
-          }
+          } 
+          vverbose<<'\n'<<"-->[MainClient][MakeAndSendGameMove] check if ack arrive"<<'\n';
+          if(waitForAck && difftime(time(NULL),start)>SLEEP_TIME )
+          {
+            connection_manager->sendMessage(*message,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
+            time(&start);
+            waitForAck=true;
+           }
+          
         }
-        delete netMess;
-        delete appMess;
+        vverbose<<"-->[MainClient][MakeAndSendGameMove] start to deleting"<<'\n';
+        if(netMess!=nullptr)
+          delete netMess;
+        if(appMess!=nullptr)
+          delete appMess;
+
+
         break;
-        
+        vverbose<<"-->[MainClient][MakeAndSendGameMove] end delete"<<'\n';
 
         //da continuare 
        
     }
+     vverbose<<"-->[MainClient][MakeAndSendGameMove] end function"<<'\n';
      return true;
   }
 /*
@@ -1807,6 +1820,35 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     }
     try
     {
+      if(comand_line.compare(0,4,"exit")==0)
+      {
+        if(logged)
+        {
+          std::cout<<"you can't exit the application when you are logged \n"<<endl;
+          std::cout<<"\t# Insert a command:";
+          std::cout.flush();
+          return true;
+        }
+        if(serverIP!=nullptr)
+          delete[] serverIP;
+        if(myIP!=nullptr)
+          delete[]myIP;
+        if(game!=nullptr)
+          delete game;
+        if(aesKeyServer!=nullptr)
+          delete aesKeyServer;
+        if(aesKeyClient!=nullptr)
+          delete aesKeyClient;
+        if(textual_interface_manager!=nullptr)
+          delete textual_interface_manager;
+        if(connection_manager!=nullptr)
+        {
+          connection_manager->closeConnection(connection_manager->getserverSocket());
+          delete connection_manager;
+        }
+        cout<<"bye bye!!"<<endl;
+        exit(0);
+      }
       if(comand_line.compare(0,5,"login")==0)
       {
         if(logged)
@@ -2113,6 +2155,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
      cipher_client=new cipher::CipherClient();//create new CipherClient object
 
      textual_interface_manager=new TextualInterfaceManager();
+     numberToTraslate=textual_interface_manager->getXTranslation();
      bool res;
     while(true)
     {
@@ -2288,7 +2331,13 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                  if(keyExchangeReciveProtocol(message,false))
                  {
                    clientPhase=INGAME_PHASE;
+                   if(game!=nullptr)
+                   {
+                     delete game;
+                     game=nullptr;
+                   }
                    game=new Game(250,startingMatch);
+                   textual_interface_manager->setGame(game->getGameBoard());
                    nonceAdv=0;
                    if(!startingMatch)
                    {
@@ -2412,6 +2461,13 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       messageChatToACK=nullptr;
     }
     clientPhase=ClientPhase::NO_PHASE;
+  }
+  void MainClient::PrintWhiteSpace()
+  {
+    for(int i=0;i<numberToTraslate;++i)
+    {
+      cout<<' ';
+    }
   }
 /*-----------------destructor-----------------------------------
 */

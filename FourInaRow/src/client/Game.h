@@ -34,8 +34,10 @@ namespace client
       bool myControl();
       vector<int> availableColumns();
       void addMessageToChat(string message);
-      int(*getGameBoard())[NUMBER_COLUMN] ;
+      //int(*getGameBoard())[NUMBER_COLUMN] ;
+      int** getGameBoard();
       string printGameBoard();
+      //~Game();
    private:
       bool controlAlignment(int row,int column,bool myMove);
       bool gameFinish(int row,int column,bool* iWon,bool* adversaryWon,bool* tie,bool myMove);
