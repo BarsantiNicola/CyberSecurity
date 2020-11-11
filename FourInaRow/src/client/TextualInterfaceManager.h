@@ -3,7 +3,7 @@
 #define TEXTUAL_INTERFACE_MANAGER
 #include <iostream>
 #include <fstream>
-
+#include <unistd.h>
 #define USERNAME_POSITION 1712
 #define SERVERSTATUS_POSITION 1842
 #define PENDING_LIST_SIZE_POSITION 1789
@@ -71,6 +71,7 @@ namespace client{
 		void resetGameboard();
 		void showTimer( int time );
 		void resetTimer();
+		bool setter();
 
 	private:
 		string insertElement( InterfacePage page , InputType input , string value , string base);

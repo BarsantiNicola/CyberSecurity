@@ -56,11 +56,10 @@ namespace client{
                 }
             if( adj_x == -1 || adj_x > 50 || adj_x <0 ) adj_x = 0;
             if( adj_y == -1 || adj_y > 50 || adj_y < 0 ) adj_y = 0;
-
+            myfile.close();
         }else
-            exit(1);
+            while(!setter());
 
-        myfile.close();
 	}
 
 
@@ -539,4 +538,44 @@ namespace client{
           cout<<message;
           cout.flush();
         }
+
+    bool TextualInterfaceManager::setter(){
+        system("/bin/clear");
+	    ofstream out;
+	    printColoredLogin();
+	    for( int a = 0; a<adj_x; a++ )
+	        cout<<' ';
+	    cout<<"Use the arrows to center the page or press Enter to complete the interface setting"<<endl;
+        system("/bin/stty raw");
+        char input = getchar();
+        // Reset terminal to normal "cooked" mode
+        system("/bin/stty cooked");
+	    switch(input){
+	        case 13:
+
+                out.open ("data/screen_size.conf", ios::out );
+                if (out.is_open()) {
+                    out << adj_x<<endl;
+                    out << adj_y<<endl;
+                }
+                out.close();
+                return true;
+
+	        case 65:
+	            if( adj_y > 0 ) adj_y--;
+	            break;
+	        case 66:
+	            if( adj_y < 20 ) adj_y++;
+	            break;
+	        case 67:
+	            if( adj_x < 50 ) adj_x++;
+	            break;
+	        case 68:
+	            if( adj_x > 0 ) adj_x--;
+	            break;
+	        default:
+	            cout<<"Bad input"<<endl;
+	    }
+	    return false;
+	}
 }

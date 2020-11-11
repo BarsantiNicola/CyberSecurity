@@ -28,9 +28,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4cbb8ddf-e807-44fa-ae33-bda27674b47b" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/program" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utility/Converter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/utility/Converter.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/screen_size.conf" beforeDir="false" afterPath="$PROJECT_DIR$/data/screen_size.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/program" beforeDir="false" afterPath="$PROJECT_DIR$/program" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/client/TextualInterfaceManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/TextualInterfaceManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/client/TextualInterfaceManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/TextualInterfaceManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/client/data/login-art.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/data/login-art.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/client/data/main_art.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/data/main_art.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -68,9 +72,9 @@
     <property name="settings.editor.selected.configurable" value="org.jetbrains.plugins.github.ui.GithubSettingsConfigurable" />
   </component>
   <component name="RunManager">
-    <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
   </component>
@@ -181,7 +185,8 @@
       <workItem from="1604798966038" duration="359000" />
       <workItem from="1604829875511" duration="3187000" />
       <workItem from="1604834227267" duration="175000" />
-      <workItem from="1604874079940" duration="2960000" />
+      <workItem from="1604874079940" duration="3559000" />
+      <workItem from="1605055313463" duration="3973000" />
     </task>
     <servers />
   </component>
