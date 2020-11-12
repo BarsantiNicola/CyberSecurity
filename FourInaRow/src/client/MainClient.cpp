@@ -2444,7 +2444,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                      game=nullptr;
                    }
                    game=new Game(250,startingMatch);
-                   //textual_interface_manager->setGame(game->getGameBoard());
+                   textual_interface_manager->setGame(game->getGameBoard());
                    nonceAdv=0;
                    if(!startingMatch)
                    {
