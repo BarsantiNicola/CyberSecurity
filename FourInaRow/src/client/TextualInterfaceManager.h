@@ -5,6 +5,7 @@
 #include <fstream>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <unordered_map>
 #define USERNAME_POSITION 1712
 #define SERVERSTATUS_POSITION 1842
 #define PENDING_LIST_SIZE_POSITION 1789
@@ -44,6 +45,12 @@ namespace client{
                 GAMEBOARD
 	};
 
+    struct Statistic{
+        int won;
+        int lose;
+        int tie;
+    };
+
 	class TextualInterfaceManager{
 	
 	private:
@@ -57,10 +64,14 @@ namespace client{
 		int adj_x;
         int adj_y;
 		void* game;
-	
+        unordered_map<string,Statistic> rank;
+
 	public:
 		TextualInterfaceManager();
 		string* getUsername();
+		void printUserList( char* userList, int len );
+		void printRankList( char* rankList, int len, bool print=true );
+		void printUserPending( string username );
 		void printLoginInterface();
 		void printColoredLogin();
 		void printMainInterface(string username,string activeUser,string serverStatus,string matchStatus,string pendingStatus);

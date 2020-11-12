@@ -147,6 +147,74 @@ namespace client{
 
 	    return true;
 	}
+
+    void TextualInterfaceManager::printUserList( char* userList, int len ){
+	    int prev = 0;
+	    for( int a = 0; a<len; a++ ){
+	        if( userList[a] == '\n' || a == len ){
+	            for( int b = 0; b<adj_x; b++ )
+	                cout<<' ';
+	            for( int b = prev; b<a; b++ )
+	                cout<<userList[b];
+	            prev = a+1;
+	        }
+	    }
+	}
+
+    void TextualInterfaceManager::printRankList( char* rankList, int len, bool print ){
+        rank.clear();
+        string username;
+        Statistic stat;
+        int count = 0;
+        int prev = 0;
+        for( int a =0; a<len; a++ )
+            if( rankList[a] == ' ' || rankList[a] == '\n' ){
+                rankList[a] = '\0';
+                switch(count){
+                    case 0:
+                        username = string(rankList+prev);
+                        break;
+                    case 1:
+                        stat.won = stoi(string(rankList+prev));
+                        break;
+                    case 2:
+                        stat.lose = stoi( string(rankList+prev));
+                        break;
+                    case 3:
+                        stat.tie = stoi( string(rankList+prev));
+                        rank[username] = stat;
+                        if( print ){
+                            for( int b = 0; b<adj_x; b++ )
+                                cout<<' ';
+                            cout<<"username: "<<username<<"\twon: "<<stat.won<<"\tlose: "<<stat.lose;
+                            cout<<"\ttie: "<<stat.tie<<"\ttotal: "<<stat.won+stat.tie+stat.lose<<'\n';
+                        }
+                        stat = {0,0,0};
+                        count = 0;
+                        break;
+                    default:
+                        break;
+                }
+                prev = a+1;
+
+            }
+
+	}
+
+    void TextualInterfaceManager::printUserPending( string username ){
+
+	    auto it = rank.find(username);
+	    Statistic stat = it->second;
+	    int totalMatch = stat.won+stat.tie+stat.lose;
+	    for( int a= 0; a<adj_x; a++ )
+	        cout<<' ';
+	    if( totalMatch )
+	        cout<< username<<"TotalMatches: "<<totalMatch<<"\tWinPercentage: "<<(double)stat.won/totalMatch<<endl;
+        else
+            cout<< username<<"TotalMatches: "<<totalMatch<<"\tWinPercentage: 0.0" <<endl;
+
+    }
+
 	void TextualInterfaceManager::printLoginInterface(){
 
         execCommand( CLEAR );
@@ -530,18 +598,15 @@ namespace client{
 
     bool TextualInterfaceManager::setter(){
 	    execCommand(CLEAR);
-       // system("/bin/clear");
 	    ofstream out;
 	    printColoredLogin();
 	    for( int a = 0; a<adj_x; a++ )
 	        cout<<' ';
 	    cout<<"Use the arrows to center the page or press Enter to complete the interface setting"<<endl;
-        //system("/bin/stty raw");
         execCommand(RAW);
         char input = getchar();
         // Reset terminal to normal "cooked" mode
         execCommand(COOKED);
-        //system("/bin/stty cooked");
 	    switch(input){
 	        case 13:
 
