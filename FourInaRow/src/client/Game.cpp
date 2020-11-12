@@ -8,6 +8,10 @@ namespace client
     timer=15;
     for(int i=0;i<NUMBER_ROW;++i)
     {
+      gameBoard[i]=new int[NUMBER_COLUMN];
+    }
+    for(int i=0;i<NUMBER_ROW;++i)
+    {
       for(int j=0;j<NUMBER_COLUMN;++j)
       {
         gameBoard[i][j]=0;
@@ -371,7 +375,7 @@ return false in case of non autorizate move
   {
     return (int**)gameBoard;//controllare sicurezza
   }
- /* Game::~Game()
+  Game::~Game()
   {
    
     for(int i=0;i<NUMBER_ROW;i++)
@@ -380,5 +384,5 @@ return false in case of non autorizate move
     }
     delete []gameBoard;
    
-  }*/
+  }
 }
