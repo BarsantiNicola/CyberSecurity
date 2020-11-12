@@ -22,7 +22,7 @@ namespace client
     private:
       long timer;
       string chat="";
-      int gameBoard[NUMBER_ROW][NUMBER_COLUMN];
+      int** gameBoard=new int*[NUMBER_ROW];
       bool gameControl;
       int chatLen;
    public:
@@ -37,7 +37,7 @@ namespace client
       //int(*getGameBoard())[NUMBER_COLUMN] ;
       int** getGameBoard();
       string printGameBoard();
-      //~Game();
+      ~Game();
    private:
       bool controlAlignment(int row,int column,bool myMove);
       bool gameFinish(int row,int column,bool* iWon,bool* adversaryWon,bool* tie,bool myMove);
