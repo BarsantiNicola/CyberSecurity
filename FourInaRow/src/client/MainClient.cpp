@@ -1738,16 +1738,21 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
    if(!res)
      return;
    if(*messG->getCurrent_Token() < nonceAdv || collMove!=collGame )
+   {
+     verbose<<"-->[MainClient][ReceiveGameMove] the twoColl are difference: "<<collMove<<" != "<<collGame<<'\n';
      return;
-
+   }
    nonceAdv=*c_nonce; 
    messageACK=createMessage(ACK,nullptr,nullptr,0,aesKeyClient,this->currentToken,false);
    connection_manager->sendMessage(*messageACK,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
    if(!cipher_client->toSecureForm( messG, aesKeyServer ))
-     return;
-   statGame=game->makeMove(collMove,&iWon,&adversaryWon,&tie,false);
-   if(statGame!=StatGame::MOVE_OK || statGame!=StatGame::GAME_FINISH)
    {
+     return;
+   }
+   statGame=game->makeMove(collMove,&iWon,&adversaryWon,&tie,false);
+   if(statGame!=StatGame::MOVE_OK && statGame!=StatGame::GAME_FINISH)
+   {
+     verbose<<"-->[MainClient][ReceiveGameMove] error in the state game "<<'\n';
      return;
    }
    
