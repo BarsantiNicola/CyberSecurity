@@ -20,7 +20,7 @@ namespace client{
             for( int b = 0; b<7; b++)
                 gameBoard[a][b] = 0;
 
-        last = false;
+        last = true;
         adj_x=-1;
 		adj_y=-1;
 		login_page = "";
@@ -217,7 +217,7 @@ namespace client{
 
 	void TextualInterfaceManager::printLoginInterface(){
 
-        execCommand( CLEAR );
+        	execCommand( CLEAR );
 		this->printColoredLogin();
 		cout.flush();
 
