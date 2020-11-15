@@ -1703,7 +1703,7 @@ namespace server {
             return nullptr;
 
         }
-        
+
         Message* response;
 
         int *sNonce = this->clientRegister.getClientNonce(*(this->userRegister.getSocket(username)));
@@ -1776,19 +1776,11 @@ namespace server {
 
             case -2:case -1:
                 sock = this->userRegister.getSocket(username);
-                if( !sock )
-                    return this->sendError( string( "Server error. Unable to find user"), sNonce );
-
-                nonce = this->clientRegister.getClientNonce(*sock);
-
-                if( !nonce )
-                    response = this->sendError( string( "Server error. Unable to find user'nonce"), sNonce );
-                else
-                    response = this->sendError( string("Invalid message. Bad Column."), sNonce );
+                response = this->sendError( string("Invalid message. Bad Column."), sNonce );
 
                 this->clientRegister.updateClientNonce(*sock);
                 delete sock;
-                delete nonce;
+                delete sNonce;
                 return response;
 
             case 1:
