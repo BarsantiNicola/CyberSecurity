@@ -1824,16 +1824,14 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     res=cipher_client->fromSecureForm( message , username ,aesKeyServer,true);
     int *nonce_s=message->getNonce();
     verbose<<"-->[MainClient][errorHandler] the recived nonce is:"<<*nonce_s<<'\n';
-    if(res==false || *nonce_s!=(this->nonce-1))
+    if(res==false || *nonce_s!=(this->nonce))
     {
-      if(res==false || *nonce_s!=(this->nonce))
-      {
-        verbose<<"-->[MainClient][errorHandler] error res or nonce not good:"<<'\n';
-        verbose<<"-->[MainClient][errorHandler] actual nonce"<<this->nonce<<'\n';
+      verbose<<"-->[MainClient][errorHandler] error res or nonce not good:"<<'\n';
+      verbose<<"-->[MainClient][errorHandler] actual nonce"<<this->nonce<<'\n';
         return false;
-      }
+      
     }
-    this->nonce++;
+    //this->nonce++;
     printWhiteSpace();
     std::cout<<"error to server request try again. \n"<<endl;
     stringstream sstr;
@@ -2643,8 +2641,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 */  
   int main(int argc, char** argv)
   {
-    //Logger::setThreshold(  NO_VERBOSE );
-    Logger::setThreshold(  VERY_VERBOSE );
+    Logger::setThreshold(  NO_VERBOSE );
+    //Logger::setThreshold(  VERY_VERBOSE );
     client::MainClient* main_client;
     if(argc==1)
     {
