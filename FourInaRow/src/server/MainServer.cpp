@@ -183,12 +183,18 @@ namespace server {
             delete nonce;
         }
         base<<"--> [MainServer][manageMessage] Message content verification passed"<<'\n';
+
+        // asynchronous management of match
+        if( message->getMessageType() == MATCH )
+            this->clientRegister.updateClientNonce( socket );
+
         // pass the message to the higher level handler
         response = this->userManager( message, username, socket );
 
         //  for next message nonce has to be increased(for GAME the nonce needs a different management implemented into MainServer::gameHandler)
-        if( message->getMessageType() != GAME )
+        if( message->getMessageType() != GAME && message->getMessageType() != MATCH )
             this->clientRegister.updateClientNonce( socket );
+
         return response;
 
     }
