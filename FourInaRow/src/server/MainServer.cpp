@@ -192,7 +192,12 @@ namespace server {
         response = this->userManager( message, username, socket );
 
         //  for next message nonce has to be increased(for GAME the nonce needs a different management implemented into MainServer::gameHandler)
-        if( message->getMessageType() != GAME && message->getMessageType() != MATCH )
+        if( message->getMessageType() == GAME && response ) {
+            this->clientRegister.updateClientNonce(socket);
+            return response;
+        }
+
+        if( message->getMessageType() != MATCH )
             this->clientRegister.updateClientNonce( socket );
 
         return response;
@@ -1698,34 +1703,38 @@ namespace server {
             return nullptr;
 
         }
+        cout<<"USERNAME: "<<username<<endl;
         Message* response;
-        int *nonce = message->getNonce();
+
+        int *sNonce = this->clientRegister.getClientNonce(*(this->userRegister.getSocket(username)));
+        int *nonce = message->getCurrent_Token();
+
         if( !nonce ){
             verbose<<"--> [MainServer][gameHandler] Error, Missing Nonce"<<'\n';
-            return this->sendError( string( "Security error, Missing nonce"),nullptr );
+            return this->sendError( string( "Security error, Missing nonce"),sNonce );
         }
 
         int matchID = this->matchRegister.getMatchPlay( username );
         if( matchID == -1 ){
 
             verbose<<"--> [MainServer][gameHandler] Error unable to find match"<<'\n';
-            response = this->sendError( "Invalid request. Match already closed", nullptr );
+            response = this->sendError( "Invalid request. Match already closed", sNonce );
             delete nonce;
             return response;
 
         }
 
-        if( !this->matchRegister.verifyToken( matchID, *nonce )){
+     /*   if( !this->clientRegister.verifyToken( matchID, *nonce )){
 
             verbose<<"--> [MainServer][gameHandler] Security Error, invalid nonce"<<'\n';
-            return this->sendError( "Security Error, Invalid nonce", nullptr );
+            return this->sendError( "Security Error, Invalid nonce", nonce );
 
-        }
+        }*/
 
         if( !this->cipherServer.fromSecureForm( message , username, this->userRegister.getSessionKey(username) ) ){
 
             verbose << "--> [MainServer][gameHandler] Error, Verification failure" << '\n';
-            response = this->sendError(string( "Security error. Invalid message'signature" ), nonce );
+            response = this->sendError(string( "Security error. Invalid message'signature" ), sNonce );
 
             delete nonce;
             return response;
@@ -1755,14 +1764,14 @@ namespace server {
             case -2:case -1:
                 sock = this->userRegister.getSocket(username);
                 if( !sock )
-                    return this->sendError( string( "Server error. Unable to find user"), nullptr );
+                    return this->sendError( string( "Server error. Unable to find user"), sNonce );
 
                 nonce = this->clientRegister.getClientNonce(*sock);
 
                 if( !nonce )
-                    response = this->sendError( string( "Server error. Unable to find user'nonce"), nullptr );
+                    response = this->sendError( string( "Server error. Unable to find user'nonce"), sNonce );
                 else
-                    response = this->sendError( string("Invalid message. Bad Column."), nonce );
+                    response = this->sendError( string("Invalid message. Bad Column."), sNonce );
 
                 this->clientRegister.updateClientNonce(*sock);
                 delete sock;
