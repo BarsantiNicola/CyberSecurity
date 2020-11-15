@@ -173,12 +173,15 @@ namespace client{
                 switch(count){
                     case 0:
                         username = string(rankList+prev);
+                        count++;
                         break;
                     case 1:
                         stat.won = stoi(string(rankList+prev));
+                        count++;
                         break;
                     case 2:
                         stat.lose = stoi( string(rankList+prev));
+                        count++;
                         break;
                     case 3:
                         stat.tie = stoi( string(rankList+prev));
@@ -195,6 +198,8 @@ namespace client{
                     default:
                         break;
                 }
+
+
                 prev = a+1;
 
             }
@@ -209,9 +214,9 @@ namespace client{
 	    for( int a= 0; a<adj_x; a++ )
 	        cout<<' ';
 	    if( totalMatch )
-	        cout<< username<<"TotalMatches: "<<totalMatch<<"\tWinPercentage: "<<(double)stat.won/totalMatch<<endl;
+	        cout<< "Username: "<<username<<"\tTotalMatches: "<<totalMatch<<"\tWinPercentage: "<<(double)stat.won/totalMatch<<endl;
         else
-            cout<< username<<"TotalMatches: "<<totalMatch<<"\tWinPercentage: 0.0" <<endl;
+            cout<< "Username: "<<username<<"\tTotalMatches: "<<totalMatch<<"\tWinPercentage: 0.0" <<endl;
 
     }
 

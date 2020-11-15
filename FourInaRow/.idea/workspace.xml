@@ -29,7 +29,10 @@
   <component name="ChangeListManager">
     <list default="true" id="4cbb8ddf-e807-44fa-ae33-bda27674b47b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/MainServer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MainServer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/launchClient.sh" beforeDir="false" afterPath="$PROJECT_DIR$/launchClient.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/program" beforeDir="false" afterPath="$PROJECT_DIR$/program" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/client/TextualInterfaceManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/TextualInterfaceManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/SQLConnector.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/SQLConnector.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -176,7 +179,7 @@
       <workItem from="1604874079940" duration="3559000" />
       <workItem from="1605055313463" duration="4319000" />
       <workItem from="1605134423003" duration="9396000" />
-      <workItem from="1605461573516" duration="1914000" />
+      <workItem from="1605461573516" duration="2831000" />
     </task>
     <servers />
   </component>

@@ -11,7 +11,7 @@ namespace server {
 
     //  the function contact a remote sql database to generate and return a formatted string containing of the users rank
     string SQLConnector::getRankList() {
-        string ret = "RANK LIST\n";
+        string ret = "";
         try {
 
             vverbose<<"--> [SQLConnector][getRankList] Starting to get user rank list"<<'\n';
@@ -41,20 +41,14 @@ namespace server {
             vverbose<<"--> [SQLConnector][getRankList] Request completed, formatting the results"<<'\n';
             while (res->next()) {
 
-                ret.append("\n\tusername: " );
-                value = res->getString("username");
-                ret.append(value );
-                if( value.length() > 5 )
-                    ret.append("\ttotalMatch: " );
-                else
-                    ret.append( "\t\ttotalMatch: ");
-                ret.append( to_string(res->getInt("totalMatch") ));
-                ret.append( "\t\twonMatch: ");
+                ret.append(res->getString("username") );
+                ret.append( " " );
                 ret.append( to_string( res->getInt("wonMatch") ));
-                ret.append( "\t\tlooseMatch: ");
+                ret.append( " " );
                 ret.append( to_string( res->getInt("loseMatch")));
-                ret.append( "\t\ttieMatch: ");
+                ret.append( " " );
                 ret.append( to_string( res->getInt("tieMatch")));
+                ret.append( "\n" );
 
             }
 
