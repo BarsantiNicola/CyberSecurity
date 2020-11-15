@@ -1573,7 +1573,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                       cout.flush(); 
                     }
                   
-                    sleep(3000);
+                    sleep(5);
                     adv_username_1 = "";
                     clientPhase= ClientPhase::NO_PHASE;
                     sendImplicitUserListReq();
@@ -1690,14 +1690,14 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     }
     if(*c_nonce!=this->currentToken)
     {
-      vverbose<<"-->[MainClient][ReceiveGameMove] nonce not valid"<<'\n';
+      vverbose<<"-->[MainClient][ReceiveGameMove] nonce not valid: "<<*c_nonce<<" !="<<this->currentToken<<'\n';
       messageACK=createMessage(ACK,nullptr,nullptr,0,aesKeyClient,*c_nonce,false);
       connection_manager->sendMessage(*messageACK,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
       delete c_nonce;
       return;
     }
     //nonceAdv=*c_nonce;
-    delete c_nonce;
+    
     chosenColl=message->getChosenColumn();
     chosenCollLen=message->getChosenColumnLength();
     appLen=message->getChosenColumnLength();
@@ -1717,12 +1717,14 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     if(netGameMess==nullptr)
     {
       verbose<<"-->[MainClient][ReceiveGameMove] impossible to extract game message type netMessage"<<'\n';
+      delete c_nonce;
       return;
     }
    messG= Converter::decodeMessage( *netGameMess );
    if(messG==nullptr)
    {
       verbose<<"-->[MainClient][ReceiveGameMove] impossible to extract game message type Message"<<'\n';
+      delete c_nonce;
       return;
    }
    
@@ -1736,23 +1738,33 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
    Message appG=*messG;
    res=cipher_client->fromSecureForm( &appG, username ,aesKeyClient,false); 
    if(!res)
-     return;
-   if(*messG->getCurrent_Token() < nonceAdv || collMove!=collGame )
    {
-     verbose<<"-->[MainClient][ReceiveGameMove] the twoColl are difference: "<<collMove<<" != "<<collGame<<'\n';
+     verbose<<"-->[MainClient][ReceiveGameMove] error to decrypt the message appG"<<'\n';
+     return;
+   }
+   if(*appG.getCurrent_Token() < nonceAdv || collMove!=collGame )
+   {
+     verbose<<"-->[MainClient][ReceiveGameMove] the twoColl are difference: "<<collMove<<" != "<<collGame<<" or"<<'\n';
+     verbose<<"-->[MainClient][ReceiveGameMove] the nonce server receved from adversary is minor of nonce adv: "<<*appG.getCurrent_Token()<<" < "<<nonceAdv<<'\n';
+     delete c_nonce;
      return;
    }
    nonceAdv=*c_nonce; 
    messageACK=createMessage(ACK,nullptr,nullptr,0,aesKeyClient,this->currentToken,false);
    connection_manager->sendMessage(*messageACK,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
+   vverbose<<"-->[MainClient][ReceiveGameMove] Message sended"<<'\n';
    if(!cipher_client->toSecureForm( messG, aesKeyServer ))
    {
+     verbose<<"-->[MainClient][ReceiveGameMove] error to cipher the message messG"<<'\n';
+     delete c_nonce;
      return;
    }
+   
    statGame=game->makeMove(collMove,&iWon,&adversaryWon,&tie,false);
    if(statGame!=StatGame::MOVE_OK && statGame!=StatGame::GAME_FINISH)
    {
      verbose<<"-->[MainClient][ReceiveGameMove] error in the state game "<<'\n';
+     delete c_nonce;
      return;
    }
    
@@ -1762,6 +1774,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
    if(socketIsClosed)
    {
      vverbose<<"-->[MainClient][ReceiveGameMove] error to handle"<<'\n';
+     delete c_nonce;
      return;
    }
 
@@ -1787,12 +1800,12 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
        cout.flush(); 
      }
        
-      sleep(3000);
+      sleep(5);
       clientPhase = ClientPhase::NO_PHASE;
       clearGameParam();
       sendImplicitUserListReq();
     }         
-     
+    delete c_nonce; 
   }
 
 /*
@@ -2458,6 +2471,10 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                      this->currTokenChat=this->currTokenChatAdv + 1;
                      currTokenIninzialized=true;
                      keyExchangeClientSend();
+                   }
+                   else
+                   {
+                     this->currentToken++;
                    }
                    if(!chatWait.empty())
                    {

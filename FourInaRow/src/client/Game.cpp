@@ -296,12 +296,12 @@ return false in case of non autorizate move
     }
     for(int i=NUMBER_ROW-1;i>=0;--i)
     {
-      if(gameBoard[i][NUMBER_COLUMN]==0)
+      if(gameBoard[i][column]==0)
       {
         if(myMove)
-          gameBoard[i][NUMBER_COLUMN]=1;
+          gameBoard[i][column]=1;
         else
-          gameBoard[i][NUMBER_COLUMN]=2;
+          gameBoard[i][column]=2;
         row=i;
         break;
       }

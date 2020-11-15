@@ -3,6 +3,7 @@
 #include<vector>
 #include<stdexcept>
 #include<thread>
+#include"../Logger.h"
 #define NUMBER_ROW 6
 #define NUMBER_COLUMN 7
 using namespace std;

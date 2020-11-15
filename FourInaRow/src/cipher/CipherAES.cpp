@@ -270,6 +270,7 @@ This function encryptMessage with AES_256 gcm
       }
       catch(std::bad_alloc& e)
       {
+        verbose<<"-->[CipherAES][encryptMessage] error bad alloc exception"<<'\n';
         return nullptr;
       }
       bool res= copyToFrom(0,lengthPlaintext,netMessage->getMessage(),textInPlain);
@@ -291,6 +292,7 @@ This function encryptMessage with AES_256 gcm
       }
       catch(std::bad_alloc& e)
       {
+        verbose<<"-->[CipherAES][encryptMessage] error bad alloc exception ciphertext"<<'\n';
         delete[]tag;
         return nullptr;
       }
@@ -298,6 +300,7 @@ This function encryptMessage with AES_256 gcm
       
       if(lengthcipher==-1)
       {
+        verbose<<"-->[CipherAES][encryptMessage] error lengthcipher -1"<<'\n';
         delete[]ciphertext;
         delete[]tag;
         return nullptr;
@@ -311,6 +314,7 @@ This function encryptMessage with AES_256 gcm
       }
       catch(std::bad_alloc& e)
       {
+        verbose<<"-->[CipherAES][encryptMessage] error bad alloc exception newMessage"<<'\n';
         delete[]ciphertext;
         delete[]tag;
         return nullptr;
@@ -327,6 +331,7 @@ This function encryptMessage with AES_256 gcm
       bool result=insertField(newMessage->getMessageType(),newMessage,ciphertext,lengthcipher,false);
       if(result==false)
       {
+        verbose<<"-->[CipherAES][encryptMessage] error insert field"<<'\n';
         delete[]ciphertext;
         delete[]tag;
         return nullptr;
@@ -555,6 +560,7 @@ This function encryptMessage with AES_256 gcm
         result=getDeconcatenateLength(valueField,valueFieldLength,&collSize,&gameSize,(unsigned char) '&',(unsigned int) 5);
         if(!result)
         {
+          vverbose<<"-->[CipherAES][insertField]error to obtain length"<<'\n';
           return false;
         }
         try
@@ -563,6 +569,7 @@ This function encryptMessage with AES_256 gcm
         }
         catch(std::bad_alloc)
         {
+          verbose<<"-->[CipherAES][insertField] bad alloc of coll";
           return false;
         }
         try
@@ -571,12 +578,14 @@ This function encryptMessage with AES_256 gcm
         }
         catch(std::bad_alloc)
         {
+          verbose<<"-->[CipherAES][insertField] bad alloc of game";
           delete coll;
           return false;
         }
         result=deconcatenateTwoField(valueField,valueFieldLength,coll,&collSize,game,&gameSize,(unsigned char) '&',(unsigned int) 5);
         if(!result)
         {
+          vverbose<<"-->[CipherAES][Destructor]error to deconcatenate"<<'\n';
           return false;
         }
         message->setChosenColumn(coll,collSize);
@@ -591,7 +600,10 @@ This function encryptMessage with AES_256 gcm
         result=true;
       }
       break;
-
+    case GAME:
+       message->setChosenColumn(valueField,valueFieldLength);
+       result=true;
+    break;
     case CHAT:
       message->setMessage(valueField,valueFieldLength);
       result=true;

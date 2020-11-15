@@ -289,13 +289,20 @@ namespace cipher
          {
            vverbose<<"-->[CipherClient][toSecureForm] securing GAME to AES"<<'\n';
            if(aesKey==nullptr)
+           {
+             verbose<<"-->[CipherClient][toSecureForm] aesKey is nullptr"<<'\n';
              return false;
+           }
            correct=this->aes->modifyParam( aesKey );
            if(!correct)
+           {
+             verbose<<"-->[CipherClient][toSecureForm] impossible to modify param"<<'\n';
              return false;
+           }
            app = this->aes->encryptMessage(*message);
            if(app == nullptr)
            {
+             verbose<<"-->[CipherClient][toSecureForm] error to encryptMessage"<<'\n';
              return false;
            }
            message->setSignatureAES(app->getSignatureAES(),app->getSignatureAESLen());
