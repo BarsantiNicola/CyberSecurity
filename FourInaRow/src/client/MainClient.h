@@ -63,6 +63,7 @@ namespace client
       bool notConnected=true;
       bool startChallenge=false;
       bool implicitUserListReq=false;
+      string textualMessageToUser="";
       //bool waitForChatACK=false;
       int currTokenChatAdv;
       int nUser=0;

@@ -263,9 +263,6 @@ namespace client
           std::cout<<app<<endl;
         }
         implicitUserListReq=false;
-        printWhiteSpace();
-        std::cout<<"\t# Insert a command:";
-        cout.flush();
         return true;
       }
   }
@@ -273,7 +270,8 @@ namespace client
   {
     bool res;
     implicitUserListReq=true;
-    res=sendReqUserListProtocol();
+    res=sendReqUserListProtocol(); 
+
     return res;
   }
 
@@ -729,11 +727,12 @@ namespace client
     verbose<<"--> [MainClient][reciveRejectProtocol] the actual nonce is:"<<nonce<<'\n';
     startChallenge=false;
     cout<<"\n \n";
-    printWhiteSpace();
+    //printWhiteSpace();
+     textualMessageToUser="the user " + challenged_username + " reject your request " + '\n';
     cout<<"the user "<<challenged_username <<" reject your request "<<'\n';
-    printWhiteSpace();
-    std::cout<<"\t# Insert a command:";
-    cout.flush();
+    //printWhiteSpace();
+    //std::cout<<"\t# Insert a command:";
+    //cout.flush();
     challenged_username = "";
     return res;
   }
@@ -1840,6 +1839,10 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     sstr<<nUser;
     ssreq<<nreq;
     string errorMessage((char*)message->getMessage());
+    if(clientPhase==ClientPhase::INGAME_PHASE)
+    {
+      clearGameParam();
+    }
     textual_interface_manager->printMainInterface(this->username,sstr.str(),"online","none",ssreq.str());
     clientPhase=ClientPhase::NO_PHASE;
     printWhiteSpace();
@@ -1955,6 +1958,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         cout<<'\n';
         if(username.empty()||password.empty())
         {
+          textual_interface_manager->printLoginInterface();
           printWhiteSpace();
           std::cout<<"username or password not valid \n";
           printWhiteSpace();
@@ -1964,6 +1968,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         cipher_client->newRSAParameter(username,password);
         if(!cipher_client->getRSA_is_start())
         {
+          textual_interface_manager->printLoginInterface();
           printWhiteSpace();
           std::cout<<"login failed retry \n";
           printWhiteSpace();
@@ -1985,6 +1990,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           }
           else
           {
+             textual_interface_manager->printLoginInterface();
              printWhiteSpace();
              std::cout<<"login failed retry"<<'\n';
              printWhiteSpace();
@@ -2195,6 +2201,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
              cout.flush();
              return false;
          }
+         res=sendImplicitUserListReq();
       }
       
       else if(comand_line.compare(0,4,"quit")==0)
@@ -2358,6 +2365,15 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                      cout.flush();
                    }
                  }
+                 if(!textualMessageToUser.empty())
+                 {
+                   printWhiteSpace();
+                   cout<<'\n'<<textualMessageToUser;
+                 }
+                 printWhiteSpace();
+                 std::cout<<"\t# Insert a command:";
+                 cout.flush();
+                 textualMessageToUser="";
                }
                break;
 
@@ -2406,6 +2422,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 
               case REJECT:
                 receiveRejectProtocol(message);
+                sendImplicitUserListReq();
                 break;
 
               case GAME_PARAM:
@@ -2595,8 +2612,11 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
   void MainClient::clearGameParam()
   {
     adv_username_1 = "";
-    delete game;
-    game=nullptr;
+    if(game!=nullptr)
+    {
+      delete game;
+      game=nullptr;
+    }
     chatWait.clear();
     if(messageChatToACK!=nullptr)
     {
@@ -2641,8 +2661,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 */  
   int main(int argc, char** argv)
   {
-    Logger::setThreshold(  NO_VERBOSE );
-    //Logger::setThreshold(  VERY_VERBOSE );
+    //Logger::setThreshold(  NO_VERBOSE );
+    Logger::setThreshold(  VERY_VERBOSE );
     client::MainClient* main_client;
     if(argc==1)
     {
