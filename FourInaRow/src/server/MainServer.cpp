@@ -1703,40 +1703,50 @@ namespace server {
             return nullptr;
 
         }
-        cout<<"USERNAME: "<<username<<endl;
+        
         Message* response;
 
         int *sNonce = this->clientRegister.getClientNonce(*(this->userRegister.getSocket(username)));
-        int *nonce = message->getCurrent_Token();
-
-        if( !nonce ){
-            verbose<<"--> [MainServer][gameHandler] Error, Missing Nonce"<<'\n';
-            return this->sendError( string( "Security error, Missing nonce"),sNonce );
-        }
 
         int matchID = this->matchRegister.getMatchPlay( username );
         if( matchID == -1 ){
 
             verbose<<"--> [MainServer][gameHandler] Error unable to find match"<<'\n';
             response = this->sendError( "Invalid request. Match already closed", sNonce );
-            delete nonce;
+
+            delete sNonce;
             return response;
 
         }
 
-     /*   if( !this->clientRegister.verifyToken( matchID, *nonce )){
+        string adversary;
+        if( !username.compare(this->matchRegister.getChallenger(matchID)))
+            adversary = this->matchRegister.getChallenger(matchID);
+        else
+            adversary = this->matchRegister.getChallenged(matchID);
 
-            verbose<<"--> [MainServer][gameHandler] Security Error, invalid nonce"<<'\n';
-            return this->sendError( "Security Error, Invalid nonce", nonce );
+        int *nonce = message->getCurrent_Token();
 
-        }*/
+        if( !nonce ){
+            verbose<<"--> [MainServer][gameHandler] Error, Missing Nonce"<<'\n';
+            this->sendDisconnectMessage(adversary);
+            this->userRegister.setLogged(adversary, this->userRegister.getSessionKey(adversary));
+            this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
+            response = this->sendError( string( "Security error, Missing nonce"),sNonce );
+
+            delete sNonce;
+            return response;
+        }
 
         if( !this->cipherServer.fromSecureForm( message , username, this->userRegister.getSessionKey(username) ) ){
 
             verbose << "--> [MainServer][gameHandler] Error, Verification failure" << '\n';
+            this->sendDisconnectMessage(adversary);
             response = this->sendError(string( "Security error. Invalid message'signature" ), sNonce );
-
+            this->userRegister.setLogged(adversary, this->userRegister.getSessionKey(adversary));
+            this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
             delete nonce;
+            delete sNonce;
             return response;
 
         }
@@ -1745,8 +1755,12 @@ namespace server {
 
         if( col<0 || col>= NUMBER_COLUMN ){
             verbose<<"--> [MainServer][gameHandler] Error invalid message column field"<<'\n';
+            this->sendDisconnectMessage(adversary);
             response = this->sendError( "Invalid request. Invalid column field", nullptr );
+            this->userRegister.setLogged(adversary, this->userRegister.getSessionKey(adversary));
+            this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
             delete nonce;
+            delete sNonce;
             return response;
         }
         int status;
@@ -1756,7 +1770,6 @@ namespace server {
             status = this->matchRegister.addChallengerMove( matchID, col );
 
         delete nonce;
-        string user_2;
         int* sock;
 
         switch( status ){
@@ -1779,17 +1792,13 @@ namespace server {
                 return response;
 
             case 1:
-                if( !this->matchRegister.getChallenger(matchID).compare(username))
-                    user_2 = this->matchRegister.getChallenged(matchID);
-                else
-                    user_2 = this->matchRegister.getChallenger(matchID);
 
-                SQLConnector::incrementUserGame(user_2 , WIN);
+                SQLConnector::incrementUserGame(adversary , WIN);
                 SQLConnector::incrementUserGame(username, LOOSE);
-                if( !this->sendDisconnectMessage(user_2)) {
+                if( !this->sendDisconnectMessage(adversary)) {
 
-                    verbose << "--> [MainServer][gameHandler] Error, unable to contact the user: " << user_2 << '\n';
-                    int *sock = this->userRegister.getSocket(user_2);
+                    verbose << "--> [MainServer][gameHandler] Error, unable to contact the user: " << adversary << '\n';
+                    int *sock = this->userRegister.getSocket(adversary);
                     if( sock ) {
                         this->logoutClient(*sock);
                         delete sock;
@@ -1811,23 +1820,19 @@ namespace server {
                 }
 
                 this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
-                this->userRegister.setLogged( user_2, this->userRegister.getSessionKey(user_2));
+                this->userRegister.setLogged( adversary, this->userRegister.getSessionKey(adversary));
                 this->matchRegister.removeMatch(matchID);
                 break;
 
             case 2:
-                if( !this->matchRegister.getChallenger(matchID).compare(username))
-                    user_2 = this->matchRegister.getChallenged(matchID);
-                else
-                    user_2 = this->matchRegister.getChallenger(matchID);
 
-                SQLConnector::incrementUserGame(user_2 , TIE );
+                SQLConnector::incrementUserGame(adversary , TIE );
                 SQLConnector::incrementUserGame(username, TIE );
 
-                if( !this->sendDisconnectMessage(user_2)) {
+                if( !this->sendDisconnectMessage(adversary)) {
 
-                    verbose << "--> [MainServer][gameHandler] Error, unable to contact the user: " << user_2 << '\n';
-                    int *sock = this->userRegister.getSocket(user_2);
+                    verbose << "--> [MainServer][gameHandler] Error, unable to contact the user: " << adversary << '\n';
+                    int *sock = this->userRegister.getSocket(adversary);
                     if( sock ) {
                         this->logoutClient(*sock);
                         delete sock;
@@ -1849,7 +1854,7 @@ namespace server {
                 }
 
                 this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
-                this->userRegister.setLogged( user_2, this->userRegister.getSessionKey(user_2));
+                this->userRegister.setLogged( adversary, this->userRegister.getSessionKey(adversary));
                 this->matchRegister.removeMatch(matchID);
                 break;
 
