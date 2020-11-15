@@ -551,7 +551,7 @@ namespace cipher{
     bool CipherRSA::sign( Message* message ){
 
         NetMessage* compactForm = Converter::compactForm( message->getMessageType() , *message );
-        cout<<"COMPACT FORM CREATED"<<endl;
+        
         if( !compactForm ) {
             verbose << "-->[CipherRSA][sign] Error during the generation of the compact Form of the message" << '\n';
             return false;
