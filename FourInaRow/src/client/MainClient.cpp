@@ -1768,7 +1768,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
      return;
    }
    
-   //connection_manager->sendMessage(*messG,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
+   connection_manager->sendMessage(*messG,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
    this->currentToken++;
    textual_interface_manager->printGameInterface(true, string("15"),game->getChat(),game->printGameBoard());
    if(socketIsClosed)
