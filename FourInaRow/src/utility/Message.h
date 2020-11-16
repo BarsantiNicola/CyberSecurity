@@ -34,11 +34,11 @@ namespace utility {
         LOGOUT_OK,          //  Response to LOGOUT_REQ, user correctly logged out
         GAME_PARAM,         //  Message to give the game parameters needed by clients to play a match(IP,PORT) and handling the match start
         DISCONNECT,         //  Request/Response for quitting from the match
-        ERROR               //  Message to inform users about invalid request or errors during the management of a request
+        ERROR ,              //  Message to inform users about invalid request or errors during the management of a request
         GAME,               //  Message to confirm to the server a match move of a user
         MOVE,               //  Message to send a match move
         CHAT,               //  Message to send a message to the other user during a match
-        ACK,                //  Message to confirm the receipt of a message in UDP connection
+        ACK                //  Message to confirm the receipt of a message in UDP connection
 
     };
 
