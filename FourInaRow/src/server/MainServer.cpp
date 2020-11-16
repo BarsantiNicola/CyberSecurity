@@ -1719,9 +1719,9 @@ namespace server {
 
         string adversary;
         if( !username.compare(this->matchRegister.getChallenger(matchID)))
-            adversary = this->matchRegister.getChallenger(matchID);
-        else
             adversary = this->matchRegister.getChallenged(matchID);
+        else
+            adversary = this->matchRegister.getChallenger(matchID);
 
         int *nonce = message->getCurrent_Token();
 
