@@ -9,8 +9,8 @@ namespace utility {
     //                                                                                           //
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
-    //  costructor to allow to no-arguments class instantiation
     Message::Message(){
+
         nonce = nullptr;
         current_token = nullptr;
         port = nullptr;
@@ -46,7 +46,7 @@ namespace utility {
         dh_key_len = 0;
     }
 
-    //  costructor to allow to usage of the class as a no-pointer function argument
+    //  copy-constructor
     Message::Message(Message& msg ){
 
         this->messageType = msg.messageType;
@@ -103,13 +103,13 @@ namespace utility {
 
     Message::~Message(){
 
-        if( ! this->username.empty() )
+        if( !this->username.empty() )
             this->username.clear();
 
-        if( ! this->adv_username_1.empty() )
+        if( !this->adv_username_1.empty() )
             this->adv_username_1.clear();
 
-        if( ! this->adv_username_2.empty() )
+        if( !this->adv_username_2.empty() )
             this->adv_username_2.clear();
 
         if( this->nonce )
@@ -162,7 +162,7 @@ namespace utility {
 
 
     void Message::setMessageType( MessageType t ){
-
+        
         this->messageType = t;
         vverbose<<"--> [Message][setMessageType] Set of MessageType Completed"<<'\n';
 

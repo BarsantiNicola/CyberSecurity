@@ -12,45 +12,51 @@ using namespace std;
 
 namespace utility {
 
-    //  types of messages that could be sended by the application
+    //  types of message that could be sent by the application
     enum MessageType{
-        CERTIFICATE_REQ,
-        CERTIFICATE,
-        LOGIN_REQ,
-        LOGIN_OK,
-        LOGIN_FAIL,
-        KEY_EXCHANGE,
-        USER_LIST_REQ,
-        USER_LIST,
-        RANK_LIST_REQ,
-        RANK_LIST,
-        MATCH,
-        ACCEPT,
-        REJECT,
-        WITHDRAW_REQ,
-        WITHDRAW_OK,
-        LOGOUT_REQ,
-        LOGOUT_OK,
-        GAME_PARAM,
-        GAME,
-        MOVE,
-        CHAT,
-        ACK,
-        DISCONNECT,
-        ERROR
+
+        CERTIFICATE_REQ,    //  Request to obtain the server'certificate and an authenticated init nonce
+        CERTIFICATE,        //  Response to CERTIFICATE_REQ
+        LOGIN_REQ,          //  Request to login into the service
+        LOGIN_OK,           //  Response to LOGIN_REQ, login correctly done
+        LOGIN_FAIL,         //  Response to LOGIN_REQ, login failed
+        KEY_EXCHANGE,       //  Message to generate a shared AES-256 GCM session key
+        USER_LIST_REQ,      //  Request to obtain the logged users ready to accept a challenge
+        USER_LIST,          //  Response to USER_LIST_REQ
+        RANK_LIST_REQ,      //  Request to obtain the ranks of all the users
+        RANK_LIST,          //  Response to RANK_LIST_REQ
+        MATCH,              //  Request to challenge a connected user
+        ACCEPT,             //  Response to MATCH, the user has accepted the challenge
+        REJECT,             //  Response to MATCH, the user has rejected the challenge
+        WITHDRAW_REQ,       //  Update for MATCH, the challenge is aborted
+        WITHDRAW_OK,        //  Response from WITHDRAW_REQ, the challenged user has removed the pending challenge
+        LOGOUT_REQ,         //  Request to logout from the service
+        LOGOUT_OK,          //  Response to LOGOUT_REQ, user correctly logged out
+        GAME_PARAM,         //  Message to give the game parameters needed by clients to play a match(IP,PORT) and handling the match start
+        DISCONNECT,         //  Request/Response for quitting from the match
+        ERROR               //  Message to inform users about invalid request or errors during the management of a request
+        GAME,               //  Message to confirm to the server a match move of a user
+        MOVE,               //  Message to send a match move
+        CHAT,               //  Message to send a message to the other user during a match
+        ACK,                //  Message to confirm the receipt of a message in UDP connection
+
     };
 
-    ///////////////////////////////////////////////////////////////////////////////////////
-    //                                                                                   //
-    //                                   MESSAGE                                         //
-    //    The class is designed as a container for the information that the application  //
-    //    needs to send. It permits easily to generate a message and convert it to       //
-    //    a form that could be used by the connection_manager(netMessage). Each field    //
-    //    must not contain in every form the string "& or it will not be converted       //
-    //                                                                                   //
-    ///////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////
+    //                                                                                    //
+    //                                   MESSAGE                                          //
+    //    The class is designed as a container for the information that the application   //
+    //    needs to send on the network. It permits easily to access to the fields of a    //
+    //    a message or define/change them. It is used by the upper-level functions and    //
+    //    can be converter in utility::NetMessage which is the form used by lower-level   //
+    //    functions.                                                                      //
+    //                                                                                    //
+    //    FOR MESSAGE/NETMESSAGE CONVERTION LOOK AT utility::Converter                    //
+    //                                                                                    //
+    ////////////////////////////////////////////////////////////////////////////////////////
 
     class Message {
+
         private:
             MessageType messageType;
 
@@ -94,9 +100,9 @@ namespace utility {
 
         public:
 
-            //  COSTRUCTORS AND DESTRUCTORS
+            //  CONSTRUCTORS & DESTRUCTORS
             Message();
-            Message(Message&);
+            Message(Message&);          //  COPY-CONSTRUCTOR
             ~Message();
 
             //  SETTERS
@@ -122,7 +128,6 @@ namespace utility {
             bool set_DH_key( unsigned char* key , unsigned int len );
 
             //  GETTERS
-
             MessageType getMessageType();
             string getUsername();
             string getAdversary_1();
@@ -162,7 +167,8 @@ namespace utility {
             unsigned char* getSignatureAES();
             unsigned int getSignatureAESLen();
 
-            void myCopy( unsigned char* dest, unsigned char* source, int len );
+            // UTILITIES
+            void myCopy( unsigned char* dest, unsigned char* source, int len );  //  UTILITY FUNCTION SIMILAR TO MEMSET
 
 
     };

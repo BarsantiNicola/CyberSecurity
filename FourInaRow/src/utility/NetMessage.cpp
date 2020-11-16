@@ -9,69 +9,85 @@ namespace utility {
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
 
-    //  costructor for generation of a NetMessage starting from the byte array received by the Connection Manager
-    NetMessage::NetMessage(unsigned char *mess, unsigned int length) {
+    //  costructor for the generation of a NetMessage starting from a byte array
+    NetMessage::NetMessage( unsigned char *mess, unsigned int length ) {
 
-        if( !mess || length == 0 ){
+        //  verification of arguments validity
+        if( !mess || length<1 ){
 
-            verbose << "-->[NetMessage][Costructor] Error invalid arguments. Operation Aborted" << '\n';
+            verbose << "-->[NetMessage][Costructor] Error invalid arguments. Empty netmessage generated" << '\n';
             this->message = nullptr;
             this->len = 0;
             return;
 
         }
 
-        vverbose<<"-->[NetMessage][Costructor] Generation of message: "<<mess<<'\t'<<" LEN: "<<length<<'\n';
-        this->message = new unsigned char[length];
-        if( this->message ) {
+        try {
 
+            this->message = new unsigned char[length];
             myCopy( this->message,  mess, length);
             this->len = length;
-            vverbose << "-->[NetMessage][Costructor] Message generated" << '\n';
+            vverbose << "-->[NetMessage][Costructor] Message correctly generated: [" << this->message<<'\t'<<"]\n";
 
-        }else {
+        }catch( bad_alloc e ){
 
             this->message = nullptr;
             this->len = 0;
-            verbose << "-->[NetMessage][Costructor] Error during the allocation of memory. Operation Aborted." << '\n';
+            verbose << "-->[NetMessage][Costructor] Error during the allocation of memory. Empty netmessage generated" << '\n';
 
         }
 
     }
 
-    //  costructor to allow the passage of NetMessage as a non-pointer function argument
-    NetMessage::NetMessage(NetMessage& value ){
+    //  copy-constructor
+    NetMessage::NetMessage( NetMessage& value ){
 
+        //  verification of arguments validity
         if( !value.getMessage() ){
-            vverbose << "-->[NetMessage][Costructor] Message generated" << '\n';
+
+            verbose << "-->[NetMessage][Costructor] Invalid arguments, empty netmessage generated" << '\n';
             this->message = nullptr;
             this->len = 0;
             return;
+
         }
 
-        this->message = new unsigned char[value.length()];
-        if( this->message ) {
+        try{
 
+            this->message = new unsigned char[value.length()];
             myCopy(this->message, value.getMessage(), value.length());
             this->len = value.length();
-            vverbose << "-->[NetMessage][Costructor] Message generated" << '\n';
 
-        }else
-            verbose <<"-->[NetMessage][Costructor] Error during the allocation of memory. Operation Aborted."<<'\n';
+        }catch( bad_alloc e ){
+
+            this->message = nullptr;
+            this->len = 0;
+            verbose << "-->[NetMessage][Costructor] Error during the allocation of memory. Empty netmessage generated" << '\n';
+
+        }
 
     }
 
+    //  utility function similar to std::memset
     void NetMessage::myCopy( unsigned char* dest, unsigned char* source, int len ){
 
-        for( int a = 0; a<len;a++ )
+        //  verification of arguments validity. No control is needed on len(function resilient to len<=0)
+        if( !dest || !source ){
+
+            verbose << "-->[NetMessage][Costructor] Error invalid arguments. Operation Aborted" << '\n';
+            return;
+
+        }
+
+        for( int a = 0; a<len; a++ )
             dest[a] = source[a];
 
     }
 
     NetMessage::~NetMessage(){
 
-        delete[] this->message;
-        vverbose<<"-->[NetMessage][Destructor] Message destroyed"<<'\n';
+        if( this->message )
+            delete[] this->message;
 
     }
 
@@ -84,12 +100,21 @@ namespace utility {
     //  return the content of the netmessage as an unsigned char* array
     unsigned char* NetMessage::getMessage(){
 
+        //  verification of used variables
         if( !this->message || !this->len ) return nullptr;
 
-        unsigned char* ret = new unsigned char[this->len];
-        myCopy( ret,  this->message , this->len);
+        try {
 
-        return ret;
+            unsigned char *ret = new unsigned char[this->len];
+            myCopy( ret, this->message, this->len );
+            return ret;
+
+        }catch( bad_alloc e ){
+
+            verbose << "-->[NetMessage][getMessage] Error during the allocation of memory. Empty message given" << '\n';
+            return nullptr;
+
+        }
 
     }
 
@@ -97,44 +122,6 @@ namespace utility {
     unsigned int NetMessage::length(){
 
         return this->len;
-
-    }
-
-    void myCopy( unsigned char* dest, unsigned char* source, int len ){
-
-        for( int a = 0; a<len;a++ )
-            dest[a] = source[a];
-
-    }
-
-    NetMessage* NetMessage::giveWithLength(){
-
-        unsigned int newLen = this->len+to_string(this->len).length()+1;
-        int numberLen = to_string(this->len).length();
-        unsigned char* newMsg = new unsigned char[this->len+numberLen+1];
-
-        for( int a = 0; a<newLen; a++ )
-            newMsg[a] = '\0';
-
-        myCopy( newMsg , (unsigned char*)to_string(this->len).c_str(), numberLen);
-        newMsg[numberLen++] = '%';
-
-        for( int a = 0; a<this->len; a++ )
-            newMsg[a+numberLen] = this->message[a];
-
-        NetMessage* ret =  new NetMessage( newMsg , newLen );
-        delete[] newMsg;
-
-        return ret;
-
-    }
-
-
-    //  function with an example of usage of the class which performs a test for its correctness
-    void NetMessage::test(){
-
-        NetMessage msg((unsigned char*)"messaggio di prova" , strlen("messaggio di prova"));
-        base<<"CONTENT: " << msg.getMessage()<<" LENGTH: "<<msg.length()<<'\n';
 
     }
 
