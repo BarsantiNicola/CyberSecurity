@@ -332,14 +332,8 @@ namespace client{
 
 	void TextualInterfaceManager::printGameInterface(bool myMove, string timer,string chat,string gameboard){
 
-	    string value;
         execCommand(CLEAR);
-
-        //value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::TIMER,timer,game_page);
-                value=gameboard;
-		value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::CHAT,chat,game_page );
-		//value=insertElement(InterfacePage::MATCH_PAGE_0,InputType::GAMEBOARD,gameboard,value);
-		this->printColoredGame( value );
+		this->printColoredGame( game_page );
 		cout<<"\t# Insert a command:";
 		cout.flush();
 
