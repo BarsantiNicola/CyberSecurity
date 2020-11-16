@@ -1157,7 +1157,6 @@ namespace server {
         if( *(this->userRegister.getStatus(username) ) != LOGGED ){
 
             verbose<<"--> [MainServer][matchHandler] Error, challenger unable to accept match requests"<<'\n';
-            cout<<"---------------"<<username<<"----------"<<*(this->userRegister.getStatus(username) )<<endl;
             response = new Message();
             response->setMessageType( REJECT );
             response->setAdversary_1( username );
@@ -1526,7 +1525,7 @@ namespace server {
             return response;
 
         }
-        //cout<<"challenger: "<<message->getAdversary_1()<<" challenged: "<<message->getAdversary_2()<<endl;
+
         if( message->getAdversary_1().empty() || message->getAdversary_2().empty()){
 
             verbose<< "--> [MainServer][acceptHandler] Error, Missing usernames"<<'\n';
@@ -1534,7 +1533,6 @@ namespace server {
 
         }
         int matchID = this->matchRegister.getMatchID( message->getAdversary_1() );
-        //cout<<"matchID: "<<matchID<<endl;
         if( matchID == -1 )
             return nullptr;
 
