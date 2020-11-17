@@ -11,9 +11,10 @@ namespace server {
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     MainServer::MainServer( string ipAddr , int port ){
-
+        
         this->manager = new utility::ConnectionManager( true , ipAddr.c_str(), port );
         base<<"--> [MainServer][MainServer] Server build completed"<<'\n';
+
 
     }
 
