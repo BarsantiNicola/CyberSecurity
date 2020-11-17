@@ -1797,7 +1797,11 @@ namespace utility{
             case GAME:
                 nonce = message.getCurrent_Token();
                 sign = message.getSignature();
-                len = 29+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen()+message.getSignatureAESLen();
+                if( message.getSignatureAESLen() != 0 )
+                    len = 37+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen()+message.getSignatureAESLen();
+                else
+                    len = 29+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen();
+
                 key = message.getChosenColumn();
                 value = new unsigned char[len];
                 if( !value ){
@@ -1809,9 +1813,12 @@ namespace utility{
                 pos = writeField(value , 'y', (unsigned char*)to_string(type).c_str(),to_string(type).length(),0, false  );
                 pos = writeField(value , 't', (unsigned char*)to_string(*nonce).c_str(),to_string(*nonce).length(),pos,false  );
                 pos = writeField(value , 'v', key,message.getChosenColumnLength(),pos,false  );
-                pos = writeField(value , 's', sign, message.getSignatureLen(), pos,false );
-                if( message.getSignatureAESLen() != 0 ) 
-                	pos = writeField(value, 'w' , message.getSignatureAES(), message.getSignatureAESLen(), pos , true );
+
+                if( message.getSignatureAESLen() != 0 ) {
+                    pos = writeField(value, 's', sign, message.getSignatureLen(), pos, false);
+                    pos = writeField(value, 'w', message.getSignatureAES(), message.getSignatureAESLen(), pos, true);
+                }else
+                    pos = writeField(value, 's', sign, message.getSignatureLen(), pos, true);
                 delete[] sign;
 
                 delete[] key;
