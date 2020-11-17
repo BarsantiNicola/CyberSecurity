@@ -1797,12 +1797,14 @@ namespace utility{
             case GAME:
                 nonce = message.getCurrent_Token();
                 sign = message.getSignature();
+                cout<<"AES SIGNATURE LEN: "<<message.getSignatureAESLen()<<endl;
                 if( message.getSignatureAESLen() != 0 )
                     len = 37+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen()+message.getSignatureAESLen();
                 else
                     len = 29+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen();
 
                 key = message.getChosenColumn();
+
                 value = new unsigned char[len];
                 if( !value ){
                     verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
@@ -1815,12 +1817,13 @@ namespace utility{
                 pos = writeField(value , 'v', key,message.getChosenColumnLength(),pos,false  );
 
                 if( message.getSignatureAESLen() != 0 ) {
+                    net = message.getSignatureAES();
                     pos = writeField(value, 's', sign, message.getSignatureLen(), pos, false);
-                    pos = writeField(value, 'w', message.getSignatureAES(), message.getSignatureAESLen(), pos, true);
+                    pos = writeField(value, 'w', net, message.getSignatureAESLen(), pos, true);
+                    delete[] net;
                 }else
                     pos = writeField(value, 's', sign, message.getSignatureLen(), pos, true);
                 delete[] sign;
-
                 delete[] key;
                 break;
 

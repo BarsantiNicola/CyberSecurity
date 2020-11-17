@@ -1,5 +1,4 @@
 
-
 #ifndef FOURINAROW_MESSAGE_H
 #define FOURINAROW_MESSAGE_H
 
@@ -24,7 +23,7 @@ namespace utility {
         USER_LIST_REQ,      //  (6)  Request to obtain the logged users ready to accept a challenge
         USER_LIST,          //  (7)  Response to USER_LIST_REQ
         RANK_LIST_REQ,      //  (8)  Request to obtain the ranks of all the users
-        RANK_LIST,          //  (0)  Response to RANK_LIST_REQ
+        RANK_LIST,          //  (9)  Response to RANK_LIST_REQ
         MATCH,              //  (10) Request to challenge a connected user
         ACCEPT,             //  (11) Response to MATCH, the user has accepted the challenge
         REJECT,             //  (12) Response to MATCH, the user has rejected the challenge
@@ -98,6 +97,8 @@ namespace utility {
             unsigned char* DH_key = nullptr;
             unsigned int dh_key_len = 0;
 
+            void myCopy( unsigned char* dest, unsigned char* source, int len );  //  UTILITY FUNCTION SIMILAR TO MEMSET
+
         public:
 
             //  CONSTRUCTORS & DESTRUCTORS
@@ -167,13 +168,7 @@ namespace utility {
             unsigned char* getSignatureAES();
             unsigned int getSignatureAESLen();
 
-            // UTILITIES
-            void myCopy( unsigned char* dest, unsigned char* source, int len );  //  UTILITY FUNCTION SIMILAR TO MEMSET
-
-
     };
-
-
 
 }
 #endif //FOURINAROW_MESSAGE_H
