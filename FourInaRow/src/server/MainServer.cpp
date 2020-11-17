@@ -626,8 +626,7 @@ namespace server {
         }
 
         bool ret = this->sendMessage( message, *socket );
-        if(after)
-            this->clientRegister.updateClientNonce(*socket);
+        this->clientRegister.updateClientNonce(*socket);
         delete socket;
         return ret;
 
