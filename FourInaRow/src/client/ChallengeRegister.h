@@ -13,6 +13,7 @@ namespace client
     public:
       bool addData(ChallengeInformation data);
       bool removeData(ChallengeInformation data);
+      bool removeData(string username);
       bool findData(ChallengeInformation data);
       int getDimension();
       ChallengeInformation* getData(int dataPosition);

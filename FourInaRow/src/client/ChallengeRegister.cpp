@@ -72,6 +72,25 @@ namespace client
  {
    return challengeInformationList.size();
  }
+ bool ChallengeRegister::removeData(string username)
+ {
+   for(int i=0;i<challengeInformationList.size();i++)
+   {
+     try
+     {
+       if(challengeInformationList.at(i).getUserName().compare(username)==0)
+       {
+          challengeInformationList.erase(challengeInformationList.begin()+i);
+          return true;
+       }
+     }
+     catch(out_of_range& e)
+     {
+       break;
+     }
+   }
+   return false;
+ }
  bool ChallengeRegister::removeData(ChallengeInformation data)
  {
    for(int i=0;i<challengeInformationList.size();i++)

@@ -472,7 +472,19 @@ namespace cipher
          }
          delete app;
          break; 
-
+       case WITHDRAW_REQ:
+         if(!aesKey)
+           return false;
+         correct=this->aes->modifyParam( aesKey );
+         if(!correct)
+           return false;
+         app = this->aes->decryptMessage(*message);
+         if(app == nullptr)
+         {
+           return false;
+         }
+         delete app;
+         break;
        case ACK:
          if(!aesKey)
            return false;

@@ -119,6 +119,7 @@ namespace client
       bool reciveDisconnectProtocol(Message* message);
       bool sendDisconnectProtocol();
       bool sendWithDrawProtocol();
+      bool receiveWithDraw(Message* message);
       bool receiveWithDrawOkProtocol(Message* message);
       bool sendLogoutProtocol();//ok
       bool receiveLogoutProtocol(Message* message);//ok

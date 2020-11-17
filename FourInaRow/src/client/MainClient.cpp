@@ -1058,6 +1058,43 @@ namespace client
      return true;
   }
 /*
+---------------------bool receiveWithDraw-----------------------------------------
+*/
+  bool MainClient::receiveWithDraw(Message* message)
+  {
+    bool res;
+    int* nonce_s;
+    string advUsername="";
+    ChallengeInformation *data=nullptr;
+    if(message==nullptr)
+    {
+      return false;
+    }
+    nonce_s=message->getNonce();
+    verbose<<"-->[MainClient][receiveWithDraw] the recived nonce is:"<<*nonce_s<<'\n';
+    if(*nonce_s!=(this->nonce))
+    {
+      verbose<<"--> [MainClient][receiveWithDraw] error the nonce isn't valid"<<'\n';
+      delete nonce_s;
+      return false;
+      }
+    if(message->getMessageType()!=WITHDRAW_REQ)
+    {
+      verbose<<"--> [MainClient][receiveWithDraw] message type not expected"<<'\n';
+        return false;
+    }
+    res=cipher_client->fromSecureForm( message , username ,aesKeyServer,false);
+    if(!res)
+      return false;
+     this->nonce++;
+     //clientPhase=START_GAME_PHASE;
+     adv_username_1 = "";
+     //devo eliminare dal challenge_register
+     challenge_register->removeData(message->getUsername());
+     return true;
+
+  }
+/*
 ----------------------------receiveWithDrawOkProtocol----------------------------
 */
   bool MainClient::receiveWithDrawOkProtocol(Message* message)
@@ -1089,7 +1126,7 @@ namespace client
      this->nonce++;
      //clientPhase=START_GAME_PHASE;
      adv_username_1 = "";
-     string challenged_username = "";
+     challenged_username = "";
      return true;
   }
  /*
@@ -1728,6 +1765,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     gameMess=message->getMessage();
     gameMessLen=message->getMessageLength();
     netGameMess=new NetMessage(gameMess , gameMessLen );
+    vverbose<<"-->[MainClient][ReceiveGameMove] extracted GAME type netMessage"<<'\n';
     if(netGameMess==nullptr)
     {
       verbose<<"-->[MainClient][ReceiveGameMove] impossible to extract game message type netMessage"<<'\n';
@@ -1781,6 +1819,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
    else
    {
      verbose<<"-->[MainClient][ReceiveGameMove]  the signatureAES length is "<<messG->getSignatureAESLen()<<'\n';
+     //verbose<<"-->[MainClient][ReceiveGameMove]  the signatureAES is  "<<*messG->getSignatureAES()<<'\n';
    }
 
    vverbose<<"-->[MainClient][ReceiveGameMove]  GAME message secured"<<'\n';
@@ -2464,11 +2503,15 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 
               case ACCEPT:
                  res=receiveAcceptProtocol(message);
+                 challenged_username = "";
                  if(res)
                    startingMatch=true;
                  break;
               case WITHDRAW_OK:
                 receiveWithDrawOkProtocol(message);
+                break;
+              case WITHDRAW_REQ:
+                receiveWithDraw(message);
                 break;
               case ERROR:
               {
@@ -2630,6 +2673,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 
   void MainClient::clearGameParam()
   {
+    adv_username_1 = "";
     adv_username_1 = "";
     if(game!=nullptr)
     {
