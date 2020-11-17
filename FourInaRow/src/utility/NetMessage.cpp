@@ -27,7 +27,7 @@ namespace utility {
             this->message = new unsigned char[length];
             myCopy( this->message,  mess, length);
             this->len = length;
-            vverbose << "-->[NetMessage][Costructor] Message correctly generated: [" << this->message<<'\t'<<"]\n";
+            cout << "-->[NetMessage][Costructor] Message correctly generated: [\t" << this->message<<"\t]\n";
 
         }catch( bad_alloc e ){
 

@@ -69,7 +69,7 @@ namespace server {
             bool sendAcceptMessage( string challenger, string challenged, int* socket );
             bool sendRejectMessage( string challenger, string challenged, int* socket );
             bool sendWithdrawMessage( string username, int* socket );
-            bool sendDisconnectMessage( string username );
+            bool sendDisconnectMessage( string username, bool after );
             bool sendGameParam( string username , string source, bool update );   //  MANAGES MESSAGE GAME_PARAM
 
 

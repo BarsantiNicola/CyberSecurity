@@ -368,9 +368,9 @@ namespace server {
             this->sendRejectMessage(challenger, challenged, this->userRegister.getSocket(challenger));
         }else //  otherwise we send a disconnect to the other client
             if( !challenged.compare(username))
-                this->sendDisconnectMessage( challenger );
+                this->sendDisconnectMessage( challenger, true );
             else
-                this->sendDisconnectMessage( challenged );
+                this->sendDisconnectMessage( challenged, true );
 
         //  finally we remove the match
         this->matchRegister.removeMatch( matchID );
@@ -582,7 +582,7 @@ namespace server {
     }
 
     // sends directly a DISCONNECT message to a client identified by a username
-    bool MainServer::sendDisconnectMessage( string username ){
+    bool MainServer::sendDisconnectMessage( string username, bool after ){
 
         if( username.empty()){
 
@@ -598,6 +598,8 @@ namespace server {
             return false;
 
         }
+        if(!after)
+            this->clientRegister.updateClientNonce(*socket);
 
         int* nonce = this->clientRegister.getClientNonce(*socket);
         if( !nonce ){
@@ -624,7 +626,8 @@ namespace server {
         }
 
         bool ret = this->sendMessage( message, *socket );
-        this->clientRegister.updateClientNonce(*socket);
+        if(after)
+            this->clientRegister.updateClientNonce(*socket);
         delete socket;
         return ret;
 
@@ -1683,7 +1686,7 @@ namespace server {
 
         delete nonce;
         
-        this->sendDisconnectMessage(opposite);
+        this->sendDisconnectMessage(opposite, true);
         this->userRegister.setLogged( username, this->userRegister.getSessionKey(username));
         this->userRegister.setLogged( opposite, this->userRegister.getSessionKey(opposite));
         this->matchRegister.removeMatch(matchID);
@@ -1727,7 +1730,7 @@ namespace server {
 
         if( !nonce ){
             verbose<<"--> [MainServer][gameHandler] Error, Missing Nonce"<<'\n';
-            this->sendDisconnectMessage(adversary);
+            this->sendDisconnectMessage(adversary, false);
             this->userRegister.setLogged(adversary, this->userRegister.getSessionKey(adversary));
             this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
             response = this->sendError( string( "Security error, Missing nonce"),sNonce );
@@ -1739,7 +1742,7 @@ namespace server {
         if( !this->cipherServer.fromSecureForm( message , username, this->userRegister.getSessionKey(username) ) ){
 
             verbose << "--> [MainServer][gameHandler] Error, Verification failure" << '\n';
-            this->sendDisconnectMessage(adversary);
+            this->sendDisconnectMessage(adversary, false);
             response = this->sendError(string( "Security error. Invalid message'signature" ), sNonce );
             this->userRegister.setLogged(adversary, this->userRegister.getSessionKey(adversary));
             this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
@@ -1753,7 +1756,7 @@ namespace server {
 
         if( col<0 || col>= NUMBER_COLUMN ){
             verbose<<"--> [MainServer][gameHandler] Error invalid message column field"<<'\n';
-            this->sendDisconnectMessage(adversary);
+            this->sendDisconnectMessage(adversary, false);
             response = this->sendError( "Invalid request. Invalid column field", nullptr );
             this->userRegister.setLogged(adversary, this->userRegister.getSessionKey(adversary));
             this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
@@ -1785,7 +1788,7 @@ namespace server {
 
                 SQLConnector::incrementUserGame(adversary , WIN);
                 SQLConnector::incrementUserGame(username, LOOSE);
-                if( !this->sendDisconnectMessage(adversary)) {
+                if( !this->sendDisconnectMessage(adversary, false)) {
 
                     verbose << "--> [MainServer][gameHandler] Error, unable to contact the user: " << adversary << '\n';
                     int *sock = this->userRegister.getSocket(adversary);
@@ -1797,7 +1800,7 @@ namespace server {
 
                 }
 
-                if( !this->sendDisconnectMessage( username )){
+                if( !this->sendDisconnectMessage( username, false )){
 
                     verbose << "--> [MainServer][gameHandler] Error, unable to contact the user: " << username << '\n';
                     sock = this->userRegister.getSocket(username);
@@ -1819,7 +1822,7 @@ namespace server {
                 SQLConnector::incrementUserGame(adversary , TIE );
                 SQLConnector::incrementUserGame(username, TIE );
 
-                if( !this->sendDisconnectMessage(adversary)) {
+                if( !this->sendDisconnectMessage(adversary, false)) {
 
                     verbose << "--> [MainServer][gameHandler] Error, unable to contact the user: " << adversary << '\n';
                     int *sock = this->userRegister.getSocket(adversary);
@@ -1831,7 +1834,7 @@ namespace server {
 
                 }
 
-                if( !this->sendDisconnectMessage( username )){
+                if( !this->sendDisconnectMessage( username, false )){
 
                     verbose << "--> [MainServer][gameHandler] Error, unable to contact the user: " << username << '\n';
                     int *sock = this->userRegister.getSocket(username);
