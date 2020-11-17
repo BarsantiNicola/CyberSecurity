@@ -85,7 +85,7 @@ namespace utility {
             this->setSignature( msg.signature , msg.signature_len );
 
         if( msg.signature_2 )
-            this->setSignature( msg.signature_2 , msg.signature_2_len );
+            this->setSignatureAES( msg.signature_2 , msg.signature_2_len );
 
         if( msg.pub_Key )
             this->setPubKey( msg.pub_Key, msg.pub_key_len );
