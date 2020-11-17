@@ -280,6 +280,7 @@ namespace client
 */
   bool MainClient::reciveDisconnectProtocol(Message* message)
   {
+      vverbose<<"-->[MainClient][reciveDiconnectProtocol] starting disconnectProtocol"<<'\n';
       int* nonce_s;
       bool res;
       if(message==nullptr)
@@ -288,6 +289,11 @@ namespace client
         return false;
       }
       nonce_s=message->getNonce();
+      if(nonce_s==nullptr)
+      {
+        verbose<<"--> [MainClient][reciveDiconnectProtocol] error the nonce is null"<<'\n';
+        return false;
+      }
       verbose<<"-->[MainClient][reciveDiconnectProtocol the recived nonce is:"<<*nonce_s<<'\n';
       if(*nonce_s!=(this->nonce))
       {
@@ -729,7 +735,7 @@ namespace client
     cout<<"\n \n";
     //printWhiteSpace();
      textualMessageToUser="the user " + challenged_username + " reject your request " + '\n';
-    cout<<"the user "<<challenged_username <<" reject your request "<<'\n';
+    //cout<<"the user "<<challenged_username <<" reject your request "<<'\n';
     //printWhiteSpace();
     //std::cout<<"\t# Insert a command:";
     //cout.flush();
@@ -1585,9 +1591,12 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                   }
                   break;
                 case DISCONNECT:
-                  reciveDisconnectProtocol(message);
+                  reciveDisconnectProtocol(retMess);
                   waitForAck=false;
                   break;
+                default:
+                    verbose<<"-->[MainClient][MakeAndSendGameMove] message type not found"<<'\n';
+                    break;
                 }
               }
             }
@@ -1758,13 +1767,23 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
    messageACK=createMessage(ACK,nullptr,nullptr,0,aesKeyClient,this->currentToken,false);
    connection_manager->sendMessage(*messageACK,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
    vverbose<<"-->[MainClient][ReceiveGameMove] Message sended"<<'\n';
+   verbose<<"-->[MainClient][ReceiveGameMove] securing GAME message"<<'\n';
    if(!cipher_client->toSecureForm( messG, aesKeyServer ))
    {
      verbose<<"-->[MainClient][ReceiveGameMove] error to cipher the message messG"<<'\n';
      delete c_nonce;
      return;
    }
-   
+   if(messG->getSignatureAES()==nullptr)
+   {
+     verbose<<"-->[MainClient][ReceiveGameMove]  the signatureAES is nullptr"<<'\n';
+   }
+   else
+   {
+     verbose<<"-->[MainClient][ReceiveGameMove]  the signatureAES length is "<<messG->getSignatureAESLen()<<'\n';
+   }
+
+   vverbose<<"-->[MainClient][ReceiveGameMove]  GAME message secured"<<'\n';
    statGame=game->makeMove(collMove,&iWon,&adversaryWon,&tie,false);
    if(statGame!=StatGame::MOVE_OK && statGame!=StatGame::GAME_FINISH)
    {
@@ -1772,7 +1791,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
      delete c_nonce;
      return;
    }
-   
+   vverbose<<"-->[MainClient][ReceiveGameMove] sending GAME message"<<'\n';
    connection_manager->sendMessage(*messG,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
    this->currentToken++;
    textual_interface_manager->printGameInterface(true, string("15"),game->getChat(),game->printGameBoard());
@@ -2368,7 +2387,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                  if(!textualMessageToUser.empty())
                  {
                    printWhiteSpace();
-                   cout<<'\n'<<textualMessageToUser;
+                   cout<<textualMessageToUser;
                  }
                  printWhiteSpace();
                  std::cout<<"\t# Insert a command:";

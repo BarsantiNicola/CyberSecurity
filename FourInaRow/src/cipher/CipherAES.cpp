@@ -321,10 +321,12 @@ This function encryptMessage with AES_256 gcm
       }
       if(newMessage->getMessageType()==GAME)
       {
+        verbose<<"-->[CipherAES][encryptMessage] setSignatureAES"<<'\n';
         newMessage->setSignatureAES( tag , 16 );
       }
       else
       {
+        verbose<<"-->[CipherAES][encryptMessage] setSignature"<<'\n';
         newMessage->setSignature( tag , 16 );
       }
 
@@ -459,10 +461,12 @@ This function encryptMessage with AES_256 gcm
       }
       if(newMessage->getMessageType()==GAME)
       {
+        verbose<<"-->[CipherAES][encryptMessage] getSignatureAES"<<'\n';
         tag=newMessage->getSignatureAES();
       }
       else
       {
+        verbose<<"-->[CipherAES][encryptMessage] getSignature"<<'\n';
         tag=newMessage->getSignature();
       }
 
