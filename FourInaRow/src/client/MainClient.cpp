@@ -1849,7 +1849,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         return false;
       
     }
-    //this->nonce++;
+    this->nonce++;
     printWhiteSpace();
     std::cout<<"error to server request try again. \n"<<endl;
     stringstream sstr;
