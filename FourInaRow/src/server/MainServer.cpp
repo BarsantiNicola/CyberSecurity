@@ -197,7 +197,7 @@ namespace server {
             return response;
         }
 
-        if( message->getMessageType() != MATCH )
+        if( message->getMessageType() != MATCH && message->getMessageType() != GAME )
             this->clientRegister.updateClientNonce( socket );
 
         return response;
