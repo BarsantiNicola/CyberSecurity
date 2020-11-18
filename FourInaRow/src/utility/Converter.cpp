@@ -2923,7 +2923,7 @@ NetMessage* Converter::compactForm(MessageType type, Message message ,int* lengt
 
             case GAME:
                 nonce = message.getCurrent_Token();
-                len = 1+to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen();
+                len = to_string(type).length()+to_string(*nonce).length()+message.getChosenColumnLength()+message.getSignatureLen();//rimosso un +1
                 key = message.getChosenColumn();
                 *lengthPlaintext=len-message.getChosenColumnLength();
                 try

@@ -1812,6 +1812,20 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
      delete c_nonce;
      return;
    }
+   /*prova
+   */
+   /*Message prova=*messG;
+   vverbose<<"-->[MainClient][ReceiveGameMove] start prova"<<'\n';
+   if(!cipher_client->fromSecureForm( &prova, username ,aesKeyServer,false))
+   {
+     verbose<<"-->[MainClient][ReceiveGameMove] error to decrypt the message prova"<<'\n';
+   }
+   else
+   {
+     verbose<<"-->[MainClient][ReceiveGameMove] correct decipher the message prova"<<'\n';
+   }
+   vverbose<<"-->[MainClient][ReceiveGameMove] end prova"<<'\n';*/
+   //fine prova
    if(messG->getSignatureAES()==nullptr)
    {
      verbose<<"-->[MainClient][ReceiveGameMove]  the signatureAES is nullptr"<<'\n';
