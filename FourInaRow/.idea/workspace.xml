@@ -27,14 +27,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4cbb8ddf-e807-44fa-ae33-bda27674b47b" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/program" beforeDir="false" afterPath="$PROJECT_DIR$/program" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/cipher/CipherServer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/cipher/CipherServer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/MainServer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MainServer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/MatchInformation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MatchInformation.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utility/NetMessage.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/utility/NetMessage.cpp" afterDir="false" />
-    </list>
+    <list default="true" id="4cbb8ddf-e807-44fa-ae33-bda27674b47b" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -188,7 +181,7 @@
       <workItem from="1605604580479" duration="1874000" />
       <workItem from="1605621816607" duration="4670000" />
       <workItem from="1605628194696" duration="2001000" />
-      <workItem from="1605701933742" duration="5117000" />
+      <workItem from="1605701933742" duration="5504000" />
     </task>
     <servers />
   </component>
