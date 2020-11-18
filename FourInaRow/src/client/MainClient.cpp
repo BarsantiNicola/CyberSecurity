@@ -130,7 +130,7 @@ namespace client
         verbose<<"-->[MainClient][loginProtocol] message nullptr"<<'\n';
         return false;
       }
-      nonce_s=message->getNonce();
+      nonce_s=retMess->getNonce();
       verbose<<"-->[MainClient][loginProtocol] the recived nonce is:"<<*nonce_s<<'\n';
       if(*nonce_s!=(this->nonce))
       {
