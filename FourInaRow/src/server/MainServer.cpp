@@ -295,7 +295,7 @@ namespace server {
                 break;
             case utility::GAME:
                 base<<"--> [MainServer][matchManager] Message received: GAME"<<'\n';
-                ret = this->gameHandler( message, username );
+                ret = this->gameHandler( message, username, nonce );
                 break;
             default:
                 base<<"--> [MainServer][matchManager] Unknown message type"<<'\n';
@@ -1281,6 +1281,7 @@ namespace server {
 
         }
 
+        this->clientRegister.updateClientNonce(*adv_socket);
         delete adv_socket;
         delete adv_nonce;
         delete userKey;
@@ -1573,7 +1574,7 @@ namespace server {
 
         if( !this->cipherServer.toSecureForm( response , this->userRegister.getSessionKey( username ))){
 
-            verbose << "--> [MainServer][acceptHandler] Error, Verification failure" << '\n';
+            verbose << "--> [MainServer][withdrawHandler] Error, Verification failure" << '\n';
             delete response;
             response = this->sendError(string( "Server error. Service unable to generate the message'signature" ), nonce );
 
@@ -1635,7 +1636,7 @@ namespace server {
         return nullptr;
     }
 
-    Message* MainServer::gameHandler( Message* message, string username ){
+    Message* MainServer::gameHandler( Message* message, string username, int* nonce ){
 
         if( !message || username.empty() ){
 
@@ -1646,16 +1647,11 @@ namespace server {
 
         Message* response;
 
-        int *sNonce = this->clientRegister.getClientNonce(*(this->userRegister.getSocket(username)));
-
         int matchID = this->matchRegister.getMatchPlay( username );
         if( matchID == -1 ){
 
             verbose<<"--> [MainServer][gameHandler] Error unable to find match"<<'\n';
-            response = this->sendError( "Invalid request. Match already closed", sNonce );
-
-            delete sNonce;
-            return response;
+            return this->sendError( "Invalid request. Match already closed", nonce );
 
         }
 
@@ -1665,28 +1661,48 @@ namespace server {
         else
             adversary = this->matchRegister.getChallenger(matchID);
 
-        int *nonce = message->getCurrent_Token();
+        int *advSocket = this->userRegister.getSocket(adversary);
 
-        if( !nonce ){
+        if( !advSocket ){
+            verbose<<"--> [MainServer][gameHandler] Error, Adversary logged out"<<'\n';
+            this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
+            response = this->sendError( string( "Error, Adversary is logged out"),nonce );
+
+            return response;
+        }
+
+        int *adv_nonce = message->getCurrent_Token();
+        int *myNonce = this->clientRegister.getClientNonce(*advSocket);
+
+        if( !adv_nonce || !myNonce ){
+
             verbose<<"--> [MainServer][gameHandler] Error, Missing Nonce"<<'\n';
             this->sendDisconnectMessage(adversary);
             this->userRegister.setLogged(adversary, this->userRegister.getSessionKey(adversary));
             this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
-            response = this->sendError( string( "Security error, Missing nonce"),sNonce );
-
-            delete sNonce;
+            response = this->sendError( string( "Security error, Missing nonce"),nonce );
+            if( adv_nonce ) delete adv_nonce;
+            if( myNonce ) delete myNonce;
             return response;
+        }
+
+        if( *adv_nonce != *myNonce ){
+            verbose<<"--> [MainServer][gameHandler] Error, invalid nonce"<<'\n';
+            this->sendDisconnectMessage(adversary);
+            this->userRegister.setLogged(adversary, this->userRegister.getSessionKey(adversary));
+            this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
+            response = this->sendError( string( "Security error, Missing nonce"), nonce );
         }
 
         if( !this->cipherServer.fromSecureForm( message , adversary , this->userRegister.getSessionKey(username) ) ){
 
             verbose << "--> [MainServer][gameHandler] Error, Verification failure" << '\n';
             this->sendDisconnectMessage(adversary);
-            response = this->sendError(string( "Security error. Invalid message'signature" ), sNonce );
+            response = this->sendError(string( "Security error. Invalid message'signature" ), nonce );
             this->userRegister.setLogged(adversary, this->userRegister.getSessionKey(adversary));
             this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
-            delete nonce;
-            delete sNonce;
+            delete adv_nonce;
+
             return response;
 
         }
@@ -1699,27 +1715,25 @@ namespace server {
             response = this->sendError( "Invalid request. Invalid column field", nullptr );
             this->userRegister.setLogged(adversary, this->userRegister.getSessionKey(adversary));
             this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
-            delete nonce;
-            delete sNonce;
+            delete adv_nonce;
             return response;
         }
+        /*
         int status;
         if( !this->matchRegister.getChallenger(matchID).compare(username))
             status = this->matchRegister.addChallengedMove( matchID, col);
         else
             status = this->matchRegister.addChallengerMove( matchID, col );
 
-        delete nonce;
-        int* sock;
 
         switch( status ){
 
             case -2:case -1:
                 sock = this->userRegister.getSocket(username);
-                response = this->sendError( string("Invalid message. Bad Column."), sNonce );
+                response = this->sendError( string("Invalid message. Bad Column."), nonce );
 
                 delete sock;
-                delete sNonce;
+
                 return response;
 
             case 1:
@@ -1790,8 +1804,8 @@ namespace server {
                 break;
 
             default: break;
-        }
-
+        }*/
+        this->clientRegister.updateClientNonce(*advSocket);
         return nullptr;
     }
 

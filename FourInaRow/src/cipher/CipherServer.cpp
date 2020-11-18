@@ -144,6 +144,20 @@ namespace cipher{
 
                 break;
 
+            case WITHDRAW_REQ:
+
+                if( !key ) return false;
+
+                this->aes->modifyParam( key );
+                app = this->aes->encryptMessage(*message);
+                if( app == nullptr )
+                    return false;
+
+                message->setSignature( app->getSignature(), app->getSignatureLen() );
+                delete app;
+
+                break;
+
             case WITHDRAW_OK:
 
                 if( !key ) return false;

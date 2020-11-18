@@ -53,7 +53,7 @@ namespace server {
             Message* rejectHandler( Message* message , string username, int* nonce );                         //  MANAGES MESSAGE REJECT                                 //////////////// TODO
             Message* withdrawHandler( Message* message, string username, int* nonce );                       //  MANAGES MESSAGE WITHDRAW_REQ                           //////////////// TODO
             Message* disconnectHandler( Message* message, string username, int* nonce );         //  MANAGES MESSAGE DISCONNECT                             //////////////// TODO
-            Message* gameHandler( Message* message, string username );
+            Message* gameHandler( Message* message, string username, int* nonce );
 
             //  MESSAGE HANDLERS
             Message* manageMessage( Message* message, int socket );                 //  HANDLES MESSAGES AND SENT THEM TO THE CORRECT PROTOCOL
