@@ -1150,7 +1150,7 @@ namespace client
         message->setPort( this->myPort );
         message->setUsername(param );
         cipherRes=cipher_client->toSecureForm( message,aesKey);
-        //this->nonce++;
+        this->nonce++;
         verbose<<"--> [MainClient][createMessage] the actual nonce is:"<<nonce<<'\n';
         break;
         
@@ -1162,7 +1162,7 @@ namespace client
           partialKey = this->cipher_client->getPartialKey();
           message->set_DH_key( partialKey->getMessage(), partialKey->length() );
           cipherRes=this->cipher_client->toSecureForm( message,aesKey);
-          //this->nonce++;
+          this->nonce++;
           verbose<<"--> [MainClient][createMessage] the actual nonce is:"<<nonce<<'\n';
         }
         else
@@ -1188,7 +1188,7 @@ namespace client
         {
           vverbose<<"--> [MainClient][createMessage] cipherRes is false"<<'\n';
         }
-        //this->nonce++;
+        this->nonce++;
         verbose<<"--> [MainClient][createMessage] the actual nonce is:"<<nonce<<'\n';
 
         break;
@@ -1197,7 +1197,7 @@ namespace client
         message->setMessageType( RANK_LIST_REQ );
         message->setNonce(this->nonce);
         cipherRes =this->cipher_client->toSecureForm( message,aesKey );
-        //this->nonce++;
+        this->nonce++;
         verbose<<"--> [MainClient][createMessage] the actual nonce is:"<<nonce<<'\n';
         break;
 
@@ -1206,7 +1206,7 @@ namespace client
         message->setNonce(this->nonce);
         
         cipherRes=this->cipher_client->toSecureForm( message,aesKey);
-        //this->nonce++;
+        this->nonce++;
         verbose<<"--> [MainClient][createMessage] the actual nonce is:"<<nonce<<'\n';
         break;
 
@@ -1216,7 +1216,7 @@ namespace client
         message->setAdversary_1(param);
         message->setAdversary_2(this->username.c_str());
         cipherRes = this->cipher_client->toSecureForm( message,aesKey);
-        //this->nonce++;
+        this->nonce++;
         verbose<<"--> [MainClient][createMessage] the actual nonce is:"<<nonce<<'\n';
         break;
 
@@ -1243,7 +1243,7 @@ namespace client
         message->setNonce(this->nonce);
         message->setUsername(this->username);
         cipherRes = this->cipher_client->toSecureForm( message,aesKey);
-        //this->nonce++;
+        this->nonce++;
         verbose<<"--> [MainClient][createMessage] the actual nonce is:"<<nonce<<'\n';
         break;
 
@@ -1310,7 +1310,7 @@ namespace client
         cipherRes = this->cipher_client->toSecureForm( message,aesKey);
         //net = Converter::encodeMessage(MATCH, *message );               //da vedere l'utilità in caso cancellare
         //message = this->cipher_client->toSecureForm( message,aesKey );
-        //this->nonce++;
+        this->nonce++;
         verbose<<"--> [MainClient][createMessage] the actual nonce is:"<<nonce<<'\n';
         break;
 
