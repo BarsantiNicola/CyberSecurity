@@ -328,9 +328,9 @@ namespace cipher{
                 if( !app )
                     return false;
 
-                message->setChosenColumn( app->getChosenColumn(), app->getChosenColumnLength());
-                delete app;
-                return this->rsa->serverVerifySignature(*message, username );
+                message->setChosenColumn(app->getChosenColumn(), app->getChosenColumnLength());
+
+                return this->rsa->serverVerifySignature(*app, username );
                 
             default:
                 verbose<<"--> [CipherServer][fromSecureForm] Error, MessageType not supported:"<<message->getMessageType()<<'\n';

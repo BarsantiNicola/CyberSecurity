@@ -11,7 +11,7 @@ namespace server {
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     MainServer::MainServer( string ipAddr , int port ){
-        
+
         this->manager = new utility::ConnectionManager( true , ipAddr.c_str(), port );
         base<<"--> [MainServer][MainServer] Server build completed"<<'\n';
 
@@ -1739,7 +1739,7 @@ namespace server {
             return response;
         }
 
-        if( !this->cipherServer.fromSecureForm( message , username, this->userRegister.getSessionKey(username) ) ){
+        if( !this->cipherServer.fromSecureForm( message , adversary , this->userRegister.getSessionKey(username) ) ){
 
             verbose << "--> [MainServer][gameHandler] Error, Verification failure" << '\n';
             this->sendDisconnectMessage(adversary, false);

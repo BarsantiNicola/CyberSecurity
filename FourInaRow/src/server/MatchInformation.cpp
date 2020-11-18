@@ -71,7 +71,7 @@ namespace server{
 
         if( this->status != STARTED ) return -2;
         int row = -1;
-        if( chosen_col <0 || chosen_col >= NUMBER_COLUMN)
+        if( chosen_col >-1 || chosen_col <= NUMBER_COLUMN)
             for( int a = NUMBER_ROW-1; a>0; a-- )
                 if( !this->gameBoard[chosen_col][a] ){
                     row = a;
@@ -92,12 +92,12 @@ namespace server{
 
         if( this->status != STARTED ) return -2;
         int row = -1;
-        if( chosen_col <0 || chosen_col >= NUMBER_COLUMN)
-        for( int a = NUMBER_ROW-1; a>0; a-- )
-            if( !this->gameBoard[chosen_col][a] ){
-                row = a;
-                break;
-            }
+        if( chosen_col >-1 || chosen_col <= NUMBER_COLUMN)
+            for( int a = NUMBER_ROW-1; a>0; a-- )
+                if( !this->gameBoard[chosen_col][a] ){
+                    row = a;
+                    break;
+                }
         if( row == -1 ){
             verbose<<"--> [MatchInformation][addChallengedMove] Error, column full"<<'\n';
             return -2;

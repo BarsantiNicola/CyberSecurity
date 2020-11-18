@@ -27,7 +27,10 @@ namespace utility {
             this->message = new unsigned char[length];
             myCopy( this->message,  mess, length);
             this->len = length;
-            cout << "-->[NetMessage][Costructor] Message correctly generated: [\t" << this->message<<"\t]\n";
+            cout << "-->[NetMessage][Costructor] Message correctly generated: [\t";
+            for( int a = 0; a<len; a++ )
+                cout<<this->message[a];
+            cout<<"\t]\n";
 
         }catch( bad_alloc e ){
 
