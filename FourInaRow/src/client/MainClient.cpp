@@ -1801,7 +1801,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
      delete c_nonce;
      return;
    }
-   nonceAdv=*c_nonce; 
+   nonceAdv=*appG.getCurrent_Token(); 
    messageACK=createMessage(ACK,nullptr,nullptr,0,aesKeyClient,this->currentToken,false);
    connection_manager->sendMessage(*messageACK,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
    vverbose<<"-->[MainClient][ReceiveGameMove] Message sended"<<'\n';
@@ -1812,20 +1812,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
      delete c_nonce;
      return;
    }
-   /*prova
-   */
-   /*Message prova=*messG;
-   vverbose<<"-->[MainClient][ReceiveGameMove] start prova"<<'\n';
-   if(!cipher_client->fromSecureForm( &prova, username ,aesKeyServer,false))
-   {
-     verbose<<"-->[MainClient][ReceiveGameMove] error to decrypt the message prova"<<'\n';
-   }
-   else
-   {
-     verbose<<"-->[MainClient][ReceiveGameMove] correct decipher the message prova"<<'\n';
-   }
-   vverbose<<"-->[MainClient][ReceiveGameMove] end prova"<<'\n';*/
-   //fine prova
+
    if(messG->getSignatureAES()==nullptr)
    {
      verbose<<"-->[MainClient][ReceiveGameMove]  the signatureAES is nullptr"<<'\n';
