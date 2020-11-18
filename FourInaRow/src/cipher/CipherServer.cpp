@@ -146,7 +146,10 @@ namespace cipher{
 
             case WITHDRAW_REQ:
 
-                if( !key ) return false;
+                if( !key ){
+                  verbose<<"-->[CipherServer][toSecureForm] key is nullptr"<<'\n';
+                  return false;
+                }
 
                 this->aes->modifyParam( key );
                 app = this->aes->encryptMessage(*message);
@@ -160,13 +163,16 @@ namespace cipher{
 
             case WITHDRAW_OK:
 
-                if( !key ) return false;
-
+                if( !key ){
+                  verbose<<"-->[CipherServer][toSecureForm] key is nullptr"<<'\n';
+                  return false;
+                }
                 this->aes->modifyParam( key );
                 app = this->aes->encryptMessage(*message);
-                if( app == nullptr )
+                if( app == nullptr ){
+                    verbose<<"-->[CipherServer][toSecureForm] Error, to autenticate WITHDRAW_OK with AES"<<'\n';
                     return false;
-
+                }
                 message->setSignature( app->getSignature(), app->getSignatureLen() );
                 delete app;
 
@@ -211,10 +217,10 @@ namespace cipher{
 		break;
 		
             default:
-                vverbose<<"--> [CipherServer][toSecureForm] Error, messageType not supported:"<<message->getMessageType()<<'\n';
+                verbose<<"--> [CipherServer][toSecureForm] Error, messageType not supported:"<<message->getMessageType()<<'\n';
                 return false;
         }
-
+        verbose<<"--> [CipherServer][toSecureForm]returning true for message type:"<<message->getMessageType()<<'\n';
         return true;
 
     }

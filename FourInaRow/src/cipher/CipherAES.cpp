@@ -207,12 +207,14 @@ This function encryptMessage with AES_256 gcm
     int ciphertextLength;
     unsigned char* ciphertext;
     unsigned char* tag;
+    verbose<<"-->[CipherAES][decryptMessage] enter to encryptMessage function"<<'\n';
     try
     {
       tag=new unsigned char[16];
     }
     catch(std::bad_alloc& e)
     {
+      verbose<<"-->[CipherAES][decryptMessage] error bad alloc tag"<<'\n';
       return nullptr;
     }
     Converter converter;
@@ -243,6 +245,7 @@ This function encryptMessage with AES_256 gcm
       }   
       catch(std::bad_alloc& e)
       {
+        verbose<<"-->[CipherAES][decryptMessage] error bad alloc ciphertext"<<'\n';
         delete[]tag;
         return nullptr;
       }
@@ -250,6 +253,7 @@ This function encryptMessage with AES_256 gcm
       int ret=gcmEncrypt(app,0,netMessage->getMessage(),lengthPlaintext,ciphertext,tag);
       if(ret==-1)
       {
+        verbose<<"-->[CipherAES][decryptMessage] error to encrypt with gcm"<<'\n';
         delete[]tag;
         return nullptr;
       }
@@ -257,6 +261,7 @@ This function encryptMessage with AES_256 gcm
 
       newMessage->setSignature( tag , 16 );
       //delete[]tag;
+      verbose<<"-->[CipherAES][encryptMessage] end correctly the encrypt message"<<'\n';
       return newMessage;
     }
     else
@@ -340,12 +345,14 @@ This function encryptMessage with AES_256 gcm
       }
       delete[]ciphertext;
       //delete[]tag;
+      verbose<<"-->[CipherAES][encryptMessage] end correctly the encrypt message 2 "<<'\n';
       return newMessage;
     }
   }
 /*--------------------Function decryptMessage--------------------------------------*/
   Message* CipherAES::decryptMessage(Message message)
  {
+    verbose<<"-->[CipherAES][decryptMessage] enter to decryptMessage"<<'\n';
     int lengthCleareText=0;
     int lengthToDecrypt=0;
     int ciphertextLength;
@@ -357,6 +364,7 @@ This function encryptMessage with AES_256 gcm
     }
     catch(std::bad_alloc& e)
     {
+      verbose<<"-->[CipherAES][decryptMessage] error bad alloc"<<'\n';
       return nullptr;
     }
     Converter converter;
@@ -384,6 +392,7 @@ This function encryptMessage with AES_256 gcm
       }
       catch(std::bad_alloc& e)
       {
+        verbose<<"-->[CipherAES][decryptMessage] errorTo create a message compact"<<'\n';
         return nullptr;
       }
       tag=newMessage->getSignature();
@@ -394,6 +403,7 @@ This function encryptMessage with AES_256 gcm
       }
       catch(std::bad_alloc& e)
       {
+        verbose<<"-->[CipherAES][decryptMessage] error bad alloc plaintext"<<'\n';
         delete[]tag;
         return nullptr;
       }
@@ -426,6 +436,7 @@ This function encryptMessage with AES_256 gcm
       }
       catch(std::bad_alloc& e)
       {
+        verbose<<"-->[CipherAES][decryptMessage] error bad alloc text in plain"<<'\n';
         delete[]tag;
         return nullptr;
       }
@@ -454,6 +465,7 @@ This function encryptMessage with AES_256 gcm
       }
       catch(std::bad_alloc& e)
       {
+        verbose<<"-->[CipherAES][decryptMessage] error bad alloc message"<<'\n';
         delete[]textToDecrypt;
         delete[]textInPlain;
         delete[]tag;
@@ -476,6 +488,7 @@ This function encryptMessage with AES_256 gcm
       }
       catch(std::bad_alloc& e)
       {
+        verbose<<"-->[CipherAES][decryptMessage] error bad alloc plaintext"<<'\n';
         delete[]textToDecrypt;
         delete[]textInPlain;
         delete newMessage;
