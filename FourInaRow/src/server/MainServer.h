@@ -42,23 +42,23 @@ namespace server {
 
             //  PROTOCOL HANDLERS
             Message* certificateHandler( Message* message , int socket );       //  MANAGES MESSAGE CERTIFICATE_REQ                        //////////////// DONE
-            Message* loginHandler( Message* message,  int socket );             //  MANAGES MESSAGE LOGIN_REQ                              //////////////// DONE
-            Message* keyExchangeHandler( Message* message , string username );  //  MANAGES MESSAGE KEY_EXCHANGE                           //////////////// DONE
-            Message* userListHandler( Message* message, string username );      //  MANAGES MESSAGE USER_LIST_REQ                          //////////////// DONE
-            Message* rankListHandler( Message* message, string username );      //  MANAGES MESSAGE RANK_LIST_REQ                          //////////////// DONE
-            Message* logoutHandler( Message* message , string username , int socket );       //  MANAGES MESSAGE LOGOUT_REQ                             //////////////// DONE
+            Message* loginHandler( Message* message,  int socket, int* nonce );             //  MANAGES MESSAGE LOGIN_REQ                              //////////////// DONE
+            Message* keyExchangeHandler( Message* message , string username, int* nonce );  //  MANAGES MESSAGE KEY_EXCHANGE                           //////////////// DONE
+            Message* userListHandler( Message* message, string username, int* nonce );      //  MANAGES MESSAGE USER_LIST_REQ                          //////////////// DONE
+            Message* rankListHandler( Message* message, string username, int* nonce );      //  MANAGES MESSAGE RANK_LIST_REQ                          //////////////// DONE
+            Message* logoutHandler( Message* message , string username , int socket, int* nonce );       //  MANAGES MESSAGE LOGOUT_REQ                             //////////////// DONE
 
-            Message* matchHandler( Message* message, string username );         //  MANAGES MESSAGE MATCH               //////////////// TODO
-            Message* acceptHandler( Message* message , string username );    //  MANAGES MESSAGE ACCEPT              //////////////// TODO
-            Message* rejectHandler( Message* message , string username );                         //  MANAGES MESSAGE REJECT                                 //////////////// TODO
-            Message* withdrawHandler( Message* message, string username );                       //  MANAGES MESSAGE WITHDRAW_REQ                           //////////////// TODO
-            Message* disconnectHandler( Message* message, string username );         //  MANAGES MESSAGE DISCONNECT                             //////////////// TODO
+            Message* matchHandler( Message* message, string username, int* nonce );         //  MANAGES MESSAGE MATCH               //////////////// TODO
+            Message* acceptHandler( Message* message , string username, int* nonce );    //  MANAGES MESSAGE ACCEPT              //////////////// TODO
+            Message* rejectHandler( Message* message , string username, int* nonce );                         //  MANAGES MESSAGE REJECT                                 //////////////// TODO
+            Message* withdrawHandler( Message* message, string username, int* nonce );                       //  MANAGES MESSAGE WITHDRAW_REQ                           //////////////// TODO
+            Message* disconnectHandler( Message* message, string username, int* nonce );         //  MANAGES MESSAGE DISCONNECT                             //////////////// TODO
             Message* gameHandler( Message* message, string username );
 
             //  MESSAGE HANDLERS
             Message* manageMessage( Message* message, int socket );                 //  HANDLES MESSAGES AND SENT THEM TO THE CORRECT PROTOCOL
             Message* userManager(Message* message, string username , int socket );  //  HANDLES MESSAGES WHICH INVOLVE ONLY THE USER AND THE SERVER
-            Message* matchManager(Message* message, string username );  //  HANDLES MESSAGES WHICH INVOLVE MANY USERS
+            Message* matchManager(Message* message, string username, int* nonce );  //  HANDLES MESSAGES WHICH INVOLVE MANY USERS
 
             //  EVENT HANDLERS
             void logoutClient(int socket);                           //  SECURE DISCONNECTION OF A CLIENT FROM THE SERVER
@@ -69,8 +69,8 @@ namespace server {
             bool sendAcceptMessage( string challenger, string challenged, int* socket );
             bool sendRejectMessage( string challenger, string challenged, int* socket );
             bool sendWithdrawMessage( string username, int* socket );
-            bool sendDisconnectMessage( string username, bool after );
-            bool sendGameParam( string username , string source, bool update );   //  MANAGES MESSAGE GAME_PARAM
+            bool sendDisconnectMessage( string username );
+            bool sendGameParam( string username , string source );   //  MANAGES MESSAGE GAME_PARAM
 
 
         public:
