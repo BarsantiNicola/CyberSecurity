@@ -1569,8 +1569,8 @@ namespace server {
         this->userRegister.setLogged( username , this->userRegister.getSessionKey(username));
 
         response = new Message();
-        message->setMessageType( WITHDRAW_OK );
-        message->setNonce(*nonce);
+        response->setMessageType( WITHDRAW_OK );
+        response->setNonce(*nonce);
 
         if( !this->cipherServer.toSecureForm( response , this->userRegister.getSessionKey( username ))){
 
