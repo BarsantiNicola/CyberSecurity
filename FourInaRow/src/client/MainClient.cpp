@@ -326,6 +326,7 @@ namespace client
     bool res;
     bool socketIsClosed=false;
     Message* message;
+    vverbose<<"-->[MainClient][sendDisconnectProtocol] startingDisconnectProtocol"<<'\n';
     message=createMessage(MessageType::DISCONNECT, nullptr,nullptr,0,aesKeyServer,this->nonce,false);
     if(message==nullptr)
       return false;
@@ -342,7 +343,8 @@ namespace client
       clientPhase=ClientPhase::NO_PHASE;
       sendImplicitUserListReq();
     }
-     
+    clearGameParam();
+    challenged_username = ""; 
     return res;
   }
 /*
@@ -778,6 +780,7 @@ namespace client
        messageChatToACK=message;
        game->addMessageToChat(chat);
        textual_interface_manager->printGameInterface(true, string("15"),game->getChat(),game->printGameBoard());
+       textual_interface_manager->setChat( this->username, (char*)chat.c_str(), chat.size() );
        return true;
      }
   }
@@ -800,11 +803,11 @@ namespace client
     nonce_s=message->getCurrent_Token();
     if(*nonce_s!=(this->currTokenChatAdv))
     {
-      //verbose<<"--> [MainClient][reciveChatProtocol] error the nonce isn't valid"<<'\n';
-      res=cipher_client->fromSecureForm( message , username ,aesKeyServer,false);
+      verbose<<"--> [MainClient][reciveChatProtocol] error the nonce isn't valid"<<'\n';
+      res=cipher_client->fromSecureForm( message , username ,aesKeyClient,false);
       if(!res)
       {
-        verbose<<"--> [MainClient][reciveChatProtocol] error to decrypt"<<'\n';
+        verbose<<"--> [MainClient][reciveChatProtocol] error to decrypt"<<this->currTokenChatAdv<<" != "<<*nonce_s<<'\n';
         return false;
       }
       messageACK=createMessage(ACK,nullptr,nullptr,0,aesKeyClient,*nonce_s,false);
@@ -826,6 +829,8 @@ namespace client
     messageACK=createMessage(ACK,nullptr,nullptr,0,aesKeyClient,*nonce_s,false);
     connection_manager->sendMessage(*messageACK,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
     game->addMessageToChat(printableString(message->getMessage(),message->getMessageLength()));
+    
+    textual_interface_manager->setChat( adv_username_1, (char*)message->getMessage(), message->getMessageLength() );
     textual_interface_manager->printGameInterface(true, string("15"),game->getChat(),game->printGameBoard());
     this->currTokenChatAdv+=2;
     return true;
@@ -836,32 +841,41 @@ namespace client
   bool MainClient::receiveACKChatProtocol(Message* message)
   {	
     bool res;
-    if(messageChatToACK)
+    vverbose<<"--> [MainClient][reciveACKChatProtocol] starting receive ACK chat protocol"<<'\n';
+    if(messageChatToACK==nullptr)
       return false;
     if(message==nullptr)
       return false;
     if(message->getMessageType()!=ACK)
       return false;
     
-    res=cipher_client->fromSecureForm( message , username ,aesKeyServer,false);
+    res=cipher_client->fromSecureForm( message , username ,aesKeyClient,false);
     if(!res)
     {
-      verbose<<"--> [MainClient][reciveACKProtocol] error to decrypt"<<'\n';
+      verbose<<"--> [MainClient][reciveACKChatProtocol] error to decrypt"<<'\n';
       return false;
     }   
     if(*message->getCurrent_Token() != *messageChatToACK->getCurrent_Token())
+    {
+        verbose<<"--> [MainClient][reciveACKChatProtocol] tokenChatProtocol recived is "<<*message->getCurrent_Token()<<" expected "<<messageChatToACK->getCurrent_Token()<<'\n';
        return false;
+    }
     delete messageChatToACK;
     messageChatToACK=nullptr;//verificare funzionamento
-    
+    if(messageChatToACK==nullptr)
+    {
+      verbose<<"--> [MainClient][reciveACKChatProtocol] messageChatToACK setted at nullptr"<<'\n';
+    }
     if(!chatWait.empty())
     {
       if(!sendChatProtocol(chatWait[0]))
       {
-        verbose<<"--> [MainClient][reciveACKProtocol] some problem to send chat"<<'\n';
+        verbose<<"--> [MainClient][reciveACKChatProtocol] some problem to send chat"<<'\n';
       }
       chatWait.erase(chatWait.begin());
     }
+    vverbose<<"--> [MainClient][reciveACKChatProtocol] function finished return true"<<'\n';
+    textual_interface_manager->printGameInterface(true, string("15"),game->getChat(),game->printGameBoard());
     return true;
   }
 /*
@@ -1091,6 +1105,8 @@ namespace client
      adv_username_1 = "";
      //devo eliminare dal challenge_register
      challenge_register->removeData(message->getUsername());
+     textualMessageToUser=message->getUsername()+" had delete the challenge \n";
+     sendImplicitUserListReq();
      return true;
 
   }
@@ -1306,7 +1322,7 @@ namespace client
       case DISCONNECT:
         message->setMessageType( DISCONNECT );
         message->setNonce(this->nonce);
-        message->setUsername(string(param) );
+        //message->setUsername(string(param) );
         cipherRes = this->cipher_client->toSecureForm( message,aesKey);
         //net = Converter::encodeMessage(MATCH, *message );               //da vedere l'utilità in caso cancellare
         //message = this->cipher_client->toSecureForm( message,aesKey );
@@ -2318,6 +2334,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     }
       catch(exception e)
       {
+          std::cerr<<e.what()<<'\n';
           printWhiteSpace();
           std::cout<<"comand not valid"<<endl;
           printWhiteSpace();
@@ -2675,7 +2692,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
   void MainClient::clearGameParam()
   {
     adv_username_1 = "";
-    adv_username_1 = "";
+    challenged_username = "";
     if(game!=nullptr)
     {
       delete game;
