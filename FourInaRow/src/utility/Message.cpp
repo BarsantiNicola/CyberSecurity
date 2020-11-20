@@ -191,88 +191,100 @@ namespace utility {
 
     bool Message::setNonce( int nonce ){
 
-        if( this->nonce == nullptr )
-            this->nonce = new int(0);
+        if( !this->nonce ){
 
-        if( this->nonce ) {
+            try {
 
-            vverbose<<"--> [Message][setNonce] Set of Nonce Completed"<<'\n';
-            *(this->nonce) = nonce;
-            return true;
+                this->nonce = new int( nonce );
 
-        }else {
+            }catch (bad_alloc e) {
 
-            verbose << "--> [Message][setNonce] Error during allocation of memory. Operation Aborted" << '\n';
-            return false;
+                verbose<< "--> [Message][setNonce] Error during the allocation of memory. Operation aborted" << '\n';
+                return false;
 
-        }
+            }
+
+        }else
+            *( this->nonce ) = nonce;
+
+        vverbose<<"--> [Message][setNonce] Set of nonce completed"<<'\n';
+        return true;
 
     }
 
     bool Message::setCurrent_Token( int current_token ){
 
-        if( this->current_token == nullptr )
-            this->current_token = new int();
+        if( !this->current_token ){
 
-        if( this->current_token ){
+            try {
 
-            vverbose<<"--> [Message][setCurrentToken] Set of CurrentToken Completed"<<'\n';
-            *(this->current_token) = current_token;
-            return true;
+                this->current_token = new int( current_token );
 
-        }else {
+            }catch( bad_alloc e ){
 
-            verbose << "--> [Message][setCurrentToken] Error during allocation of memory. Operation Aborted" << '\n';
-            return false;
+                verbose<< "--> [Message][setCurrentToken] Error during the allocation of memory. Operation aborted" << '\n';
+                return false;
 
-        }
+            }
+
+        }else
+            *( this->current_token ) = current_token;
+
+        vverbose<<"--> [Message][setCurrentToken] Set of CurrentToken Completed"<<'\n';
+        return true;
 
     }
 
     bool Message::setPort( int port ){
 
-        if( this->port == nullptr )
-            this->port = new int();
+        if( !this->port ){
 
-        if( this->port ){
+            try {
 
-            vverbose<<"--> [Message][setPort] Set of Port Completed"<<'\n';
-            *(this->port) = port;
-            return true;
+                this->port = new int(port);
 
-        }else {
+            } catch (bad_alloc e) {
 
-            verbose << "--> [Message][setCurrentToken] Error during allocation of memory. Operation Aborted" << '\n';
-            return false;
+                verbose<<"--> [Message][setPort] Error during the allocation of memory. Operation aborted"<<'\n';
+                return false;
 
-        }
+            }
+
+        }else
+            *( this->port ) = port;
+
+        vverbose<<"--> [Message][setPort] Set of Port Completed"<<'\n';
+        return true;
 
     }
 
     bool Message::setUserList( unsigned char* user_list , unsigned int len ){
 
-        if( !user_list || len == 0 )
+        if( !user_list || len < 1 ) {
+
+            verbose<<"--> [Message][setUserList] Invalid parameters. Operation aborted"<<'\n';
             return false;
 
-
+        }
 
         if( this->user_list )
             delete[] this->user_list;
 
-        this->user_list = nullptr;
         this->user_list_len = len;
 
-        this->user_list = new unsigned char[ user_list_len ];
-        if( this->user_list ) {
+        try {
 
-            vverbose<<"--> [Message][setUserList] Set of User List Completed"<<'\n';
+            this->user_list = new unsigned char[user_list_len];
             myCopy( this->user_list,  user_list, user_list_len );
+            vverbose<<"--> [Message][setUserList] Set of User List Completed"<<'\n';
             return true;
 
-        }else{
+        }catch( bad_alloc e ){
 
-            verbose << "--> [Message][setUserList] Error during allocation of memory. Operation Aborted" << '\n';
+            verbose<<"--> [Message][setUserList] Error during the allocation of memory. Operation aborted"<<'\n';
             this->user_list_len = 0;
+            this->user_list = nullptr;
+
             return false;
 
         }
@@ -281,9 +293,9 @@ namespace utility {
 
     bool Message::setRankList(unsigned char* rank_list, unsigned int len ){
 
-        if( !rank_list || len == 0 ){
+        if( !rank_list || len < 1 ){
 
-            verbose<<"--> [Message][setRankList] Error invalid arguments. Operation Aborter"<<'\n';
+            verbose<<"--> [Message][setRankList] Error invalid arguments. Operation aborted"<<'\n';
             return false;
 
         }
@@ -291,30 +303,31 @@ namespace utility {
         if( this->rank_list )
             delete[] this->rank_list;
 
-        this->rank_list = nullptr;
         this->rank_list_len = len;
 
-        this->rank_list = new unsigned char[ rank_list_len ];
-        if( this->rank_list ) {
+        try {
 
-            vverbose<<"--> [Message][setRankList] Set of Rank List Completed"<<'\n';
-            myCopy( this->rank_list,  rank_list, rank_list_len );
+            this->rank_list = new unsigned char[rank_list_len];
+            myCopy(this->rank_list, rank_list, rank_list_len);
+            vverbose << "--> [Message][setRankList] Set of Rank List Completed" << '\n';
             return true;
 
-        }else{
+        }catch( bad_alloc e ){
 
-            verbose << "--> [Message][setRankList] Error during allocation of memory. Operation Aborted" << '\n';
-            this->rank_list = 0;
+            verbose<<"--> [Message][setRankList] Error during allocation of memory. Operation Aborted"<<'\n';
+            this->rank_list = nullptr;
+            this->rank_list_len = 0;
             return false;
 
         }
+
     }
 
     bool Message::setServer_Certificate( unsigned char* certificate , unsigned int len ){
 
-        if( !certificate || len == 0 ){
+        if( !certificate || len < 1 ){
 
-            verbose<<"--> [Message][setServerCertificate] Error invalid arguments. Operation Aborter"<<'\n';
+            verbose<<"--> [Message][setServerCertificate] Error invalid arguments. Operation aborted"<<'\n';
             return false;
 
         }
@@ -322,32 +335,31 @@ namespace utility {
         if( this->server_certificate )
             delete[] this->server_certificate;
 
-        this->server_certificate = nullptr;
         this->certificate_len = len;
 
-        this->server_certificate = new unsigned char[ certificate_len ];
-        if( this->server_certificate ) {
+        try {
 
+            this->server_certificate = new unsigned char[certificate_len];
+            myCopy(this->server_certificate, certificate, certificate_len);
             vverbose<<"--> [Message][setServerCertificate] Set of Server Certificate Completed"<<'\n';
-            myCopy( this->server_certificate,  certificate, certificate_len );
             return true;
 
-        }else{
+        }catch( bad_alloc e ){
 
             verbose << "--> [Message][setServerCertificate] Error during allocation of memory. Operation Aborted" << '\n';
             this->certificate_len = 0;
+            this->server_certificate = nullptr;
             return false;
 
         }
+
     }
-
-
 
     bool Message::setSignature( unsigned char* signature , unsigned int len ){
 
-        if( !signature || len == 0 ){
+        if( !signature || len < 1 ){
 
-            verbose<<"--> [Message][setSignature] Error invalid arguments. Operation Aborter"<<'\n';
+            verbose<<"--> [Message][setSignature] Error invalid arguments. Operation aborted"<<'\n';
             return false;
 
         }
@@ -355,20 +367,20 @@ namespace utility {
         if( this->signature )
             delete[] this->signature;
 
-        this->signature = nullptr;
         this->signature_len = len;
 
-        this->signature = new unsigned char[ signature_len ];
-        if( this->signature ) {
+        try {
 
-            vverbose<<"--> [Message][setSignature] Set of Signature Completed"<<'\n';
-            myCopy( this->signature, signature, signature_len );
+            this->signature = new unsigned char[ this->signature_len ];
+            myCopy( this->signature, signature, this->signature_len );
+            vverbose << "--> [Message][setSignature] Set of Signature Completed" << '\n';
             return true;
 
-        }else{
+        }catch( bad_alloc e ){
 
-            verbose << "--> [Message][setSignature] Error during allocation of memory. Operation Aborted" << '\n';
+            verbose<<"--> [Message][setSignature] Error during allocation of memory. Operation aborted"<<'\n';
             this->signature_len = 0;
+            this->signature = nullptr;
             return false;
 
         }
@@ -377,9 +389,9 @@ namespace utility {
 
     bool Message::setSignatureAES( unsigned char* signature , unsigned int len ){
 
-        if( !signature || len == 0 ){
+        if( !signature || len < 1 ){
 
-            verbose<<"--> [Message][setSignature] Error invalid arguments. Operation Aborter"<<'\n';
+            verbose<<"--> [Message][setSignatureAES] Error invalid arguments. Operation aborted"<<'\n';
             return false;
 
         }
@@ -387,20 +399,20 @@ namespace utility {
         if( this->signature_2 )
             delete[] this->signature_2;
 
-        this->signature_2 = nullptr;
         this->signature_2_len = len;
 
-        this->signature_2 = new unsigned char[ signature_2_len ];
-        if( this->signature_2 ) {
+        try {
 
-            vverbose<<"--> [Message][setSignature] Set of Signature Completed"<<'\n';
+            this->signature_2 = new unsigned char[ this->signature_2_len ];
+            vverbose<<"--> [Message][setSignatureAES] Set of Signature Completed"<<'\n';
             myCopy( this->signature_2, signature, signature_2_len );
             return true;
 
-        }else{
+        }catch( bad_alloc e ){
 
-            verbose << "--> [Message][setSignature] Error during allocation of memory. Operation Aborted" << '\n';
+            verbose << "--> [Message][setSignatureAES] Error during allocation of memory. Operation aborted" << '\n';
             this->signature_2_len = 0;
+            this->signature_2 = nullptr;
             return false;
 
         }
@@ -409,9 +421,9 @@ namespace utility {
 
     bool Message::setPubKey( unsigned char* key , unsigned int len ){
 
-        if( !key || len == 0 ){
+        if( !key || len < 1 ){
 
-            verbose<<"--> [Message][setPubKey] Error invalid arguments. Operation Aborter"<<'\n';
+            verbose<<"--> [Message][setPubKey] Error invalid arguments. Operation aborted"<<'\n';
             return false;
 
         }
@@ -419,19 +431,19 @@ namespace utility {
         if( this->pub_Key )
             delete[] this->pub_Key;
 
-        this->pub_Key = nullptr;
         this->pub_key_len = len;
 
-        this->pub_Key = new unsigned char[ pub_key_len ];
-        if( this->pub_Key ) {
+        try {
 
-            vverbose<<"--> [Message][setPubKey] Set of Public Key Completed"<<'\n';
+            this->pub_Key = new unsigned char[ pub_key_len ];
             myCopy( this->pub_Key, key, pub_key_len );
+            vverbose << "--> [Message][setPubKey] Set of Public Key Completed" << '\n';
             return true;
 
-        }else{
+        }catch( bad_alloc e ){
 
-            verbose << "--> [Message][setPubKey] Error during allocation of memory. Operation Aborted" << '\n';
+            verbose << "--> [Message][setPubKey] Error during allocation of memory. Operation aborted" << '\n';
+            this->pub_Key = nullptr;
             this->pub_key_len = 0;
             return false;
 
@@ -441,9 +453,9 @@ namespace utility {
 
     bool Message::setNetInformations( unsigned char* IP , unsigned int len ){
 
-        if( !IP || len == 0 ){
+        if( !IP || len < 1 ){
 
-            verbose<<"--> [Message][setNetInformations] Error invalid arguments. Operation Aborter"<<'\n';
+            verbose<<"--> [Message][setNetInformation] Error invalid arguments. Operation aborted"<<'\n';
             return false;
 
         }
@@ -451,20 +463,20 @@ namespace utility {
         if( this->net_informations )
             delete[] this->net_informations;
 
-        this->net_informations = nullptr;
         this->net_informations_len = len;
 
-        this->net_informations = new unsigned char[ net_informations_len ];
-        if( this->net_informations ) {
+        try {
 
-            vverbose<<"--> [Message][setNetInformations] Set of Network Information Completed"<<'\n';
-            myCopy( this->net_informations, IP, net_informations_len );
+            this->net_informations = new unsigned char[ net_informations_len ];
+            myCopy(this->net_informations, IP, net_informations_len);
+            vverbose<<"--> [Message][setNetInformation] Set of Network Information Completed"<<'\n';
             return true;
 
-        }else{
+        }catch( bad_alloc e ){
 
-            verbose << "--> [Message][setNetInformations] Error during allocation of memory. Operation Aborted" << '\n';
+            verbose<<"--> [Message][setNetInformation] Error during allocation of memory. Operation aborted"<<'\n';
             this->net_informations_len = 0;
+            this->net_informations = nullptr;
             return false;
 
         }
@@ -473,9 +485,9 @@ namespace utility {
 
     bool Message::setChosenColumn( unsigned char* chosen_column , unsigned int len ){
 
-        if( !chosen_column || len == 0 ){
+        if( !chosen_column || len < 1 ){
 
-            verbose<<"--> [Message][setChosenColumn] Error invalid arguments. Operation Aborter"<<'\n';
+            verbose<<"--> [Message][setChosenColumn] Error invalid arguments. Operation aborted"<<'\n';
             return false;
 
         }
@@ -483,20 +495,20 @@ namespace utility {
         if( this->chosen_column )
             delete[] this->chosen_column;
 
-        this->chosen_column = nullptr;
         this->chosen_column_size = len;
 
-        this->chosen_column = new unsigned char[ this->chosen_column_size ];
-        if( this->chosen_column ) {
+        try {
 
-            vverbose<<"--> [Message][setChosenColumn] Set of Chosen Column Completed"<<'\n';
-            myCopy( this->chosen_column,  chosen_column, this->chosen_column_size );
+            this->chosen_column = new unsigned char[this->chosen_column_size];
+            myCopy(this->chosen_column, chosen_column, this->chosen_column_size);
+            vverbose << "--> [Message][setChosenColumn] Set of Chosen Column Completed" << '\n';
             return true;
 
-        }else{
+        }catch( bad_alloc e ){
 
-            verbose << "--> [Message][setChosenColumn] Error during allocation of memory. Operation Aborted" << '\n';
+            verbose << "--> [Message][setChosenColumn] Error during allocation of memory. Operation aborted" << '\n';
             this->chosen_column_size = 0;
+            this->chosen_column = nullptr;
             return false;
 
         }
@@ -505,9 +517,9 @@ namespace utility {
 
     bool Message::setMessage( unsigned char* message, unsigned int len  ){
 
-        if( !message || len == 0 ){
+        if( !message || len < 1 ){
 
-            verbose<<"--> [Message][setMessage] Error invalid arguments. Operation Aborter"<<'\n';
+            verbose<<"--> [Message][setMessage] Error invalid arguments. Operation aborted"<<'\n';
             return false;
 
         }
@@ -515,30 +527,23 @@ namespace utility {
         if( this->message )
             delete[] this->message;
 
-        this->message = nullptr;
         this->message_size = len;
 
-        this->message = new unsigned char[ this->message_size ];
-        if( this->message ) {
+        try {
 
-            vverbose<<"--> [Message][setMessage] Set of Message Completed"<<'\n';
-            myCopy( this->message, message, this->message_size );
+            this->message = new unsigned char[this->message_size];
+            myCopy(this->message, message, this->message_size);
+            vverbose << "--> [Message][setMessage] Set of Message Completed" << '\n';
             return true;
 
-        }else{
+        }catch( bad_alloc e ){
 
             verbose << "--> [Message][setMessage] Error during allocation of memory. Operation Aborted" << '\n';
             this->message_size = 0;
+            this->message = nullptr;
             return false;
 
         }
-
-    }
-
-    void Message::myCopy( unsigned char* dest, unsigned char* source, int len ){
-
-        for( int a = 0; a<len;a++ )
-            dest[a] = source[a];
 
     }
 
@@ -582,44 +587,28 @@ namespace utility {
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
 
-    MessageType Message::getMessageType(){
+    MessageType Message::getMessageType(){ return this->messageType; }
 
-        return this->messageType;
+    string Message::getUsername(){ return this->username; }
 
-    }
+    string Message::getAdversary_1(){ return this->adv_username_1; }
 
-    string Message::getUsername(){
-
-        return this->username;
-
-    }
-
-    string Message::getAdversary_1(){
-
-        return this->adv_username_1;
-
-    }
-
-    string Message::getAdversary_2(){
-
-        return this->adv_username_2;
-
-    }
+    string Message::getAdversary_2(){ return this->adv_username_2; }
 
     int* Message::getNonce(){
 
-        if( !this->nonce) return nullptr;
+        if( !this->nonce ) return nullptr;
 
-        int *ret = new int();
-        if( !ret ){
+        try{
+
+            return new int( *(this->nonce));
+
+        }catch( bad_alloc e ){
 
             verbose<<"--> [Message][getNonce] Error during allocation of memory. Operation Aborted"<<'\n';
             return nullptr;
 
         }
-        *ret = *(this->nonce);
-
-        return ret;
 
     }
 
@@ -627,16 +616,16 @@ namespace utility {
 
         if( !this->current_token ) return nullptr;
 
-        int *ret = new int();
-        if( !ret ){
+        try {
+
+            return new int( *(this->current_token));
+
+        }catch( bad_alloc e ){
 
             verbose<<"--> [Message][getCurrentToken] Error during allocation of memory. Operation Aborted"<<'\n';
             return nullptr;
 
         }
-        *ret = *(this->current_token);
-
-        return ret;
 
     }
 
@@ -644,26 +633,40 @@ namespace utility {
 
         if( !this->port ) return nullptr;
 
-        int *ret = new int();
-        if( !ret ){
+        try{
+
+            return new int( *(this->port));
+
+        }catch( bad_alloc e ){
 
             verbose<<"--> [Message][getPort] Error during allocation of memory. Operation Aborted"<<'\n';
             return nullptr;
 
         }
-        *ret = *(this->port);
-
-        return ret;
 
     }
 
     unsigned char* Message::getUserList(){
 
-        return this->user_list;
+        if( !this->user_list || this->user_list_len < 1 ) return nullptr;
+
+        try{
+
+            unsigned char* ret = new unsigned char[ this->user_list_len ];
+            myCopy( ret, this->user_list, this->user_list_len );
+            return ret;
+
+        }catch( bad_alloc e ){
+
+            return nullptr;
+
+        }
 
     }
 
     unsigned int Message::getUserListLen() {
+
+        if( this->user_list_len < 0 ) return 0;
 
         return this->user_list_len;
 
@@ -671,11 +674,25 @@ namespace utility {
 
     unsigned char* Message::getRankList(){
 
-        return this->rank_list;
+        if( !this->rank_list || this->rank_list_len < 1 ) return nullptr;
+
+        try{
+
+            unsigned char* ret = new unsigned char[ this->rank_list_len ];
+            myCopy( ret, this->rank_list, this->rank_list_len );
+            return ret;
+
+        }catch( bad_alloc e ){
+
+            return nullptr;
+
+        }
 
     }
 
     unsigned int Message::getRankListLen() {
+
+        if( this->rank_list_len < 0 ) return 0;
 
         return this->rank_list_len;
 
@@ -683,22 +700,25 @@ namespace utility {
 
     unsigned char*  Message::getServerCertificate(){
 
-        if( !this->server_certificate || !this->certificate_len ) return nullptr;
+        if( !this->server_certificate || this->certificate_len < 1 ) return nullptr;
 
-        unsigned char* ret = new unsigned char[certificate_len];
-        if( !ret ){
+        try{
 
-            verbose<<"--> [Message][getServerCertificate] Error during allocation of memory. Operation Aborted"<<'\n';
+            unsigned char* ret = new unsigned char[ this->certificate_len ];
+            myCopy( ret, this->server_certificate, this->certificate_len );
+            return ret;
+
+        }catch( bad_alloc e ){
+
             return nullptr;
 
         }
-        myCopy( ret, this->server_certificate, this->certificate_len );
-
-        return ret;
 
     }
 
     unsigned int Message::getServerCertificateLength(){
+
+        if( this->certificate_len < 0 ) return 0;
 
         return this->certificate_len;
 
@@ -706,22 +726,25 @@ namespace utility {
 
     unsigned char* Message::getPubKey(){
 
-        if( !this->pub_Key || !this->pub_key_len ) return nullptr;
+        if( !this->pub_Key || this->pub_key_len < 1 ) return nullptr;
 
-        unsigned char* ret = new unsigned char[pub_key_len];
-        if( !ret ){
+        try{
 
-            verbose<<"--> [Message][getPubKey] Error during allocation of memory. Operation Aborted"<<'\n';
+            unsigned char* ret = new unsigned char[ this->pub_key_len ];
+            myCopy( ret, this->pub_Key, this->pub_key_len );
+            return ret;
+
+        }catch( bad_alloc e ){
+
             return nullptr;
 
         }
-        myCopy(  ret,  this->pub_Key, this->pub_key_len );
-
-        return ret;
 
     }
 
     unsigned int Message::getPubKeyLength(){
+
+        if( this->pub_key_len < 0 ) return 0;
 
         return this->pub_key_len;
 
@@ -729,22 +752,25 @@ namespace utility {
 
     unsigned char* Message::getNetInformations(){
 
-        if( !this->net_informations || !this->net_informations_len ) return nullptr;
+        if( !this->net_informations || this->net_informations_len < 1 ) return nullptr;
 
-        unsigned char* ret = new unsigned char[net_informations_len];
-        if( !ret ){
+        try{
 
-            verbose<<"--> [Message][getNetInformations] Error during allocation of memory. Operation Aborted"<<'\n';
+            unsigned char* ret = new unsigned char[ this->net_informations_len ];
+            myCopy( ret, this->net_informations, this->net_informations_len );
+            return ret;
+
+        }catch( bad_alloc e ){
+
             return nullptr;
 
         }
-        myCopy( ret, this->net_informations, this->net_informations_len );
-
-        return ret;
 
     }
 
     unsigned int Message::getNetInformationsLength(){
+
+        if( this->net_informations_len < 0 ) return 0;
 
         return this->net_informations_len;
 
@@ -752,22 +778,25 @@ namespace utility {
 
     unsigned char* Message::getChosenColumn(){
 
-        if( !this->chosen_column || !this->chosen_column_size ) return nullptr;
+        if( !this->chosen_column || this->chosen_column_size < 1 ) return nullptr;
 
-        unsigned char* ret = new unsigned char[chosen_column_size];
-        if( !ret ){
+        try{
 
-            verbose<<"--> [Message][getChosenColumn] Error during allocation of memory. Operation Aborted"<<'\n';
+            unsigned char* ret = new unsigned char[ this->chosen_column_size ];
+            myCopy( ret, this->chosen_column, this->chosen_column_size );
+            return ret;
+
+        }catch( bad_alloc e ){
+
             return nullptr;
 
         }
-        myCopy(  ret, this->chosen_column, this->chosen_column_size );
-
-        return ret;
 
     }
 
     unsigned int Message::getChosenColumnLength(){
+
+        if( this->chosen_column_size < 0 ) return 0;
 
         return this->chosen_column_size;
 
@@ -775,22 +804,25 @@ namespace utility {
 
     unsigned char* Message::getMessage(){
 
-        if( !this->message || !this->message_size ) return nullptr;
+        if( !this->message || this->message_size < 1 ) return nullptr;
 
-        unsigned char* ret = new unsigned char[message_size];
-        if( !ret ){
+        try{
 
-            verbose<<"--> [Message][getMessage] Error during allocation of memory. Operation Aborted"<<'\n';
+            unsigned char* ret = new unsigned char[ this->message_size ];
+            myCopy( ret, this->message, this->message_size );
+            return ret;
+
+        }catch( bad_alloc e ){
+
             return nullptr;
 
         }
-        myCopy( ret, this->message, this->message_size );
-
-        return ret;
 
     }
 
     unsigned int Message::getMessageLength(){
+
+        if( this->message_size < 0 ) return 0;
 
         return this->message_size;
 
@@ -798,22 +830,25 @@ namespace utility {
 
     unsigned char* Message::getDHkey(){
 
-        if( !this->DH_key || !this->dh_key_len ) return nullptr;
+        if( !this->DH_key || this->dh_key_len < 1 ) return nullptr;
 
-        unsigned char* ret = new unsigned char[dh_key_len];
-        if( !ret ){
+        try{
 
-            verbose<<"--> [Message][getDHkey] Error during allocation of memory. Operation Aborted"<<'\n';
+            unsigned char* ret = new unsigned char[ this->dh_key_len ];
+            myCopy( ret, this->DH_key, this->dh_key_len );
+            return ret;
+
+        }catch( bad_alloc e ){
+
             return nullptr;
 
         }
-        myCopy(  ret,  this->DH_key, this->dh_key_len );
-
-        return ret;
 
     }
 
     unsigned int Message::getDHkeyLength(){
+
+        if( this->dh_key_len < 0 ) return 0;
 
         return this->dh_key_len;
 
@@ -821,22 +856,25 @@ namespace utility {
 
     unsigned char* Message::getSignature(){
 
-        if( !this->signature || !this->signature_len ) return nullptr;
+        if( !this->signature || this->signature_len < 1 ) return nullptr;
 
-        unsigned char* ret = new unsigned char[signature_len];
-        if( !ret ){
+        try{
 
-            verbose<<"--> [Message][getSignature] Error during allocation of memory. Operation Aborted"<<'\n';
+            unsigned char* ret = new unsigned char[ this->signature_len];
+            myCopy( ret, this->signature, this->signature_len );
+            return ret;
+
+        }catch( bad_alloc e ){
+
             return nullptr;
 
         }
-        myCopy( ret, this->signature, this->signature_len );
-
-        return ret;
 
     }
 
     unsigned int Message::getSignatureLen(){
+
+        if( this->signature_len < 0 ) return 0;
 
         return this->signature_len;
 
@@ -844,24 +882,47 @@ namespace utility {
 
     unsigned char* Message::getSignatureAES(){
 
-        if( !this->signature_2 || !this->signature_2_len ) return nullptr;
+        if( !this->signature_2 || this->signature_2_len < 1 ) return nullptr;
 
-        unsigned char* ret = new unsigned char[signature_2_len];
-        if( !ret ){
+        try{
 
-            verbose<<"--> [Message][getSignature] Error during allocation of memory. Operation Aborted"<<'\n';
+            unsigned char* ret = new unsigned char[ this->signature_2_len];
+            myCopy( ret, this->signature_2, this->signature_2_len );
+            return ret;
+
+        }catch( bad_alloc e ){
+
             return nullptr;
 
         }
-        myCopy( ret, this->signature_2, this->signature_2_len );
-
-        return ret;
 
     }
 
     unsigned int Message::getSignatureAESLen(){
 
+        if( this->signature_2_len < 0 ) return 0;
+
         return this->signature_2_len;
+
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    //                                                                                           //
+    //                                    UTILITY FUNCTIONS                                      //
+    //                                                                                           //
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    void Message::myCopy( unsigned char* dest, unsigned char* source, int len ){
+
+        if( len < 0 || !dest || !source ){
+
+            verbose<<"--> [Message][myCopy] Error invalid arguments. Operation aborted"<<'\n';
+            return;
+
+        }
+
+        for( int a = 0; a<len;a++ )
+            dest[a] = source[a];
 
     }
 

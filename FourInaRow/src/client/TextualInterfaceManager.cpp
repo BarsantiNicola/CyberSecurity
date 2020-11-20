@@ -222,7 +222,7 @@ namespace client{
 
 	void TextualInterfaceManager::printLoginInterface(){
 
-        	execCommand( CLEAR );
+        execCommand( CLEAR );
 		this->printColoredLogin();
 		cout.flush();
 
