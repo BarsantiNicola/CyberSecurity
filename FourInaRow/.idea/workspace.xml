@@ -28,11 +28,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4cbb8ddf-e807-44fa-ae33-bda27674b47b" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/client/TextualInterfaceManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/TextualInterfaceManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utility/Converter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/utility/Converter.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utility/Converter.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/utility/Converter.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utility/Message.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/utility/Message.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/client/data/main_art.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/data/main_art.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -192,7 +188,7 @@
       <workItem from="1605778222474" duration="676000" />
       <workItem from="1605800883833" duration="11803000" />
       <workItem from="1605868085035" duration="6246000" />
-      <workItem from="1605880758162" duration="5482000" />
+      <workItem from="1605880758162" duration="5955000" />
     </task>
     <servers />
   </component>
