@@ -3,11 +3,13 @@
 
 namespace cipher{
 
+
     CipherServer::CipherServer(){
 
         this->rsa = new CipherRSA("server", "serverPassword", true );
         this->dh  = new CipherDH();
         this->aes = new CipherAES();
+
         if( !this->rsa || !this->dh || !this->aes ){
 
             verbose<<"-->[CipherServer][Costructor] Fatal error, unable to load cipher suites"<<'\n';
@@ -18,22 +20,25 @@ namespace cipher{
     }
 
     CipherServer::~CipherServer(){
-        delete this->rsa;
-        delete this->dh;
-        delete this->aes;
+
+        if( this->rsa ) delete this->rsa;
+        if( this->dh )  delete this->dh;
+        if( this->aes ) delete this->aes;
+
     }
 
+    //  the function convert a message into the secure domain. Basing on the type of message it applies RSA methods to generate
+    //  a signature or by AES-256 GCM creates a signature and encrypts the needed fields of the message.
     bool CipherServer::toSecureForm( Message* message , SessionKey* key ){
 
-        if( message == nullptr ){
+        if( !message ){
 
-            verbose<<"-->[CipherServer][toSecureForm] Error, null pointer message"<<'\n';
+            verbose<<"-->[CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
             return false;
 
         }
 
         Message* app;
-        unsigned char* net;
         switch( message->getMessageType()){
 
             case CERTIFICATE:
@@ -61,25 +66,47 @@ namespace cipher{
                 break;
 
             case RANK_LIST:
-                if( !key ) return false;
 
-                this->aes->modifyParam( key );
-                app = this->aes->encryptMessage(*message);
-                if( app == nullptr )
+                if( !key ){
+
+                    verbose<<"-->[CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
 
+                }
+
+                if( !this->aes->modifyParam( key )) return false;
+
+                app = this->aes->encryptMessage(*message);
+                if( !app ){
+
+                    verbose<<"-->[CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
+                    return false;
+
+                }
+
                 message->setSignature( app->getSignature(), app->getSignatureLen() );
-                message->setRankList( app->getRankList(), app->getRankListLen() );
+                message->setRankList(  app->getRankList(), app->getRankListLen() );
                 delete app;
                 break;
 
             case USER_LIST:
-                if( !key ) return false;
 
-                this->aes->modifyParam( key );
-                app = this->aes->encryptMessage(*message);
-                if( app == nullptr )
+                if( !key ){
+
+                    verbose<<"-->[CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
+
+                }
+
+                if( !this->aes->modifyParam( key )) return false;
+
+                app = this->aes->encryptMessage(*message);
+                if( !app ){
+
+                    verbose<<"-->[CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
+                    return false;
+
+                }
 
                 message->setSignature( app->getSignature(), app->getSignatureLen() );
                 message->setUserList( app->getUserList(), app->getUserListLen() );
@@ -89,12 +116,22 @@ namespace cipher{
 
             case MATCH:
 
-                if( !key ) return false;
+                if( !key ){
 
-                this->aes->modifyParam( key );
-                app = this->aes->encryptMessage(*message);
-                if( app == nullptr )
+                    verbose<<"-->[CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
+
+                }
+
+                if( !this->aes->modifyParam( key )) return false;
+
+                app = this->aes->encryptMessage(*message);
+                if( !app ){
+
+                    verbose<<"-->[CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
+                    return false;
+
+                }
 
                 message->setSignature( app->getSignature(), app->getSignatureLen() );
                 delete app;
@@ -103,12 +140,22 @@ namespace cipher{
 
             case GAME_PARAM:
 
-                if( !key ) return false;
+                if( !key ){
 
-                this->aes->modifyParam( key );
-                app = this->aes->encryptMessage(*message);
-                if( app == nullptr )
+                    verbose<<"-->[CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
+
+                }
+
+                if( !this->aes->modifyParam( key )) return false;
+
+                app = this->aes->encryptMessage(*message);
+                if( !app ){
+
+                    verbose<<"-->[CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
+                    return false;
+
+                }
 
                 message->setNetInformations( app->getNetInformations(), app->getNetInformationsLength());
                 message->setSignature( app->getSignature(), app->getSignatureLen() );
@@ -118,12 +165,22 @@ namespace cipher{
 
             case ACCEPT:
 
-                if( !key ) return false;
+                if( !key ){
 
-                this->aes->modifyParam( key );
-                app = this->aes->encryptMessage(*message);
-                if( app == nullptr )
+                    verbose<<"-->[CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
+
+                }
+
+                if( !this->aes->modifyParam( key )) return false;
+
+                app = this->aes->encryptMessage(*message);
+                if( !app ){
+
+                    verbose<<"-->[CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
+                    return false;
+
+                }
 
                 message->setSignature( app->getSignature(), app->getSignatureLen() );
                 delete app;
@@ -132,12 +189,22 @@ namespace cipher{
 
             case REJECT:
 
-                if( !key ) return false;
+                if( !key ){
 
-                this->aes->modifyParam( key );
-                app = this->aes->encryptMessage(*message);
-                if( app == nullptr )
+                    verbose<<"-->[CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
+
+                }
+
+                if( !this->aes->modifyParam( key )) return false;
+
+                app = this->aes->encryptMessage(*message);
+                if( !app ){
+
+                    verbose<<"-->[CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
+                    return false;
+
+                }
 
                 message->setSignature( app->getSignature(), app->getSignatureLen() );
                 delete app;
@@ -147,14 +214,21 @@ namespace cipher{
             case WITHDRAW_REQ:
 
                 if( !key ){
-                  verbose<<"-->[CipherServer][toSecureForm] key is nullptr"<<'\n';
-                  return false;
+
+                    verbose<<"-->[CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    return false;
+
                 }
 
-                this->aes->modifyParam( key );
+                if( !this->aes->modifyParam( key )) return false;
+
                 app = this->aes->encryptMessage(*message);
-                if( app == nullptr )
+                if( !app ){
+
+                    verbose<<"-->[CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
                     return false;
+
+                }
 
                 message->setSignature( app->getSignature(), app->getSignatureLen() );
                 delete app;
@@ -164,15 +238,22 @@ namespace cipher{
             case WITHDRAW_OK:
 
                 if( !key ){
-                  verbose<<"-->[CipherServer][toSecureForm] key is nullptr"<<'\n';
-                  return false;
-                }
-                this->aes->modifyParam( key );
-                app = this->aes->encryptMessage(*message);
-                if( app == nullptr ){
-                    verbose<<"-->[CipherServer][toSecureForm] Error, to autenticate WITHDRAW_OK with AES"<<'\n';
+
+                    verbose<<"-->[CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
+
                 }
+
+                if( !this->aes->modifyParam( key )) return false;
+
+                app = this->aes->encryptMessage(*message);
+                if( !app ){
+
+                    verbose<<"-->[CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
+                    return false;
+
+                }
+
                 message->setSignature( app->getSignature(), app->getSignatureLen() );
                 delete app;
 
@@ -180,12 +261,22 @@ namespace cipher{
 
             case DISCONNECT:
 
-                if( !key ) return false;
+                if( !key ){
 
-                this->aes->modifyParam( key );
-                app = this->aes->encryptMessage(*message);
-                if( app == nullptr )
+                    verbose<<"-->[CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
+
+                }
+
+                if( !this->aes->modifyParam( key )) return false;
+
+                app = this->aes->encryptMessage(*message);
+                if( !app ){
+
+                    verbose<<"-->[CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
+                    return false;
+
+                }
 
                 message->setSignature( app->getSignature(), app->getSignatureLen() );
                 delete app;
@@ -194,12 +285,23 @@ namespace cipher{
 
             case LOGOUT_OK:
 
-                if( !key ) return false;
-                this->aes->modifyParam( key );
-                app = this->aes->encryptMessage(*message);
-                if( app == nullptr ) {
+                if( !key ){
+
+                    verbose<<"-->[CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
+
                 }
+
+                if( !this->aes->modifyParam( key )) return false;
+
+                app = this->aes->encryptMessage(*message);
+                if( !app ){
+
+                    verbose<<"-->[CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
+                    return false;
+
+                }
+
                 message->setSignature( app->getSignature(), app->getSignatureLen() );
                 delete app;
 
@@ -212,23 +314,30 @@ namespace cipher{
                 break;
                 
             case GAME:
-		if( !this->rsa->sign(message))
-		    return false;
-		break;
+
+                if( !this->rsa->sign(message))
+		            return false;
+		        break;
 		
             default:
+
                 verbose<<"--> [CipherServer][toSecureForm] Error, messageType not supported:"<<message->getMessageType()<<'\n';
                 return false;
+
         }
+
         verbose<<"--> [CipherServer][toSecureForm]returning true for message type:"<<message->getMessageType()<<'\n';
         return true;
 
     }
+
+    //  the function convert a message from the secure domain. Basing on the type of message it uses RSA'methods to validate the message'
+    //  signature or by AES-256 GCM decrypts the needed fields and validate the message signature.
     bool CipherServer::fromSecureForm( Message* message , string username , SessionKey* key ){
 
         if( !message ){
 
-            verbose<<"-->[CipherServer][fromSecureForm] Error, null pointer message"<<'\n';
+            verbose<<"-->[CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
             return false;
 
         }
@@ -245,116 +354,166 @@ namespace cipher{
 
             case KEY_EXCHANGE:
 
-                return this->rsa->serverVerifySignature(*message, username);
+                return this->rsa->serverVerifySignature( *message, username );
 
             case USER_LIST_REQ:
-                if( !key ) return false;
+
+                if( !key ){
+
+                    verbose<<"-->[CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    return false;
+
+                }
 
                 this->aes->modifyParam( key );
                 app = this->aes->decryptMessage( *message );
 
                 if( !app ) return false;
-                message->setUserList( app->getUserList(), app->getUserListLen() );
                 delete app;
+
                 break;
 
             case RANK_LIST_REQ:
-                if( !key ) return false;
+
+                if( !key ){
+
+                    verbose<<"-->[CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    return false;
+
+                }
 
                 this->aes->modifyParam( key );
                 app = this->aes->decryptMessage( *message );
 
                 if( !app ) return false;
-                message->setUserList( app->getRankList(), app->getRankListLen() );
                 delete app;
+
                 break;
 
             case MATCH:
-                if( !key ) return false;
+
+                if( !key ){
+
+                    verbose<<"-->[CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    return false;
+
+                }
 
                 this->aes->modifyParam( key );
                 app = this->aes->decryptMessage( *message );
 
                 if( !app ) return false;
                 delete app;
+
                 break;
 
             case ACCEPT:
-                if( !key ) return false;
+
+                if( !key ){
+
+                    verbose<<"-->[CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    return false;
+
+                }
 
                 this->aes->modifyParam( key );
                 app = this->aes->decryptMessage( *message );
 
                 if( !app ) return false;
-
                 delete app;
+
                 break;
 
             case REJECT:
-                if( !key ) return false;
+
+                if( !key ){
+
+                    verbose<<"-->[CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    return false;
+
+                }
 
                 this->aes->modifyParam( key );
                 app = this->aes->decryptMessage( *message );
 
                 if( !app ) return false;
-
                 delete app;
+
                 break;
 
             case LOGOUT_REQ:
-                if( !key ) return false;
+
+                if( !key ){
+
+                    verbose<<"-->[CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    return false;
+
+                }
 
                 this->aes->modifyParam( key );
                 app = this->aes->decryptMessage( *message );
 
-                if( !app ){
-
-                    return false;
-                }
+                if( !app ) return false;
                 delete app;
+
                 break;
 
             case DISCONNECT:
-                if( !key ) return false;
+
+                if( !key ){
+
+                    verbose<<"-->[CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    return false;
+
+                }
 
                 this->aes->modifyParam( key );
                 app = this->aes->decryptMessage( *message );
 
-                if( !app ){
-
-                    return false;
-                }
+                if( !app ) return false;
                 delete app;
+
                 break;
 
             case WITHDRAW_REQ:
-                if( !key ) return false;
 
-                this->aes->modifyParam( key );
-                app = this->aes->decryptMessage( *message );
+                if( !key ){
 
-                if( !app ){
-
+                    verbose<<"-->[CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
+
                 }
-                delete app;
-                break;
-            case GAME:
-                if( !key ) return false;
 
                 this->aes->modifyParam( key );
                 app = this->aes->decryptMessage( *message );
 
-                if( !app )
+                if( !app ) return false;
+                delete app;
+
+                break;
+
+            case GAME:
+
+                if( !key ){
+
+                    verbose<<"-->[CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
 
+                }
+
+                this->aes->modifyParam( key );
+                app = this->aes->decryptMessage( *message );
+
+                if( !app )return false;
                 message->setChosenColumn(app->getChosenColumn(), app->getChosenColumnLength());
+                delete app;
 
                 return this->rsa->serverVerifySignature(*app, username );
                 
             default:
-                verbose<<"--> [CipherServer][fromSecureForm] Error, MessageType not supported:"<<message->getMessageType()<<'\n';
 
+                verbose<<"--> [CipherServer][fromSecureForm] Error, MessageType not supported:"<<message->getMessageType()<<'\n';
+                return false;
 
         }
 
@@ -362,27 +521,40 @@ namespace cipher{
 
     }
 
+    //  it gives the server certificate extracting it from the file-system
     NetMessage* CipherServer::getServerCertificate(){
 
         return this->rsa->getServerCertificate();
 
     }
 
-    SessionKey* CipherServer::getSessionKey( unsigned char* param , unsigned int paramLen ){
-
-        return this->dh->generateSessionKey( param , paramLen );
-
-    }
-
+    //  used to start the diffie-hellman algorithm to create the parameter to be send to the other end-point
     NetMessage* CipherServer::getPartialKey(){
 
         return this->dh->generatePartialKey();
 
     }
 
+    //  used at the end of the diffie-hellman algorithm to generate a session key for AES-256 GCM
+    SessionKey* CipherServer::getSessionKey( unsigned char* param , unsigned int paramLen ){
+
+        return this->dh->generateSessionKey( param , paramLen );
+
+    }
+
+    //  the function extract the RSA public key of the given username then compact it in a form that can be inserted into a Message
     NetMessage* CipherServer::getPubKey( string username ){
 
+        std::ifstream pubKeyRead;
         EVP_PKEY* key = this->rsa->getUserKey( username );
+        NetMessage* message;
+
+        if( !key ){
+
+            verbose<<"-->[CipherServer][getPubKey] Error, unable to find the user key"<<'\n';
+            return nullptr;
+
+        }
 
         string path = "data/temp/";
         path.append(username);
@@ -398,12 +570,15 @@ namespace cipher{
 
         PEM_write_PUBKEY(f, key );
         fclose(f);
+        EVP_PKEY_free( key );
 
-        std::ifstream pubKeyRead;
         pubKeyRead.open(path.c_str() );
         if( !pubKeyRead ){
+
+            remove( path.c_str() );
             verbose<<"--> [CipherServer][getPubKey] Fatal Error. Unable to find: "<<path<<'\n';
             return nullptr;
+
         }
 
         pubKeyRead.seekg( 0, std::ios::end );
@@ -411,19 +586,29 @@ namespace cipher{
 
         unsigned char* pubKey;
         pubKeyRead.seekg( 0, std::ios::beg );
-        pubKey = new unsigned char[ len ];
-        if( !pubKey ){
+
+        try {
+
+            pubKey = new unsigned char[len];
+
+            pubKeyRead.read( (char*)pubKey, len);
+            pubKeyRead.close();
+            remove( path.c_str() );
+
+            message = new NetMessage( pubKey, len);
+
+            delete[] pubKey;
+            return message;
+
+        }catch( bad_alloc e ){
+
             verbose<<"--> [CipherServer][getPubKey] Fatal error. Unable to allocate memory"<<'\n';
             pubKeyRead.close();
+            remove( path.c_str() );
             return nullptr;
+
         }
-        pubKeyRead.read( (char*)pubKey, len);
-        pubKeyRead.close();
-        remove( path.c_str() );
 
-        return new NetMessage( pubKey, len);
     }
-
-
 
 }

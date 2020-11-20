@@ -10,7 +10,9 @@ namespace cipher{
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     CipherDH::CipherDH() {
+
        this->ephemeralKey = nullptr;
+
     }
 
     CipherDH::~CipherDH(){
@@ -29,29 +31,62 @@ namespace cipher{
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     //  the function apply an hash on the given string and generate a set of parameters for AES encryption
-    SessionKey* CipherDH::generateKeys(unsigned char *value, int len) {
+    SessionKey* CipherDH::generateKeys( unsigned char *value, int len ) {
+
+        if( !value || len <1 ){
+
+            verbose<<"--> [CipherDH][generateKeys] Invalid arguments, operation aborted"<<'\n';
+            return nullptr;
+
+        }
+
         vverbose<<"--> [CipherDH][generateKeys] Generation of session parameters"<<'\n';
         unsigned char* hashed;
-        unsigned char* sessionKey = new unsigned char[32];
-        unsigned char* iv = new unsigned char[16];
-        unsigned char* seed = new unsigned char[16];
-        unsigned char* splittedValue = new unsigned char[128];
+        unsigned char* sessionKey = nullptr;
+        unsigned char* iv = nullptr;
+        unsigned char* seed = nullptr;
+        unsigned char* splittedValue = nullptr;
+
+        try{
+
+            sessionKey = new unsigned char[32];
+            iv = new unsigned char[16];
+            seed = new unsigned char[16];
+            splittedValue = new unsigned char[128];
+
+        }catch( bad_alloc e ){
+
+            verbose<<"--> [CipherDH][generateKeys] Invalid arguments, operation aborted"<<'\n';
+            if( !sessionKey ) delete[] sessionKey;
+            if( !iv ) delete[] iv;
+            if( !seed ) delete[] seed;
+            if( !splittedValue ) delete[] splittedValue;
+            return nullptr;
+
+        }
 
         for( int a = 0; a<2; a++ ){
+
             for( int b = 0; b<128; b++ )
                 splittedValue[b] = value[ a*128+b];
+
             hashed = CipherHASH::hashFunction( splittedValue, 128 );
+
             if( a )
                 for( int b = 0; b<16;b++) {
+
                     iv[b] = hashed[b];
                     seed[b] = hashed[16 + b];
+
                 }
             else
                 for (int b = 0; b < 32; b++)
                     sessionKey[b] = hashed[b];
 
             delete[] hashed;
+
         }
+
         delete[] splittedValue;
 
         SessionKey* ret = new SessionKey;
@@ -61,12 +96,14 @@ namespace cipher{
         ret->ivLen = 16;
         ret->seed = seed;
         ret->seedLen = 16;
+
         vverbose<<"--> [CipherDH][generateKeys] Session parameters correctly created"<<'\n';
         return ret;
+
     }
 
-    DH* CipherDH::get_dh2048_auto()
-    {
+    DH* CipherDH::get_dh2048_auto(){
+
         static unsigned char dhp_2048[] = {
                 0xF9, 0xEA, 0x2A, 0x73, 0x80, 0x26, 0x19, 0xE4, 0x9F, 0x4B,
                 0x88, 0xCB, 0xBF, 0x49, 0x08, 0x60, 0xC5, 0xBE, 0x41, 0x42,
@@ -95,16 +132,20 @@ namespace cipher{
                 0x4F, 0x56, 0x5B, 0x16, 0xE8, 0x59, 0x79, 0x81, 0x90, 0x7D,
                 0x7C, 0x75, 0x55, 0xB8, 0x50, 0x63
         };
+
         static unsigned char dhg_2048[] = {
                 0x02
         };
+
         DH *dh = DH_new();
         BIGNUM *p, *g;
 
         if (dh == NULL)
             return NULL;
+
         p = BN_bin2bn(dhp_2048, sizeof(dhp_2048), NULL);
         g = BN_bin2bn(dhg_2048, sizeof(dhg_2048), NULL);
+
         if (p == NULL || g == NULL
             || !DH_set0_pqg(dh, p, NULL, g)) {
             DH_free(dh);
@@ -112,7 +153,9 @@ namespace cipher{
             BN_free(g);
             return NULL;
         }
+
         return dh;
+
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -143,87 +186,119 @@ namespace cipher{
         }
 
         DH* temp = get_dh2048_auto();
-        if(1 != EVP_PKEY_set1_DH(params,temp)){
+        if( 1 != EVP_PKEY_set1_DH( params, temp ) ){
 
             verbose<<"--> [CipherDH][generatePartialKey] Error, during the merging of diffie-hellman parameters"<<'\n';
-            EVP_PKEY_free(params);
+            EVP_PKEY_free( params );
             return nullptr;
 
         }
-        DH_free(temp);
+        DH_free( temp );
 
         EVP_PKEY_CTX *DHctx;
-        if(!(DHctx = EVP_PKEY_CTX_new(params, NULL))){
+        if( !( DHctx = EVP_PKEY_CTX_new( params, nullptr ))){
 
             verbose<<"--> [CipherDH][generatePartialKey] Error, during the creation of diffie-hellman context"<<'\n';
-            EVP_PKEY_free(params);
+            EVP_PKEY_free( params );
             return nullptr;
 
         }
 
-        EVP_PKEY_free(params);
+        EVP_PKEY_free( params );
 
-        if(1 != EVP_PKEY_keygen_init(DHctx)){
+        if( 1 != EVP_PKEY_keygen_init(DHctx) ){
+
             verbose<<"--> [CipherDH][generatePartialKey] Error, during the initialization of diffie-hellman parameters"<<'\n';
-            EVP_PKEY_CTX_free(DHctx);
+            EVP_PKEY_CTX_free( DHctx );
             return nullptr;
+
         }
-        if(1 != EVP_PKEY_keygen(DHctx, &(this->ephemeralKey))){
+
+        if( 1 != EVP_PKEY_keygen( DHctx, &( this->ephemeralKey )) ){
+
             verbose<<"--> [CipherDH][generatePartialKey] Error, during the generation of the ephemeral key"<<'\n';
-            EVP_PKEY_CTX_free(DHctx);
+            EVP_PKEY_CTX_free( DHctx );
             return nullptr;
+
         }
         vverbose<<"--> [CipherDH][generatePartialKey] Exporting of generated public key"<<'\n';
 
         string file = "data/temp/param.pem";
         FILE* pubStore = fopen( file.c_str(),"w+");
         if( !pubStore ){
+
             verbose<<"-->[CipherDH][generatePartialKey] Error, unable to extract diffie-hellman partial key"<<'\n';
-            EVP_PKEY_free(this->ephemeralKey);
+            EVP_PKEY_free( this->ephemeralKey );
             this->ephemeralKey = nullptr;
-            EVP_PKEY_CTX_free(DHctx);
+            EVP_PKEY_CTX_free( DHctx );
             return nullptr;
+
         }
 
         if( PEM_write_PUBKEY( pubStore , this->ephemeralKey ) != 1 ){
+
             verbose<<"-->[CipherDH][generatePartialKey] Error, unable to store diffie-hellman partial key"<<'\n';
-            fclose(pubStore);
-            EVP_PKEY_free(this->ephemeralKey);
+            fclose( pubStore );
+            remove( file.c_str() );
+            EVP_PKEY_free( this->ephemeralKey );
             this->ephemeralKey = nullptr;
-            EVP_PKEY_CTX_free(DHctx);
+            EVP_PKEY_CTX_free( DHctx );
             return nullptr;
+
         }
 
-        fclose(pubStore);
-        EVP_PKEY_CTX_free(DHctx);
+        fclose( pubStore );
+        EVP_PKEY_CTX_free( DHctx );
         std::ifstream paramRead;
-        paramRead.open(file.c_str());
+        paramRead.open( file.c_str() );
 
         if( !paramRead ){
+
             verbose<<"-->[CipherDH][generatePartialKey] Error, unable to load diffie-hellman partial key"<<'\n';
             EVP_PKEY_free(this->ephemeralKey);
             this->ephemeralKey = nullptr;
+            remove( file.c_str() );
             return nullptr;
+
         }
 
         paramRead.seekg( 0, std::ios::end );
         int len = paramRead.tellg();
         paramRead.seekg( 0, std::ios::beg );
-        unsigned char* param = new unsigned char[len];
+        unsigned char* param;
 
-        if( !param){
+        try{
+
+            param = new unsigned char[len];
+
+        }catch( bad_alloc e ){
+
             verbose<<"--> [CipherDH][generatePartialKey] Fatal error. Unable to allocate memory"<<'\n';
             paramRead.close();
+            remove( file.c_str() );
             EVP_PKEY_free(this->ephemeralKey);
             this->ephemeralKey = nullptr;
             return nullptr;
+
         }
+
         paramRead.read( (char*)param, len );
         paramRead.close();
-        remove(file.c_str() );
+        remove( file.c_str() );
         vverbose<<"-->[CipherDH][generatePartialKey] Partial Diffie-Hellman parameter generated"<<'\n';
 
-        return new NetMessage( param , len );
+        try {
+
+            NetMessage* ret = new NetMessage(param, len);
+            delete[] param;
+            return ret;
+
+        }catch( bad_alloc e ){
+
+            verbose<<"--> [CipherDH][generatePartialKey] Fatal error. Unable to allocate memory"<<'\n';
+            return nullptr;
+
+        }
 
     }
 
@@ -231,10 +306,13 @@ namespace cipher{
     void CipherDH::stash() {
 
         vverbose<<"--> [CipherDH][generatePartialKey] Force removing of DH partial values"<<'\n';
+
         if( this->ephemeralKey ) {
+
             EVP_PKEY_free(this->ephemeralKey);
             this->ephemeralKey = nullptr;
             vverbose<<"--> [CipherDH][generatePartialKey] CipherDH reset completed" <<'\n';
+
         }
 
     }
@@ -243,10 +321,11 @@ namespace cipher{
     //  allow to be used before the generatePartialKey
     SessionKey* CipherDH::generateSessionKey( unsigned char *advKey, int len ) {
 
-
         if( !this->ephemeralKey ){
+
             verbose<<"-->[CipherDH][generateSessionKey]  You must initialize the ephemeral key. Use generatePartialKey() before"<<'\n';
             return nullptr;
+
         }
 
         vverbose<<"--> [CipherDH][generatePartialKey] Starting derivation of keys"<<'\n';
@@ -258,21 +337,25 @@ namespace cipher{
 
         FILE* shared = fopen( file.c_str(), "r" );
         if( !shared ){
+
             verbose<<"-->[CipherDH][generateSessionKey]  Error unable to find the partial key"<<'\n';
             EVP_PKEY_free( this->ephemeralKey );
             this->ephemeralKey = nullptr;
             remove(file.c_str());
             return nullptr;
+
         }
 
         EVP_PKEY* advPublicKey = PEM_read_PUBKEY( shared , nullptr, nullptr, nullptr );
         if( !advPublicKey ){
+
             verbose<<"-->[CipherDH][generateSessionKey]  Error unable to load the partial key"<<'\n';
             fclose(shared);
             remove(file.c_str());
             EVP_PKEY_free( this->ephemeralKey );
             this->ephemeralKey = nullptr;
             return nullptr;
+
         }
 
         fclose(shared);
@@ -280,119 +363,62 @@ namespace cipher{
 
         EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new( this->ephemeralKey , nullptr );
         if( !ctx ){
+
             verbose<<"-->[CipherDH][generateSessionKey]  Error during the allocation of context"<<'\n';
             EVP_PKEY_free( this->ephemeralKey );
             this->ephemeralKey = nullptr;
             return nullptr;
+
         }
 
         if( EVP_PKEY_derive_init(ctx) <= 0){
+
             verbose<<"-->[CipherDH][generateSessionKey]  Error during the preparation of context"<<'\n';
             EVP_PKEY_free( this->ephemeralKey );
             this->ephemeralKey = nullptr;
             return nullptr;
+
         }
 
         if( EVP_PKEY_derive_set_peer( ctx, advPublicKey ) <= 0){
+
             verbose<<"-->[CipherDH][generateSessionKey]  Error during the initialization of context"<<'\n';
             EVP_PKEY_free( this->ephemeralKey );
             this->ephemeralKey = nullptr;
             return nullptr;
+
         }
 
         size_t newLen;
         EVP_PKEY_derive(ctx,nullptr, &newLen);
-        unsigned char* completeKey = new unsigned char[int(newLen)];
+        unsigned char* completeKey;
 
-        if( !completeKey ){
+        try {
+
+            completeKey = new unsigned char[int(newLen)];
+
+        }catch( bad_alloc e ){
+
             verbose<<"-->[CipherDH][generateSessionKey]  Error during the allocation of memory"<<'\n';
             EVP_PKEY_free( this->ephemeralKey );
             this->ephemeralKey = nullptr;
             return nullptr;
+
         }
 
         if( EVP_PKEY_derive(ctx,completeKey,&newLen) <= 0){
+
             verbose<<"-->[CipherDH][generateSessionKey]  Error during the derivation of the key"<<'\n';
             EVP_PKEY_free( this->ephemeralKey );
             this->ephemeralKey = nullptr;
             return nullptr;
+
         };
 
-        EVP_PKEY_free(this->ephemeralKey);
+        EVP_PKEY_free( this->ephemeralKey );
         this->ephemeralKey = nullptr;
         vverbose<<"--> [CipherDH][generateSessionKey] Session keys correctly derived"<<'\n';
         return generateKeys( completeKey, newLen );
-
-    }
-
-    void CipherDH::test(){
-        CipherDH* dh = new CipherDH();
-        CipherDH* dh2 = new CipherDH();
-        CipherRSA* rsa = new CipherRSA( "bob" , "bobPassword" , false );
-        CipherRSA* rsa2 = new CipherRSA( "alice", "alicePassword" , false );
-
-        //  FUNCTIONS FOR TESTING PURPOSE THE USERS HAVE EXCHANGED THEIR PUBLIC KEYS
-        rsa->setAdversaryKey(rsa2->getPubKey());
-        rsa2->setAdversaryKey(rsa->getPubKey());
-
-        NetMessage* net = dh->generatePartialKey();
-        NetMessage* net2 = dh2->generatePartialKey();
-
-        //  bob generate his message and sign it
-        Message* msg = new Message();
-        msg->set_DH_key( net->getMessage() , net->length());
-        msg->setNonce( 5 );
-        msg->setMessageType(KEY_EXCHANGE);
-        rsa->sign( msg );
-
-        //  alice generate his message and sign it
-        Message* msg2 = new Message();
-        msg2->set_DH_key( net2->getMessage() , net2->length());
-        msg2->setNonce( 5 );
-        msg2->setMessageType(KEY_EXCHANGE);
-        rsa2->sign( msg2 );
-
-        delete net;
-        delete net2;
-
-        net = Converter::encodeMessage( KEY_EXCHANGE , *msg );   // BOB
-        net2 = Converter::encodeMessage( KEY_EXCHANGE , *msg2 );  // ALICE
-
-        delete msg;
-        delete msg2;
-
-        //  MESSAGE ARE SENT THROUGHT THE NETWORK
-
-        msg = Converter::decodeMessage(*net);    // BOB
-        msg2 = Converter::decodeMessage(*net2);  // ALICE
-
-        //  verification of signatures
-        rsa->clientVerifySignature( *msg2 , false );   // BOB VERIFY ALICE MESSAGE
-        rsa2->clientVerifySignature( *msg , false );  // ALICE VERIFY BOB MESSAGE
-
-        SessionKey* bob = dh->generateSessionKey( msg2->getDHkey(), msg2->getDHkeyLength());
-        SessionKey* alice = dh2->generateSessionKey( msg->getDHkey(), msg->getDHkeyLength());
-
-        if(!bob || !alice){
-            verbose<<"Error, during the generation of key"<<'\n';
-            return;
-        }
-
-        if( !bob->sessionKeyLen || ! alice->sessionKeyLen ){
-            verbose<<"Error, message not created"<<'\n';
-            return;
-        }
-        if( bob->sessionKeyLen != alice->sessionKeyLen ) {
-            verbose << "Error, lengths don't match" << '\n';
-            return;
-        }
-
-        for( int a= 0; a<bob->sessionKeyLen;a++)
-            if( bob->sessionKey[a] != alice->sessionKey[a] ) {
-                verbose<< "Error, key not matching in position: " << a << '\n';
-                return;
-            }
-        verbose<<"Success"<<'\n';
 
     }
 

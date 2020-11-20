@@ -29,8 +29,10 @@ namespace cipher {
     ///////////////////////////////////////////////////////////////////////////////////////
 
     struct keyStruct{
+
         string username;
         EVP_PKEY* pubKey;
+
     };
 
     class CipherRSA {

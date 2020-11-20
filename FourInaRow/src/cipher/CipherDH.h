@@ -25,7 +25,7 @@ namespace cipher {
 
     ///////////////////////////////////////////////////////////////////////////////////////
     //                                                                                   //
-    //                                   CIPHER_DH                                        //
+    //                                   CIPHER_DH                                       //
     //    The class is in charge of generating session keys. It usage pass throught two  //
     //    phases. The first start with the usage of generatePartialKey() which creates   //
     //    the parameter to exchange with the other peer. Obtained the parameter from the //
@@ -36,8 +36,9 @@ namespace cipher {
     ///////////////////////////////////////////////////////////////////////////////////////
 
     class CipherDH {
+
         private:
-            EVP_PKEY* ephemeralKey = nullptr;
+            EVP_PKEY* ephemeralKey;
             DH* get_dh2048_auto();
             SessionKey* generateKeys( unsigned char* value , int len );
 
@@ -47,7 +48,6 @@ namespace cipher {
             NetMessage* generatePartialKey();                                      //  GENERATE THE PARAMETER TO EXCHANGE
             SessionKey* generateSessionKey( unsigned char *partialKey, int len );  //  GENERATE THE SESSION PARAMETERS
             void stash();                                                          //  ABORT THE CURRENT SESSION PARAM GENERATION
-            static void test();
 
     };
 }
