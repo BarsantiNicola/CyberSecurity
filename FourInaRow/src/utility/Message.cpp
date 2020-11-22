@@ -389,7 +389,7 @@ namespace utility {
 
     bool Message::setSignatureAES( unsigned char* signature , unsigned int len ){
 
-        if( !signature || len < 1 ){
+        if( !signature || len < 0 ){
 
             verbose<<"--> [Message][setSignatureAES] Error invalid arguments. Operation aborted"<<'\n';
             return false;

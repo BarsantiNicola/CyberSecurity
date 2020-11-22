@@ -123,7 +123,7 @@ namespace server {
         if ( !this->clientRegister.has(socket) ) {
 
             verbose << "--> [MainServer][manageMessage] Error, unregistered socket tried to contact the server" << '\n';
-            return this->sendError(string( "Invalid request. Your socket is not registered into the service. Try to restart your application" ), message->getNonce());
+            return this->makeError(string( "Invalid request. Your socket is not registered into the service. Try to restart your application" ), message->getNonce());
 
         }
 
@@ -131,7 +131,7 @@ namespace server {
         if (!this->userRegister.has(socket) && message->getMessageType() != CERTIFICATE_REQ && message->getMessageType() != LOGIN_REQ ){
 
             vverbose << "--> [MainServer][manageMessage] Warning, user not already logged. Invalid request" << '\n';
-            return this->sendError(string( "Invalid request. You have to login to the service before"), message->getNonce());
+            return this->makeError(string( "Invalid request. You have to login to the service before"), message->getNonce());
 
         }
 
@@ -140,7 +140,7 @@ namespace server {
         if (username.empty() && message->getMessageType() != CERTIFICATE_REQ && message->getMessageType() != LOGIN_REQ ) {
 
             vverbose << "--> [MainServer][manageMessage] Error, username not found" << '\n';
-            return this->sendError(string( "Invalid request. You have to login to the service before" ), message->getNonce());
+            return this->makeError(string( "Invalid request. You have to login to the service before" ), message->getNonce());
 
         }
 
@@ -152,7 +152,7 @@ namespace server {
             if ( !nonce ) {
 
                 vverbose << "--> [MainServer][manageMessage] Error, invalid message. Missing Nonce" << '\n';
-                return this->sendError(string("Invalid request. The service requires a nonce"), nonce );
+                return this->makeError(string("Invalid request. The service requires a nonce"), nonce );
 
             }
 
@@ -161,7 +161,7 @@ namespace server {
             if ( !userNonce ){
 
                 verbose << "--> [MainServer][manageMessage]] Error, user nonce not present" << '\n';
-                response = this->sendError(string( "Server error. The service is unable to find your information" ), nonce );
+                response = this->makeError(string( "Server error. The service is unable to find your information" ), nonce );
 
                 delete nonce;
                 return response;
@@ -171,10 +171,10 @@ namespace server {
             if( *nonce != *userNonce ){
 
                 vverbose<<"--> [MainServer][keyExchangeHandler] Error invalid nonce"<<'\n';
-                response = this->sendError(string( "Security error. The nonce you give is invalid" ), nonce );
+                response = this->makeError(string( "Security error. The nonce you give is invalid" ), nonce );
 
                 delete nonce;
-             //   delete userNonce;
+               // delete userNonce;
 
                 return response;
 
@@ -414,16 +414,16 @@ namespace server {
     }
 
     //  generates an error message to be sent to the client who has made the request
-    Message* MainServer::sendError( string errorMessage, int* nonce ){
+    Message* MainServer::makeError( string errorMessage, int* nonce ){
 
         if( errorMessage.empty() ){
 
-            verbose<<"--> [MainServer][sendError] Error invalid arguments. Abort operation"<<'\n';
+            verbose<<"--> [MainServer][makeError] Error invalid arguments. Abort operation"<<'\n';
             return nullptr;
 
         }
 
-        vverbose<<"--> [MainServer][sendError] Generation of error message: "<<errorMessage<<'\n';
+        vverbose<<"--> [MainServer][makeError] Generation of error message: "<<errorMessage<<'\n';
 
         Message* response = new Message();
         response->setMessageType( ERROR );
@@ -438,7 +438,7 @@ namespace server {
         //  sign the message with a server rsa signature
         if( !this->cipherServer.toSecureForm( response , nullptr )){
 
-            verbose<<"--> [MainServer][sendError] Error unable to secure the message. Operation aborted"<<'\n';
+            verbose<<"--> [MainServer][makeError] Error unable to secure the message. Operation aborted"<<'\n';
             return nullptr;
 
         }
@@ -727,14 +727,14 @@ namespace server {
         if(! param ){
 
             verbose<<"--> [MainServer][certificateHandler] Error, unable to load server certificate"<<'\n';
-            return this->sendError( string("Server error. The service in unable to find its security information"), nonce );
+            return this->makeError( string("Server error. The service in unable to find its security information"), nonce );
 
         }
 
         if( this->userRegister.has(socket)){
 
             verbose<<"--> [MainServer][certificateHandler] Error, user already registered"<<'\n';
-            return this->sendError( string("Invalid request. The user is already logged"), nonce );
+            return this->makeError( string("Invalid request. The user is already logged"), nonce );
 
         }
 
@@ -749,7 +749,7 @@ namespace server {
 
             verbose << "--> [MainServer][certificateHandler] Error, message didn't pass security verification" << '\n';
             delete result;
-            result = this->sendError(string("Security error. Invalid message'signature"), nonce );
+            result = this->makeError(string("Security error. Invalid message'signature"), nonce );
 
         }else
             vverbose<<"--> [MainServer][certificateHandler] CERTIFICATE message correctly generated"<<'\n';
@@ -771,7 +771,7 @@ namespace server {
 
         if( message->getUsername().empty() ){
             verbose<<"--> [MainServer][loginHandler] Error, invalid message. Missing username"<<'\n';
-            return this->sendError(string("Invalid request. Missing username"), nonce );
+            return this->makeError(string("Invalid request. Missing username"), nonce );
         }
 
         Message* response = new Message();
@@ -828,7 +828,7 @@ namespace server {
             verbose << "-->[MainServer][loginHandler] Error, invalid message Missing Diffie-Hellman Parameter" << '\n';
 
             delete response;
-            response = this->sendError(string( "Server Error. The service is unable to generate a Diffie-Hellman parameter" ), nonce );
+            response = this->makeError(string( "Server Error. The service is unable to generate a Diffie-Hellman parameter" ), nonce );
 
         }
 
@@ -853,7 +853,7 @@ namespace server {
         if( !this->userRegister.has(username)){
 
             verbose << "--> [MainServer][keyExchangeHandler] Error, user not logged" << '\n';
-            response = this->sendError(string( "Invalid request. You must login into the service before" ), nonce );
+            response = this->makeError(string( "Invalid request. You must login into the service before" ), nonce );
 
             return response;
 
@@ -862,7 +862,7 @@ namespace server {
         if( *(this->userRegister.getStatus(username)) != CONNECTED ){
 
             verbose << "--> [MainServer][keyExchangeHandler] Error, key already exchanged" << '\n';
-            response = this->sendError(string( "Invalid request. Session key already generated" ), nonce );
+            response = this->makeError(string( "Invalid request. Session key already generated" ), nonce );
 
             return response;
 
@@ -871,7 +871,7 @@ namespace server {
         if( !this->cipherServer.fromSecureForm( message, username, nullptr )){
 
             verbose << "--> [MainServer][keyExchangeHandler] Error, message didn't pass the security checks" << '\n';
-            response = this->sendError(string( "Security error. Invalid message'signature" ), nonce );
+            response = this->makeError(string( "Security error. Invalid message'signature" ), nonce );
 
             return response;
 
@@ -900,7 +900,7 @@ namespace server {
 
             verbose << "--> [MainServer][keyExchangeHandler] Error, during message generation" << '\n';
             delete response;
-            response = this->sendError(string( "Server error. Service unable to generate message'signature" ), nonce );
+            response = this->makeError(string( "Server error. Service unable to generate message'signature" ), nonce );
 
         }
 
@@ -924,7 +924,7 @@ namespace server {
         if( !this->cipherServer.fromSecureForm( message, message->getUsername(), this->userRegister.getSessionKey(username) )){
 
             verbose<<"--> [MainServer][userListHandler] Error. Verification Failure"<<'\n';
-            response = this->sendError( string( "Security error. Invalid message'signature" ), nonce );
+            response = this->makeError( string( "Security error. Invalid message'signature" ), nonce );
 
             return response;
 
@@ -933,7 +933,7 @@ namespace server {
         if( *(this->userRegister.getStatus( username )) == CONNECTED || *(this->userRegister.getStatus( username )) == PLAY ){
 
             verbose << "--> [MainServer][userListHandler] Error, user not allowed" << '\n';
-            response = this->sendError(string("Invalid request. You aren't in the correct state to make that request" ), nonce );
+            response = this->makeError(string("Invalid request. You aren't in the correct state to make that request" ), nonce );
 
             return response;
 
@@ -960,7 +960,7 @@ namespace server {
 
             verbose << "--> [MainServer][userListHandler] Error during message generation" << '\n';
             delete response;
-            response = this->sendError(string( "Server error. Service unable to generate the message'signature" ), nonce );
+            response = this->makeError(string( "Server error. Service unable to generate the message'signature" ), nonce );
 
         }
 
@@ -985,7 +985,7 @@ namespace server {
         if( !this->cipherServer.fromSecureForm( message, message->getUsername(),this->userRegister.getSessionKey(username) )){
 
             verbose<<"--> [MainServer][rankListHandler] Error. Verification Failure"<<'\n';
-            response = this->sendError( string( "Security error. Invalid message'signature" ), nonce );
+            response = this->makeError( string( "Security error. Invalid message'signature" ), nonce );
 
             return response;
 
@@ -995,7 +995,7 @@ namespace server {
         if( *(this->userRegister.getStatus( username )) == CONNECTED || *(this->userRegister.getStatus( username )) == PLAY ){
 
             verbose << "--> [MainServer][rankListHandler] Error, user not allowed" << '\n';
-            response = this->sendError(string( "Invalid request. You aren't in the correct state to make that request" ), nonce );
+            response = this->makeError(string( "Invalid request. You aren't in the correct state to make that request" ), nonce );
 
             return response;
 
@@ -1019,7 +1019,7 @@ namespace server {
 
             verbose << "-->[MainServer][rankListHandler] Error. Verification Failure"<< '\n';
             delete response;
-            response = this->sendError(string( "Server error. The service is unable to generate the message'signature" ), nonce );
+            response = this->makeError(string( "Server error. The service is unable to generate the message'signature" ), nonce );
 
         }
 
@@ -1041,7 +1041,7 @@ namespace server {
         if( !this->cipherServer.fromSecureForm( message , username, this->userRegister.getSessionKey(username) ) ){
 
             verbose << "--> [MainServer][logoutHandler] Error, Verification failure" << '\n';
-            response = this->sendError(string( "Security error. Invalid message'signature" ), nonce );
+            response = this->makeError(string( "Security error. Invalid message'signature" ), nonce );
 
             return response;
         }
@@ -1049,7 +1049,7 @@ namespace server {
         if( *(this->userRegister.getStatus(username)) != LOGGED ){
 
             verbose << "--> [MainServer][logoutHandler] Error, user not in the correct state" << '\n';
-            response = this->sendError(string( "Invalid request. You aren't in the correct state to make that request" ), nonce );
+            response = this->makeError(string( "Invalid request. You aren't in the correct state to make that request" ), nonce );
 
             return response;
 
@@ -1065,7 +1065,7 @@ namespace server {
             verbose << "-->[MainServer][logoutHandler] Error. Unable to encrypt message"<< '\n';
 
             delete response;
-            response = this->sendError(string( "Server error. Service unable to generate the message'signature" ), nonce );
+            response = this->makeError(string( "Server error. Service unable to generate the message'signature" ), nonce );
 
         }
 
@@ -1089,7 +1089,7 @@ namespace server {
         if( !this->cipherServer.fromSecureForm( message , username, this->userRegister.getSessionKey(username) ) ){
 
             verbose << "--> [MainServer][matchHandler] Error, Verification failure" << '\n';
-            response = this->sendError(string( "Security error. Invalid message'signature" ), nonce );
+            response = this->makeError(string( "Security error. Invalid message'signature" ), nonce );
 
             return response;
         }
@@ -1097,19 +1097,19 @@ namespace server {
         if( message->getUsername().empty() ){
 
             verbose<<"--> [MainServer][matchHandler] Error missing user informations"<<'\n';
-            return this->sendError( "Invalid Request. You have to send a valid username", nonce );
+            return this->makeError( "Invalid Request. You have to send a valid username", nonce );
 
         }
 
         if( !message->getUsername().compare(username)){
             verbose<<"--> [MainServer][matchHandler] Error invalid user information"<<'\n';
-            return this->sendError( "Invalid Request. You have to send a valid username", nonce );
+            return this->makeError( "Invalid Request. You have to send a valid username", nonce );
         }
 
         if( this->matchRegister.getMatchID(username) != -1 ){
 
             verbose<<"--> [MainServer][matchHandler] Error, user already has registered a match"<<'\n';
-            response = this->sendError(string( "Invalid request. You're already registerd a match. Withdraw it before create a new match" ), nonce );
+            response = this->makeError(string( "Invalid request. You're already registerd a match. Withdraw it before create a new match" ), nonce );
 
             return response;
 
@@ -1117,7 +1117,7 @@ namespace server {
 
         if( !this->userRegister.has(message->getUsername())){
             verbose<<"--> [MainServer][matchHandler] Error, requested user doesn't exits"<<'\n';
-            response = this->sendError(string( "Invalid request. User doesn't exists" ), nonce );
+            response = this->makeError(string( "Invalid request. User doesn't exists" ), nonce );
 
             return response;
 
@@ -1135,7 +1135,7 @@ namespace server {
 
                 verbose<<"--> [MainServer][matchHandler] Error during security conversion"<<'\n';
                 delete response;
-                response = sendError(string("Server error. Service unable to generate the message'signature"), nonce );
+                response = this->makeError(string("Server error. Service unable to generate the message'signature"), nonce );
 
             }
 
@@ -1154,7 +1154,7 @@ namespace server {
 
                 verbose<<"--> [MainServer][matchHandler] Error during security conversion"<<'\n';
                 delete response;
-                response = sendError(string("Server error. Service unable to generate the message'signature"), nonce );
+                response = this->makeError(string("Server error. Service unable to generate the message'signature"), nonce );
 
             }
 
@@ -1182,7 +1182,7 @@ namespace server {
 
                 verbose<<"--> [MainServer][matchHandler] Error during security conversion"<<'\n';
                 delete response;
-                response = sendError(string("Server error. Service unable to generate the message'signature"), nonce );
+                response = this->makeError(string("Server error. Service unable to generate the message'signature"), nonce );
 
             }
 
@@ -1207,7 +1207,7 @@ namespace server {
 
                 verbose<<"--> [MainServer][matchHandler] Error during security conversion"<<'\n';
                 delete response;
-                response = sendError( string( "Server error. Service unable to generate the message'signature" ), nonce );
+                response = this->makeError( string( "Server error. Service unable to generate the message'signature" ), nonce );
 
             }
 
@@ -1242,7 +1242,7 @@ namespace server {
 
                 verbose<<"--> [MainServer][matchHandler] Error during security conversion"<<'\n';
                 delete response;
-                response = sendError(string("Server error. Service unable to generate the message'signature"), nonce );
+                response = this->makeError(string("Server error. Service unable to generate the message'signature"), nonce );
 
             }
 
@@ -1270,7 +1270,7 @@ namespace server {
 
                 verbose<<"--> [MainServer][matchHandler] Error during security conversion"<<'\n';
                 delete response;
-                response = sendError(string("Server error. Service unable to generate the message'signature"), nonce );
+                response = this->makeError(string("Server error. Service unable to generate the message'signature"), nonce );
 
             }
 
@@ -1304,7 +1304,7 @@ namespace server {
         if( !this->cipherServer.fromSecureForm( message , username, this->userRegister.getSessionKey(username) ) ){
 
             verbose << "--> [MainServer][acceptHandler] Error, Verification failure" << '\n';
-            response = this->sendError(string( "Security error. Invalid message'signature" ), nonce );
+            response = this->makeError(string( "Security error. Invalid message'signature" ), nonce );
 
             return response;
 
@@ -1313,7 +1313,7 @@ namespace server {
         if( message->getAdversary_1().empty() || message->getAdversary_2().empty()){
 
             verbose<< "--> [MainServer][acceptHandler] Error, Missing usernames"<<'\n';
-            response = this->sendError( "Invalid request. You have to insert your username and the challenger one" , nonce );
+            response = this->makeError( "Invalid request. You have to insert your username and the challenger one" , nonce );
             return response;
 
         }
@@ -1321,7 +1321,7 @@ namespace server {
         if( *(this->userRegister.getStatus( username )) == CONNECTED || *(this->userRegister.getStatus( username )) == PLAY   ){
 
             verbose<< "--> [MainServer][acceptHandler] Error, user try to accept a challenge before undo previous sent"<<'\n';
-            response = this->sendError( "Invalid request. You aren't in the correct state to accept a match" , nonce );
+            response = this->makeError( "Invalid request. You aren't in the correct state to accept a match" , nonce );
             return response;
 
         }
@@ -1339,7 +1339,7 @@ namespace server {
 
                 verbose<<"--> [MainServer][acceptHandler] Error during security conversion"<<'\n';
                 delete response;
-                response = sendError( string("Server error. Service unable to generate the message'signature") , nonce );
+                response = makeError( string("Server error. Service unable to generate the message'signature") , nonce );
 
             }
 
@@ -1382,7 +1382,7 @@ namespace server {
 
                 verbose<<"--> [MainServer][acceptHandler] Error during security conversion"<<'\n';
                 delete response;
-                response = sendError( string("Server error. Service unable to generate the message'signature") , nonce );
+                response = makeError( string("Server error. Service unable to generate the message'signature") , nonce );
 
             }
 
@@ -1416,7 +1416,7 @@ namespace server {
 
                 verbose<<"--> [MainServer][acceptHandler] Error during security conversion"<<'\n';
                 delete response;
-                response = sendError( string("Server error. Service unable to generate the message'signature") , nonce );
+                response = makeError( string("Server error. Service unable to generate the message'signature") , nonce );
 
             }
 
@@ -1472,7 +1472,7 @@ namespace server {
         if( !this->cipherServer.fromSecureForm( message , username, this->userRegister.getSessionKey(username) ) ){
 
             verbose << "--> [MainServer][acceptHandler] Error, Verification failure" << '\n';
-            response = this->sendError(string( "Security error. Invalid message'signature" ), nonce );
+            response = this->makeError(string( "Security error. Invalid message'signature" ), nonce );
 
             return response;
 
@@ -1481,7 +1481,7 @@ namespace server {
         if( message->getAdversary_1().empty() || message->getAdversary_2().empty()){
 
             verbose<< "--> [MainServer][acceptHandler] Error, Missing usernames"<<'\n';
-            response = this->sendError( "Invalid request. You have to specify the challenger and challenged usernames" , nonce );
+            response = this->makeError( "Invalid request. You have to specify the challenger and challenged usernames" , nonce );
 
         }
         int matchID = this->matchRegister.getMatchID( message->getAdversary_1() );
@@ -1523,7 +1523,7 @@ namespace server {
         if( !this->cipherServer.fromSecureForm( message , username, this->userRegister.getSessionKey(username) ) ){
 
             verbose << "--> [MainServer][acceptHandler] Error, Verification failure" << '\n';
-            response = this->sendError(string( "Security error. Invalid message'signature" ), nonce );
+            response = this->makeError(string( "Security error. Invalid message'signature" ), nonce );
 
             return response;
 
@@ -1534,7 +1534,7 @@ namespace server {
         if( matchID == -1 ){
 
             verbose << "--> [MainServer][withdrawReqHandler] Error, match doesn't exist" << '\n';
-            response = this->sendError(string( "Invalid request. The match is already deleted" ), nonce );
+            response = this->makeError(string( "Invalid request. The match is already deleted" ), nonce );
 
             return response;
 
@@ -1543,7 +1543,7 @@ namespace server {
         if( *(this->matchRegister.getMatchStatus(matchID)) == STARTED ){
 
             verbose << "--> [MainServer][withdrawReqHandler] Match already started" << '\n';
-            response = this->sendError(string( "Invalid request. You can't close a started game with withdraw. Use disconnect instead" ), nonce );
+            response = this->makeError(string( "Invalid request. You can't close a started game with withdraw. Use disconnect instead" ), nonce );
 
             return response;
         }
@@ -1576,7 +1576,7 @@ namespace server {
 
             verbose << "--> [MainServer][withdrawHandler] Error, Verification failure" << '\n';
             delete response;
-            response = this->sendError(string( "Server error. Service unable to generate the message'signature" ), nonce );
+            response = this->makeError(string( "Server error. Service unable to generate the message'signature" ), nonce );
 
         }
 
@@ -1599,7 +1599,7 @@ namespace server {
         if( !this->cipherServer.fromSecureForm( message , username, this->userRegister.getSessionKey(username) ) ){
 
             verbose << "--> [MainServer][acceptHandler] Error, Verification failure" << '\n';
-            response = this->sendError(string( "Security error. Invalid message'signature" ), nonce );
+            response = this->makeError(string( "Security error. Invalid message'signature" ), nonce );
 
             return response;
 
@@ -1618,7 +1618,7 @@ namespace server {
             else{
 
                 verbose << "--> [MainServer][disconnectHandler] Error, unable to identify match" << '\n';
-                response = this->sendError(string( "Invalid request. The match is already closed" ), nonce );
+                response = this->makeError(string( "Invalid request. The match is already closed" ), nonce );
 
                 return response;
 
@@ -1644,14 +1644,15 @@ namespace server {
             return nullptr;
 
         }
-
+        int* socket = this->userRegister.getSocket(username);
         Message* response;
 
         int matchID = this->matchRegister.getMatchPlay( username );
         if( matchID == -1 ){
 
+            this->clientRegister.updateClientNonce(*socket);
             verbose<<"--> [MainServer][gameHandler] Error unable to find match"<<'\n';
-            return this->sendError( "Invalid request. Match already closed", nonce );
+            return this->makeError( "Invalid request. Match already closed", nonce );
 
         }
 
@@ -1664,9 +1665,10 @@ namespace server {
         int *advSocket = this->userRegister.getSocket(adversary);
 
         if( !advSocket ){
+            this->clientRegister.updateClientNonce(*socket);
             verbose<<"--> [MainServer][gameHandler] Error, Adversary logged out"<<'\n';
             this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
-            response = this->sendError( string( "Error, Adversary is logged out"),nonce );
+            response = this->makeError( string( "Error, Adversary is logged out"),nonce );
 
             return response;
         }
@@ -1680,7 +1682,8 @@ namespace server {
             this->sendDisconnectMessage(adversary);
             this->userRegister.setLogged(adversary, this->userRegister.getSessionKey(adversary));
             this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
-            response = this->sendError( string( "Security error, Missing nonce"),nonce );
+            this->clientRegister.updateClientNonce(*socket);
+            response = this->makeError( string( "Security error, Missing nonce"),nonce );
             if( adv_nonce ) delete adv_nonce;
             if( myNonce ) delete myNonce;
             return response;
@@ -1691,14 +1694,16 @@ namespace server {
             this->sendDisconnectMessage(adversary);
             this->userRegister.setLogged(adversary, this->userRegister.getSessionKey(adversary));
             this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
-            response = this->sendError( string( "Security error, Missing nonce"), nonce );
+            this->clientRegister.updateClientNonce(*socket);
+            response = this->makeError( string( "Security error, Missing nonce"), nonce );
         }
 
         if( !this->cipherServer.fromSecureForm( message , adversary , this->userRegister.getSessionKey(username) ) ){
 
             verbose << "--> [MainServer][gameHandler] Error, Verification failure" << '\n';
             this->sendDisconnectMessage(adversary);
-            response = this->sendError(string( "Security error. Invalid message'signature" ), nonce );
+            this->clientRegister.updateClientNonce(*socket);
+            response = this->makeError(string( "Security error. Invalid message'signature" ), nonce );
             this->userRegister.setLogged(adversary, this->userRegister.getSessionKey(adversary));
             this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
             delete adv_nonce;
@@ -1712,7 +1717,8 @@ namespace server {
         if( col<0 || col>= NUMBER_COLUMN ){
             verbose<<"--> [MainServer][gameHandler] Error invalid message column field"<<'\n';
             this->sendDisconnectMessage(adversary);
-            response = this->sendError( "Invalid request. Invalid column field", nullptr );
+            this->clientRegister.updateClientNonce(*socket);
+            response = this->makeError( "Invalid request. Invalid column field", nonce );
             this->userRegister.setLogged(adversary, this->userRegister.getSessionKey(adversary));
             this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
             delete adv_nonce;
@@ -1730,7 +1736,7 @@ namespace server {
 
             case -2:case -1:
                 sock = this->userRegister.getSocket(username);
-                response = this->sendError( string("Invalid message. Bad Column."), nonce );
+                response = this->makeError( string("Invalid message. Bad Column."), nonce );
 
                 delete sock;
 

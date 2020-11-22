@@ -2901,7 +2901,7 @@ namespace utility{
 
         int val = (unsigned int)value;
 
-        if( !val || (val>8 && val<11) || ( val>47 && val<58 ) || ( val>64  && val<91 ) || ( val>96 && val<123 ))
+        if( !val || (val>8 && val<11) || ( val>31 && val<58 ) || ( val>64  && val<91 ) || ( val>96 && val<123 ))
             return false;
 
         return true;
@@ -2939,7 +2939,7 @@ namespace utility{
 
                 }catch( bad_alloc e ){
 
-                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactForm] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -2965,7 +2965,7 @@ namespace utility{
 
                 }catch( bad_alloc e ){
 
-                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactForm] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -2993,7 +2993,7 @@ namespace utility{
 
                 }catch( bad_alloc e ){
 
-                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactForm] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3021,7 +3021,7 @@ namespace utility{
 
                 }catch( bad_alloc e ){
 
-                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactForm] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3046,7 +3046,7 @@ namespace utility{
 
                 }catch( bad_alloc e ){
 
-                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactForm] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3072,7 +3072,7 @@ namespace utility{
 
                 }catch( bad_alloc e ){
 
-                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactForm] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3099,7 +3099,7 @@ namespace utility{
 
                 }catch( bad_alloc e ){
 
-                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactForm] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3124,7 +3124,7 @@ namespace utility{
 
                 }catch( bad_alloc e ){
 
-                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactForm] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3150,7 +3150,7 @@ namespace utility{
 
                 }catch( bad_alloc e ){
 
-                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactForm] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3175,7 +3175,7 @@ namespace utility{
 
                 }catch( bad_alloc e ){
 
-                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactForm] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3201,7 +3201,7 @@ namespace utility{
 
                 }catch( bad_alloc e ){
 
-                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactForm] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3227,7 +3227,7 @@ namespace utility{
 
                 }catch( bad_alloc e ){
 
-                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactForm] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3254,7 +3254,7 @@ namespace utility{
 
                 }catch( bad_alloc e ){
 
-                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactForm] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3281,7 +3281,7 @@ namespace utility{
 
                 }catch( bad_alloc e ){
 
-                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactForm] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3307,7 +3307,7 @@ namespace utility{
 
                 }catch( bad_alloc e ){
 
-                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactForm] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3332,7 +3332,7 @@ namespace utility{
 
                 }catch( bad_alloc e ){
 
-                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactForm] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3357,7 +3357,7 @@ namespace utility{
 
                 }catch( bad_alloc e ){
 
-                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactForm] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3384,7 +3384,7 @@ namespace utility{
 
                 }catch( bad_alloc e ){
 
-                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactForm] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3414,7 +3414,7 @@ namespace utility{
 
                 }catch( bad_alloc e ){
 
-                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactForm] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3442,7 +3442,7 @@ namespace utility{
 
                 }catch( bad_alloc e ){
 
-                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactForm] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3471,7 +3471,7 @@ namespace utility{
 
                 }catch( bad_alloc e ){
 
-                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactForm] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3498,7 +3498,7 @@ namespace utility{
 
                 }catch( bad_alloc e ){
 
-                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactForm] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3523,7 +3523,7 @@ namespace utility{
 
                 }catch( bad_alloc e ){
 
-                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactForm] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3549,7 +3549,7 @@ namespace utility{
 
                 }catch( bad_alloc e ){
 
-                    verbose<<"--> [Converter][encodeMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactForm] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3592,11 +3592,11 @@ compact function for AES
         int* nonce;
         int pos, len, key_size(0);
 
-        vverbose << "--> [Converter][compactForm] Starting encoding of Message" << '\n';
+        vverbose << "--> [Converter][compactMessageAES] Starting encoding of Message" << '\n';
 
         if( !verifyCompact( type, message )){
 
-            verbose<<"--> [Converter][compactForm] Error during the verification of the message"<<'\n';
+            verbose<<"--> [Converter][compactMessageAES] Error during the verification of the message"<<'\n';
             return nullptr;
 
         }
@@ -3616,7 +3616,7 @@ compact function for AES
 
                 }catch(std::bad_alloc& e){
 
-                    verbose<<"--> [Converter][compactMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactMessageAES] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3643,7 +3643,7 @@ compact function for AES
 
                 }catch(std::bad_alloc& e){
 
-                    verbose<<"--> [Converter][compactMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactMessageAES] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3672,7 +3672,7 @@ compact function for AES
 
                 }catch(std::bad_alloc& e){
 
-                    verbose<<"--> [Converter][compactMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactMessageAES] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3699,7 +3699,7 @@ compact function for AES
 
                 }catch(std::bad_alloc& e){
 
-                    verbose<<"--> [Converter][compactMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactMessageAES] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3725,7 +3725,7 @@ compact function for AES
 
                 }catch(std::bad_alloc& e){
 
-                    verbose<<"--> [Converter][compactMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactMessageAES] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3752,7 +3752,7 @@ compact function for AES
 
                 }catch(std::bad_alloc& e){
 
-                    verbose<<"--> [Converter][compactMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactMessageAES] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3780,7 +3780,7 @@ compact function for AES
 
                 }catch(std::bad_alloc& e){
 
-                    verbose<<"--> [Converter][compactMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactMessageAES] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3806,7 +3806,7 @@ compact function for AES
 
                 }catch(std::bad_alloc& e){
 
-                    verbose<<"--> [Converter][compactMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactMessageAES] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3833,7 +3833,7 @@ compact function for AES
 
                 }catch(std::bad_alloc& e){
 
-                    verbose<<"--> [Converter][compactMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactMessageAES] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3859,7 +3859,7 @@ compact function for AES
 
                 }catch(std::bad_alloc& e){
 
-                    verbose<<"--> [Converter][compactMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactMessageAES] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3886,7 +3886,7 @@ compact function for AES
 
                 }catch(std::bad_alloc& e){
 
-                    verbose<<"--> [Converter][compactMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactMessageAES] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3913,7 +3913,7 @@ compact function for AES
 
                 }catch(std::bad_alloc& e){
 
-                    verbose<<"--> [Converter][compactMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactMessageAES] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3941,7 +3941,7 @@ compact function for AES
 
                 }catch(std::bad_alloc& e){
 
-                    verbose<<"--> [Converter][compactMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactMessageAES] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3969,7 +3969,7 @@ compact function for AES
 
                 }catch(std::bad_alloc& e){
 
-                    verbose<<"--> [Converter][compactMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactMessageAES] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -3996,7 +3996,7 @@ compact function for AES
 
                 }catch(std::bad_alloc& e){
 
-                    verbose<<"--> [Converter][compactMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactMessageAES] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -4022,7 +4022,7 @@ compact function for AES
 
                 }catch(std::bad_alloc& e){
 
-                    verbose<<"--> [Converter][compactMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactMessageAES] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -4048,7 +4048,7 @@ compact function for AES
 
                 }catch(std::bad_alloc& e){
 
-                    verbose<<"--> [Converter][compactMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactMessageAES] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -4076,7 +4076,7 @@ compact function for AES
 
                 }catch(std::bad_alloc& e){
 
-                    verbose<<"--> [Converter][compactMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactMessageAES] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -4107,7 +4107,7 @@ compact function for AES
 
                 }catch(std::bad_alloc& e){
 
-                    verbose<<"--> [Converter][compactMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactMessageAES] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -4135,7 +4135,7 @@ compact function for AES
 
                 }else{
 
-                   verbose<<"--> [Converter][compactMessage] we are in decrypt mode."<<'\n';
+                   verbose<<"--> [Converter][compactMessageAES] we are in decrypt mode."<<'\n';
                    len = to_string( type ).length() + to_string( *nonce ).length() + message.getChosenColumnLength();
                    key = message.getChosenColumn();
                    *lengthPlaintext = len - message.getChosenColumnLength();
@@ -4145,7 +4145,7 @@ compact function for AES
 
                 if( !key ){
 
-                   verbose<<"--> [Converter][compactMessage] Error, the key is nullptr"<<'\n';
+                   verbose<<"--> [Converter][compactMessageAES] Error, the key is nullptr"<<'\n';
                    return nullptr;
 
                 }
@@ -4156,7 +4156,7 @@ compact function for AES
 
                 }catch(std::bad_alloc& e){
 
-                    verbose<<"--> [Converter][compactMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactMessageAES] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -4185,7 +4185,7 @@ compact function for AES
 
                 }catch( std::bad_alloc& e ){
 
-                    verbose<<"--> [Converter][compactMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactMessageAES] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -4213,7 +4213,7 @@ compact function for AES
 
                 }catch( std::bad_alloc& e ){
 
-                    verbose<<"--> [Converter][compactMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactMessageAES] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -4239,7 +4239,7 @@ compact function for AES
 
                 }catch( std::bad_alloc& e ){
 
-                    verbose<<"--> [Converter][compactMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactMessageAES] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -4266,7 +4266,7 @@ compact function for AES
 
                 }catch( std::bad_alloc& e ){
 
-                    verbose<<"--> [Converter][compactMessage] Error, unable to allocate memory"<<'\n';
+                    verbose<<"--> [Converter][compactMessageAES] Error, unable to allocate memory"<<'\n';
                     return nullptr;
 
                 }
@@ -4283,7 +4283,7 @@ compact function for AES
                 break;
 
             default:
-                verbose<<"--> [Converter][compactMessage] No option for this type of message"<<'\n';
+                verbose<<"--> [Converter][compactMessageAES] No option for this type of message"<<'\n';
                 return nullptr;
 
         }

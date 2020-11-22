@@ -179,6 +179,7 @@ namespace cipher{
             verbose<<"--> [CipherRSA][verifySignature] Error, invalid arguments"<<'\n';
             return false;
         }
+
         EVP_MD_CTX* ctx = EVP_MD_CTX_new();
         EVP_VerifyInit(ctx,EVP_sha256());
         EVP_VerifyUpdate(ctx,compactMessage, compactLen );

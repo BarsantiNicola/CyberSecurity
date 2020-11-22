@@ -54,6 +54,7 @@ namespace server {
             Message* withdrawHandler( Message* message, string username, int* nonce );                       //  MANAGES MESSAGE WITHDRAW_REQ                           //////////////// TODO
             Message* disconnectHandler( Message* message, string username, int* nonce );         //  MANAGES MESSAGE DISCONNECT                             //////////////// TODO
             Message* gameHandler( Message* message, string username, int* nonce );
+            Message* makeError( string errorMessage , int* nonce );         //  GENERATES AN ERROR MESSAGE
 
             //  MESSAGE HANDLERS
             Message* manageMessage( Message* message, int socket );                 //  HANDLES MESSAGES AND SENT THEM TO THE CORRECT PROTOCOL
@@ -62,7 +63,6 @@ namespace server {
 
             //  EVENT HANDLERS
             void logoutClient(int socket);                           //  SECURE DISCONNECTION OF A CLIENT FROM THE SERVER
-            Message* sendError( string errorMessage , int* nonce );  //  GENERATES AN ERROR MESSAGE
             void closeMatch( string username, int matchID );                            //  CLOSES A MATCH AND ADVERTICE PARTICIPANTS
             int  generateRandomNonce();                        //  GENERATES A RANDOM NONCE TO BE USED BY CLIENTS
             bool sendMessage( Message* message, int socket );

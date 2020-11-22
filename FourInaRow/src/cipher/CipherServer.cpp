@@ -342,7 +342,7 @@ namespace cipher{
 
         }
 
-        Message* app;
+        Message* app,*newMsg;
         switch( message->getMessageType()){
 
             case LOGIN_REQ:
@@ -501,14 +501,18 @@ namespace cipher{
 
                 }
 
+                newMsg = new Message();
                 this->aes->modifyParam( key );
                 app = this->aes->decryptMessage( *message );
 
-                if( !app )return false;
-                message->setChosenColumn(app->getChosenColumn(), app->getChosenColumnLength());
-                delete app;
+                if( !app ) return false;
+                
+                newMsg->setMessageType(GAME);
+                newMsg->setChosenColumn(app->getChosenColumn(), app->getChosenColumnLength());
+                newMsg->setCurrent_Token(*(app->getCurrent_Token()));
+                newMsg->setSignature(message->getSignature(),message->getSignatureLen());
 
-                return this->rsa->serverVerifySignature(*app, username );
+                return this->rsa->serverVerifySignature(*newMsg, username );
                 
             default:
 
@@ -570,7 +574,6 @@ namespace cipher{
 
         PEM_write_PUBKEY(f, key );
         fclose(f);
-        EVP_PKEY_free( key );
 
         pubKeyRead.open(path.c_str() );
         if( !pubKeyRead ){
