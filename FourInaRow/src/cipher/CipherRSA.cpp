@@ -171,7 +171,7 @@ namespace cipher{
 
         if( !compactMessage || !key || !len ){
 
-            verbose<<"-->[CipherRSA][makeSignature] Error, invalid arguments"<<'\n';
+            verbose<<"--> [CipherRSA][makeSignature] Error, invalid arguments"<<'\n';
             return nullptr;
 
         }
@@ -182,7 +182,7 @@ namespace cipher{
 
         if( !signature ){
 
-            verbose<<"-->[CipherRSA][makeSignature] Error during the allocation of the memory"<<'\n';
+            verbose<<"--> [CipherRSA][makeSignature] Error during the allocation of the memory"<<'\n';
             return nullptr;
 
         }
@@ -193,7 +193,7 @@ namespace cipher{
         EVP_SignFinal( ctx, signature, (unsigned int*)&l, key );
         EVP_MD_CTX_free( ctx );
         len = l;
-        vverbose<<"-->[CipherRSA][makeSignature] Signature generated"<<'\n';
+        vverbose<<"--> [CipherRSA][makeSignature] Signature generated"<<'\n';
 
         return signature;
 
@@ -215,13 +215,13 @@ namespace cipher{
 
         if( EVP_VerifyFinal( ctx, signature, signatureLen, key ) != 1 ){
 
-            verbose<<"-->[CipherRSA][verifySignature] Authentication Error!"<<'\n';
+            verbose<<"--> [CipherRSA][verifySignature] Authentication Error!"<<'\n';
             EVP_MD_CTX_free( ctx );
             return false;
 
         }
 
-        verbose<<"-->[CipherRSA][verifySignature] Authentication Success!"<<'\n';
+        verbose<<"--> [CipherRSA][verifySignature] Authentication Success!"<<'\n';
         EVP_MD_CTX_free( ctx );
         return true;
 
@@ -418,7 +418,7 @@ namespace cipher{
         EVP_PKEY* key = getUserKey( username );
         if( !key ){
 
-            verbose<<"-->[CipherRSA][serverVerifySignature] Error, "<<username<<"'key not found"<<'\n';
+            verbose<<"--> [CipherRSA][serverVerifySignature] Error, "<<username<<"'key not found"<<'\n';
             return false;
 
         }
@@ -427,7 +427,7 @@ namespace cipher{
         unsigned char* signature = message.getSignature();
         if( !signature ){
 
-            verbose<<"-->[CipherRSA][serverVerifySignature] Error, message hasn't a signature"<<'\n';
+            verbose<<"--> [CipherRSA][serverVerifySignature] Error, message hasn't a signature"<<'\n';
             return false;
 
         }
@@ -435,7 +435,7 @@ namespace cipher{
         NetMessage* compactMessage = Converter::compactForm( message.getMessageType(), message );
         if( !compactMessage || !compactMessage->length() ){
 
-            verbose<<"-->[CipherRSA][serverVerifySignature] Error during the generation of the compact message"<<'\n';
+            verbose<<"--> [CipherRSA][serverVerifySignature] Error during the generation of the compact message"<<'\n';
             delete[] signature;
             return false;
 
@@ -455,7 +455,7 @@ namespace cipher{
 
         if( !this->server ){
 
-            verbose<<"-->[CipherRSA][getServerCertificate] Error, not setted as server"<<'\n';
+            verbose<<"--> [CipherRSA][getServerCertificate] Error, not setted as server"<<'\n';
             return nullptr;
 
         }
@@ -481,14 +481,14 @@ namespace cipher{
         unsigned char* signature = message.getSignature();
         bool ret;
         if( !signature ){
-            verbose<<"-->[CipherRSA][clientVerifySignature] Error, message hasn't a signature"<<'\n';
+            verbose<<"--> [CipherRSA][clientVerifySignature] Error, message hasn't a signature"<<'\n';
             return false;
         }
 
         NetMessage* compactMessage = Converter::compactForm( message.getMessageType(), message );
         if( !compactMessage || !compactMessage->length() ){
 
-            verbose<<"-->[CipherRSA][clientVerifySignature] Error during the generation of the compact message"<<'\n';
+            verbose<<"--> [CipherRSA][clientVerifySignature] Error during the generation of the compact message"<<'\n';
             delete[] signature;
             return false;
 
@@ -511,14 +511,14 @@ namespace cipher{
 
         if( this->advPubKey ){
 
-            verbose<<"-->[CipherRSA][setAdversaryKey] Error, adversary key already setted[USE unsetAdversaryKey before]"<<'\n';
+            verbose<<"--> [CipherRSA][setAdversaryKey] Error, adversary key already setted[USE unsetAdversaryKey before]"<<'\n';
             return false;
 
         }
 
         if( !Key ){
 
-            verbose<<"-->[CipherRSA][setAdversaryKey] Error, null pointer passed as argument"<<'\n';
+            verbose<<"--> [CipherRSA][setAdversaryKey] Error, null pointer passed as argument"<<'\n';
             return false;
 
         }
@@ -534,7 +534,7 @@ namespace cipher{
 
         if( !this->advPubKey ) {
 
-            verbose<<"-->[CipherRSA][unsetAdversaryKey] Error, adversary key already unsetted[USE setAdversaryKey before]"<<'\n';
+            verbose<<"--> [CipherRSA][unsetAdversaryKey] Error, adversary key already unsetted[USE setAdversaryKey before]"<<'\n';
             EVP_PKEY_free(this->advPubKey);
 
         }
@@ -552,7 +552,7 @@ namespace cipher{
             return nullptr;
 
         }
-        vverbose<<"-->[CipherRSA][extractServerKey] Starting verification of certificate"<<'\n';
+        vverbose<<"--> [CipherRSA][extractServerKey] Starting verification of certificate"<<'\n';
 
         string file = "data/temp/serverCertificate.pem";
         std::ofstream pemWrite( file.c_str() );
@@ -564,7 +564,7 @@ namespace cipher{
         FILE* f = fopen("data/temp/serverCertificate.pem" , "r");
         if(!f){
 
-            verbose<<"-->[CipherRSA][extractServerKey] Error. File not found"<<'\n';
+            verbose<<"--> [CipherRSA][extractServerKey] Error. File not found"<<'\n';
             remove( file.c_str() );
             return nullptr;
 
@@ -614,7 +614,7 @@ namespace cipher{
 
         if( !pubKey || !len ){
 
-            verbose<<"-->[CipherRSA][extractAdversaryKey] Error, invalid arguments"<<'\n';
+            verbose<<"--> [CipherRSA][extractAdversaryKey] Error, invalid arguments"<<'\n';
             return false;
 
         }
@@ -640,7 +640,7 @@ namespace cipher{
 
         if( !k ){
 
-            verbose<<"-->[CipherRSA][extractAdversaryKey] Error, unable to extract adversary public key"<<'\n';
+            verbose<<"--> [CipherRSA][extractAdversaryKey] Error, unable to extract adversary public key"<<'\n';
             return false;
 
         }
@@ -690,7 +690,7 @@ namespace cipher{
         
         if( !compactForm ) {
 
-            verbose << "-->[CipherRSA][sign] Error during the generation of the compact Form of the message" << '\n';
+            verbose << "--> [CipherRSA][sign] Error during the generation of the compact Form of the message" << '\n';
             return false;
 
         }
@@ -701,7 +701,7 @@ namespace cipher{
         delete compactForm;
         if( !signature ){
 
-            verbose << "-->[CipherRSA][sign] Error during the generation of the signature. Operation aborted" << '\n';
+            verbose << "--> [CipherRSA][sign] Error during the generation of the signature. Operation aborted" << '\n';
             return false;
 
         }

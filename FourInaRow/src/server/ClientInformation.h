@@ -11,8 +11,8 @@ namespace server {
     ///////////////////////////////////////////////////////////////////////////////////////
     //                                                                                   //
     //                                   CLIENT INFORMATION                              //
-    //    The class maintans information about a client(the linked socket and its ip     //
-    //    address                                                                        //
+    //    The class maintans information about a client(the linked socket, its ip        //
+    //    address and the nonce which will be used during communications.                //
     //                                                                                   //
     ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -32,10 +32,10 @@ class ClientInformation{
             int* getNonce();
             int* getSendNonce();
             int* getReceiveNonce();
-            void updateSendNonce();
-            void updateReceiveNonce( int nonce );
             void setNonce( int nonce );
             void updateIP( int port );
+            void updateSendNonce();
+            void updateReceiveNonce( int nonce );
 
 
     };

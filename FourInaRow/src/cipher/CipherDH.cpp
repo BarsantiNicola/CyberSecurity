@@ -227,7 +227,7 @@ namespace cipher{
         FILE* pubStore = fopen( file.c_str(),"w+");
         if( !pubStore ){
 
-            verbose<<"-->[CipherDH][generatePartialKey] Error, unable to extract diffie-hellman partial key"<<'\n';
+            verbose<<"--> [CipherDH][generatePartialKey] Error, unable to extract diffie-hellman partial key"<<'\n';
             EVP_PKEY_free( this->ephemeralKey );
             this->ephemeralKey = nullptr;
             EVP_PKEY_CTX_free( DHctx );
@@ -237,7 +237,7 @@ namespace cipher{
 
         if( PEM_write_PUBKEY( pubStore , this->ephemeralKey ) != 1 ){
 
-            verbose<<"-->[CipherDH][generatePartialKey] Error, unable to store diffie-hellman partial key"<<'\n';
+            verbose<<"--> [CipherDH][generatePartialKey] Error, unable to store diffie-hellman partial key"<<'\n';
             fclose( pubStore );
             remove( file.c_str() );
             EVP_PKEY_free( this->ephemeralKey );
@@ -254,7 +254,7 @@ namespace cipher{
 
         if( !paramRead ){
 
-            verbose<<"-->[CipherDH][generatePartialKey] Error, unable to load diffie-hellman partial key"<<'\n';
+            verbose<<"--> [CipherDH][generatePartialKey] Error, unable to load diffie-hellman partial key"<<'\n';
             EVP_PKEY_free(this->ephemeralKey);
             this->ephemeralKey = nullptr;
             remove( file.c_str() );
@@ -285,7 +285,7 @@ namespace cipher{
         paramRead.read( (char*)param, len );
         paramRead.close();
         remove( file.c_str() );
-        vverbose<<"-->[CipherDH][generatePartialKey] Partial Diffie-Hellman parameter generated"<<'\n';
+        vverbose<<"--> [CipherDH][generatePartialKey] Partial Diffie-Hellman parameter generated"<<'\n';
 
         try {
 
@@ -323,7 +323,7 @@ namespace cipher{
 
         if( !this->ephemeralKey ){
 
-            verbose<<"-->[CipherDH][generateSessionKey]  You must initialize the ephemeral key. Use generatePartialKey() before"<<'\n';
+            verbose<<"--> [CipherDH][generateSessionKey]  You must initialize the ephemeral key. Use generatePartialKey() before"<<'\n';
             return nullptr;
 
         }
@@ -338,7 +338,7 @@ namespace cipher{
         FILE* shared = fopen( file.c_str(), "r" );
         if( !shared ){
 
-            verbose<<"-->[CipherDH][generateSessionKey]  Error unable to find the partial key"<<'\n';
+            verbose<<"--> [CipherDH][generateSessionKey]  Error unable to find the partial key"<<'\n';
             EVP_PKEY_free( this->ephemeralKey );
             this->ephemeralKey = nullptr;
             remove(file.c_str());
@@ -349,7 +349,7 @@ namespace cipher{
         EVP_PKEY* advPublicKey = PEM_read_PUBKEY( shared , nullptr, nullptr, nullptr );
         if( !advPublicKey ){
 
-            verbose<<"-->[CipherDH][generateSessionKey]  Error unable to load the partial key"<<'\n';
+            verbose<<"--> [CipherDH][generateSessionKey]  Error unable to load the partial key"<<'\n';
             fclose(shared);
             remove(file.c_str());
             EVP_PKEY_free( this->ephemeralKey );
@@ -364,7 +364,7 @@ namespace cipher{
         EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new( this->ephemeralKey , nullptr );
         if( !ctx ){
 
-            verbose<<"-->[CipherDH][generateSessionKey]  Error during the allocation of context"<<'\n';
+            verbose<<"--> [CipherDH][generateSessionKey]  Error during the allocation of context"<<'\n';
             EVP_PKEY_free( this->ephemeralKey );
             this->ephemeralKey = nullptr;
             return nullptr;
@@ -373,7 +373,7 @@ namespace cipher{
 
         if( EVP_PKEY_derive_init(ctx) <= 0){
 
-            verbose<<"-->[CipherDH][generateSessionKey]  Error during the preparation of context"<<'\n';
+            verbose<<"--> [CipherDH][generateSessionKey]  Error during the preparation of context"<<'\n';
             EVP_PKEY_free( this->ephemeralKey );
             this->ephemeralKey = nullptr;
             return nullptr;
@@ -382,7 +382,7 @@ namespace cipher{
 
         if( EVP_PKEY_derive_set_peer( ctx, advPublicKey ) <= 0){
 
-            verbose<<"-->[CipherDH][generateSessionKey]  Error during the initialization of context"<<'\n';
+            verbose<<"--> [CipherDH][generateSessionKey]  Error during the initialization of context"<<'\n';
             EVP_PKEY_free( this->ephemeralKey );
             this->ephemeralKey = nullptr;
             return nullptr;
@@ -408,7 +408,7 @@ namespace cipher{
 
         if( EVP_PKEY_derive(ctx,completeKey,&newLen) <= 0){
 
-            verbose<<"-->[CipherDH][generateSessionKey]  Error during the derivation of the key"<<'\n';
+            verbose<<"--> [CipherDH][generateSessionKey]  Error during the derivation of the key"<<'\n';
             EVP_PKEY_free( this->ephemeralKey );
             this->ephemeralKey = nullptr;
             return nullptr;

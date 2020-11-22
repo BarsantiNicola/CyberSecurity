@@ -12,7 +12,7 @@ namespace cipher{
 
         if( !this->rsa || !this->dh || !this->aes ){
 
-            verbose<<"-->[CipherServer][Costructor] Fatal error, unable to load cipher suites"<<'\n';
+            verbose<<"--> [CipherServer][Costructor] Fatal error, unable to load cipher suites"<<'\n';
             exit(1);
 
         }
@@ -33,7 +33,7 @@ namespace cipher{
 
         if( !message ){
 
-            verbose<<"-->[CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
+            verbose<<"--> [CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
             return false;
 
         }
@@ -69,7 +69,7 @@ namespace cipher{
 
                 if( !key ){
 
-                    verbose<<"-->[CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
 
                 }
@@ -79,7 +79,7 @@ namespace cipher{
                 app = this->aes->encryptMessage(*message);
                 if( !app ){
 
-                    verbose<<"-->[CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
                     return false;
 
                 }
@@ -93,7 +93,7 @@ namespace cipher{
 
                 if( !key ){
 
-                    verbose<<"-->[CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
 
                 }
@@ -103,7 +103,7 @@ namespace cipher{
                 app = this->aes->encryptMessage(*message);
                 if( !app ){
 
-                    verbose<<"-->[CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
                     return false;
 
                 }
@@ -118,7 +118,7 @@ namespace cipher{
 
                 if( !key ){
 
-                    verbose<<"-->[CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
 
                 }
@@ -128,7 +128,7 @@ namespace cipher{
                 app = this->aes->encryptMessage(*message);
                 if( !app ){
 
-                    verbose<<"-->[CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
                     return false;
 
                 }
@@ -142,7 +142,7 @@ namespace cipher{
 
                 if( !key ){
 
-                    verbose<<"-->[CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
 
                 }
@@ -152,7 +152,7 @@ namespace cipher{
                 app = this->aes->encryptMessage(*message);
                 if( !app ){
 
-                    verbose<<"-->[CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
                     return false;
 
                 }
@@ -167,7 +167,7 @@ namespace cipher{
 
                 if( !key ){
 
-                    verbose<<"-->[CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
 
                 }
@@ -177,7 +177,7 @@ namespace cipher{
                 app = this->aes->encryptMessage(*message);
                 if( !app ){
 
-                    verbose<<"-->[CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
                     return false;
 
                 }
@@ -191,7 +191,7 @@ namespace cipher{
 
                 if( !key ){
 
-                    verbose<<"-->[CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
 
                 }
@@ -201,7 +201,7 @@ namespace cipher{
                 app = this->aes->encryptMessage(*message);
                 if( !app ){
 
-                    verbose<<"-->[CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
                     return false;
 
                 }
@@ -215,7 +215,7 @@ namespace cipher{
 
                 if( !key ){
 
-                    verbose<<"-->[CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
 
                 }
@@ -225,7 +225,7 @@ namespace cipher{
                 app = this->aes->encryptMessage(*message);
                 if( !app ){
 
-                    verbose<<"-->[CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
                     return false;
 
                 }
@@ -239,7 +239,7 @@ namespace cipher{
 
                 if( !key ){
 
-                    verbose<<"-->[CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
 
                 }
@@ -249,7 +249,7 @@ namespace cipher{
                 app = this->aes->encryptMessage(*message);
                 if( !app ){
 
-                    verbose<<"-->[CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
                     return false;
 
                 }
@@ -263,7 +263,7 @@ namespace cipher{
 
                 if( !key ){
 
-                    verbose<<"-->[CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
 
                 }
@@ -273,7 +273,7 @@ namespace cipher{
                 app = this->aes->encryptMessage(*message);
                 if( !app ){
 
-                    verbose<<"-->[CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
                     return false;
 
                 }
@@ -287,7 +287,7 @@ namespace cipher{
 
                 if( !key ){
 
-                    verbose<<"-->[CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
 
                 }
@@ -297,7 +297,7 @@ namespace cipher{
                 app = this->aes->encryptMessage(*message);
                 if( !app ){
 
-                    verbose<<"-->[CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][toSecureForm] Error during the AES encryption operation aborted"<<'\n';
                     return false;
 
                 }
@@ -337,7 +337,7 @@ namespace cipher{
 
         if( !message ){
 
-            verbose<<"-->[CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
+            verbose<<"--> [CipherServer][toSecureForm] Error invalid arguments, operation aborted"<<'\n';
             return false;
 
         }
@@ -360,7 +360,7 @@ namespace cipher{
 
                 if( !key ){
 
-                    verbose<<"-->[CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
 
                 }
@@ -377,7 +377,7 @@ namespace cipher{
 
                 if( !key ){
 
-                    verbose<<"-->[CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
 
                 }
@@ -394,7 +394,7 @@ namespace cipher{
 
                 if( !key ){
 
-                    verbose<<"-->[CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
 
                 }
@@ -411,7 +411,7 @@ namespace cipher{
 
                 if( !key ){
 
-                    verbose<<"-->[CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
 
                 }
@@ -428,7 +428,7 @@ namespace cipher{
 
                 if( !key ){
 
-                    verbose<<"-->[CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
 
                 }
@@ -445,7 +445,7 @@ namespace cipher{
 
                 if( !key ){
 
-                    verbose<<"-->[CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
 
                 }
@@ -462,7 +462,7 @@ namespace cipher{
 
                 if( !key ){
 
-                    verbose<<"-->[CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
 
                 }
@@ -479,7 +479,7 @@ namespace cipher{
 
                 if( !key ){
 
-                    verbose<<"-->[CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
 
                 }
@@ -496,7 +496,7 @@ namespace cipher{
 
                 if( !key ){
 
-                    verbose<<"-->[CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
+                    verbose<<"--> [CipherServer][fromSecureForm] Error invalid arguments, operation aborted"<<'\n';
                     return false;
 
                 }
@@ -555,7 +555,7 @@ namespace cipher{
 
         if( !key ){
 
-            verbose<<"-->[CipherServer][getPubKey] Error, unable to find the user key"<<'\n';
+            verbose<<"--> [CipherServer][getPubKey] Error, unable to find the user key"<<'\n';
             return nullptr;
 
         }
@@ -567,7 +567,7 @@ namespace cipher{
         FILE* f = fopen(path.c_str() , "w");
         if( !f ){
 
-            verbose<<"-->[CipherServer][getPubKey] Error, unable to find temp file"<<'\n';
+            verbose<<"--> [CipherServer][getPubKey] Error, unable to find temp file"<<'\n';
             return nullptr;
 
         }

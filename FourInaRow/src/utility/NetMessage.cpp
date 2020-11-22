@@ -15,7 +15,7 @@ namespace utility {
         //  verification of arguments validity
         if( !mess || length<1 ){
 
-            verbose << "-->[NetMessage][Costructor] Error invalid arguments. Empty netmessage generated" << '\n';
+            verbose << "--> [NetMessage][Costructor] Error invalid arguments. Empty netmessage generated" << '\n';
             this->message = nullptr;
             this->len = 0;
             return;
@@ -28,7 +28,7 @@ namespace utility {
             myCopy( this->message,  mess, length);
             this->len = length;
 
-            cout << "-->[NetMessage][Costructor] Message correctly generated: [\t";
+            cout << "--> [NetMessage][Costructor] Message correctly generated: [\t";
             for( int a = 0; a<len; a++ )
                 cout<<this->message[a];
             cout<<"\t]\n";
@@ -38,7 +38,7 @@ namespace utility {
 
             this->message = nullptr;
             this->len = 0;
-            verbose << "-->[NetMessage][Costructor] Error during the allocation of memory. Empty netmessage generated" << '\n';
+            verbose << "--> [NetMessage][Costructor] Error during the allocation of memory. Empty netmessage generated" << '\n';
 
         }
 
@@ -50,7 +50,7 @@ namespace utility {
         //  verification of arguments validity
         if( !value.getMessage() ){
 
-            verbose << "-->[NetMessage][Costructor] Invalid arguments, empty netmessage generated" << '\n';
+            verbose << "--> [NetMessage][Costructor] Invalid arguments, empty netmessage generated" << '\n';
             this->message = nullptr;
             this->len = 0;
             return;
@@ -67,7 +67,7 @@ namespace utility {
 
             this->message = nullptr;
             this->len = 0;
-            verbose << "-->[NetMessage][Costructor] Error during the allocation of memory. Empty netmessage generated" << '\n';
+            verbose << "--> [NetMessage][Costructor] Error during the allocation of memory. Empty netmessage generated" << '\n';
 
         }
 
@@ -79,7 +79,7 @@ namespace utility {
         //  verification of arguments validity. No control is needed on len(function resilient to len<=0)
         if( !dest || !source ){
 
-            verbose << "-->[NetMessage][Costructor] Error invalid arguments. Operation Aborted" << '\n';
+            verbose << "--> [NetMessage][Costructor] Error invalid arguments. Operation Aborted" << '\n';
             return;
 
         }
@@ -116,7 +116,7 @@ namespace utility {
 
         }catch( bad_alloc e ){
 
-            verbose << "-->[NetMessage][getMessage] Error during the allocation of memory. Empty message given" << '\n';
+            verbose << "--> [NetMessage][getMessage] Error during the allocation of memory. Empty message given" << '\n';
             return nullptr;
 
         }

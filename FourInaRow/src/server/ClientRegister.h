@@ -28,13 +28,13 @@ namespace server {
             bool   removeClient( int socket );               // REMOVE A CLIENT
             bool   has( int socket );                        // SEARCH IF A SOCKET IS PRESENT
             string getClientNetInformation( int socket );    // RETURN THE CLIENT IP ADDRESS
-            int*   getNonce( int socket );
-            int*   getClientNonce( int socket );
-            int*   getClientReceiveNonce( int socket );
-            bool   updateClientNonce( int socket );
-            bool   updateClientReceiveNonce( int socket, int nonce );
-            bool   setNonce( int socket , int nonce );
-            bool   updateIp( int socket, int port );
+            int*   getNonce( int socket );                   // RETURN THE GLOBAL NONCE OF THE USER(USED FOR THE CERTIFICATE)
+            int*   getClientNonce( int socket );             // RETURN THE NONCE USED TO SEND MESSAGES TO THE CLIENT
+            int*   getClientReceiveNonce( int socket );      // RETURN THE NONCE USED TO RECEIVE MESSAGES FROM THE CLIENT
+            bool   updateClientNonce( int socket );          // UPDATE THE NONCE USED TO SEND MESSAGES TO THE CLIENT
+            bool   updateClientReceiveNonce( int socket, int nonce );  //  UPDATE THE NONCE USED TO RECEIVE MESSAGE FROM THE CLIENT
+            bool   setNonce( int socket , int nonce );       // SET THE NONCE FOR A CLIENT AND DERIVES THE SEND/RECEIVE NONCE FROM IT
+            bool   updateIp( int socket, int port );         // UPDATE THE SAVED IP ADDRESS FOR THE CLIENT(USED TO INSERT THE PORT AFTER A LOGIN)
 
     };
 
