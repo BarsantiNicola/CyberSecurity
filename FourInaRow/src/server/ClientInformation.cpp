@@ -74,7 +74,7 @@ namespace server{
 
         string snonce = to_string( nonce );
         this->nonce = new int(nonce);
-        this->sendNonce = new int(atoi(snonce.substr(snonce.length()/2,snonce.length()).c_str())*10000);
+        this->sendNonce = new int(atoi(snonce.substr(snonce.length()/2, snonce.length()).c_str())*10000);
         this->receiveNonce = new int(atoi(snonce.substr(0,snonce.length()/2).c_str())*10000);
 
     }

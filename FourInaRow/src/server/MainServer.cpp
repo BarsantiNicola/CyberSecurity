@@ -180,7 +180,7 @@ namespace server {
 
             }
 
-            this->clientRegister.updateClientReceiveNonce( socket, *nonce );
+            this->clientRegister.updateClientReceiveNonce( socket, *nonce+1 );
             delete userNonce;
             delete nonce;
         }
@@ -1650,7 +1650,7 @@ namespace server {
 
         int matchID = this->matchRegister.getMatchPlay( username );
         if( matchID == -1 ){
-            
+
             verbose<<"--> [MainServer][gameHandler] Error unable to find match"<<'\n';
             return this->makeError( "Invalid request. Match already closed", nonce );
 
