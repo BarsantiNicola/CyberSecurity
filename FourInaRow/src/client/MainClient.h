@@ -68,7 +68,8 @@ namespace client
       int currTokenChatAdv;
       int nUser=0;
       time_t startWaitChatAck;
-      int nonce;
+      int sendNonce;
+      int receiveNonce;
       bool logged=false;
       ClientPhase clientPhase= ClientPhase::NO_PHASE;
       bool currTokenIninzialized=false;
