@@ -1650,8 +1650,7 @@ namespace server {
 
         int matchID = this->matchRegister.getMatchPlay( username );
         if( matchID == -1 ){
-
-            this->clientRegister.updateClientNonce(*socket);
+            
             verbose<<"--> [MainServer][gameHandler] Error unable to find match"<<'\n';
             return this->makeError( "Invalid request. Match already closed", nonce );
 
@@ -1666,7 +1665,6 @@ namespace server {
         int *advSocket = this->userRegister.getSocket(adversary);
 
         if( !advSocket ){
-            this->clientRegister.updateClientNonce(*socket);
             verbose<<"--> [MainServer][gameHandler] Error, Adversary logged out"<<'\n';
             this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
             response = this->makeError( string( "Error, Adversary is logged out"),nonce );
@@ -1675,7 +1673,7 @@ namespace server {
         }
 
         int *adv_nonce = message->getCurrent_Token();
-        int *myNonce = this->clientRegister.getClientNonce(*advSocket);
+        int *myNonce = this->clientRegister.getClientReceiveNonce(*advSocket);
 
         if( !adv_nonce || !myNonce ){
 
@@ -1683,27 +1681,26 @@ namespace server {
             this->sendDisconnectMessage(adversary);
             this->userRegister.setLogged(adversary, this->userRegister.getSessionKey(adversary));
             this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
-            this->clientRegister.updateClientNonce(*socket);
             response = this->makeError( string( "Security error, Missing nonce"),nonce );
             if( adv_nonce ) delete adv_nonce;
             if( myNonce ) delete myNonce;
             return response;
         }
 
-        if( *adv_nonce != *myNonce ){
+        if( *adv_nonce < *myNonce ){
             verbose<<"--> [MainServer][gameHandler] Error, invalid nonce"<<'\n';
             this->sendDisconnectMessage(adversary);
             this->userRegister.setLogged(adversary, this->userRegister.getSessionKey(adversary));
             this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
-            this->clientRegister.updateClientNonce(*socket);
             response = this->makeError( string( "Security error, Missing nonce"), nonce );
         }
+
+        this->clientRegister.updateClientReceiveNonce(*advSocket, *myNonce );
 
         if( !this->cipherServer.fromSecureForm( message , adversary , this->userRegister.getSessionKey(username) ) ){
 
             verbose << "--> [MainServer][gameHandler] Error, Verification failure" << '\n';
             this->sendDisconnectMessage(adversary);
-            this->clientRegister.updateClientNonce(*socket);
             response = this->makeError(string( "Security error. Invalid message'signature" ), nonce );
             this->userRegister.setLogged(adversary, this->userRegister.getSessionKey(adversary));
             this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
@@ -1718,7 +1715,6 @@ namespace server {
         if( col<0 || col>= NUMBER_COLUMN ){
             verbose<<"--> [MainServer][gameHandler] Error invalid message column field"<<'\n';
             this->sendDisconnectMessage(adversary);
-            this->clientRegister.updateClientNonce(*socket);
             response = this->makeError( "Invalid request. Invalid column field", nonce );
             this->userRegister.setLogged(adversary, this->userRegister.getSessionKey(adversary));
             this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
