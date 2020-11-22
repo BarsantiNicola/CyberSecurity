@@ -22,13 +22,18 @@ class ClientInformation{
             string IPaddress;
             int socket;
             int* nonce;
+            int* receiveNonce;
+            int* sendNonce;
 
         public:
             ClientInformation( string IPaddress, int socket );
             string getIPaddress();
             int getSocket();
             int* getNonce();
-            void updateNonce();
+            int* getSendNonce();
+            int* getReceiveNonce();
+            void updateSendNonce();
+            void updateReceiveNonce( int nonce );
             void setNonce( int nonce );
             void updateIP( int port );
 

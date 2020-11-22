@@ -28,8 +28,11 @@ namespace server {
             bool   removeClient( int socket );               // REMOVE A CLIENT
             bool   has( int socket );                        // SEARCH IF A SOCKET IS PRESENT
             string getClientNetInformation( int socket );    // RETURN THE CLIENT IP ADDRESS
+            int*   getNonce( int socket );
             int*   getClientNonce( int socket );
+            int*   getClientReceiveNonce( int socket );
             bool   updateClientNonce( int socket );
+            bool   updateClientReceiveNonce( int socket, int nonce );
             bool   setNonce( int socket , int nonce );
             bool   updateIp( int socket, int port );
 

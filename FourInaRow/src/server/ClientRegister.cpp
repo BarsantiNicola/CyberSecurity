@@ -70,11 +70,33 @@ namespace server{
 
     }
 
-    int* ClientRegister::getClientNonce( int socket ){
+    int* ClientRegister::getNonce( int socket ){
 
         for( int a = 0; a<this->clientRegister.size(); a++ )
             if( this->clientRegister[a].getSocket() == socket )
                 return this->clientRegister[a].getNonce();
+
+        vverbose<<"--> [ClientRegister][getClientNetInformation] Client not present into the register"<<'\n';
+        return nullptr;
+
+    }
+
+    int* ClientRegister::getClientNonce( int socket ){
+
+        for( int a = 0; a<this->clientRegister.size(); a++ )
+            if( this->clientRegister[a].getSocket() == socket )
+                return this->clientRegister[a].getSendNonce();
+
+        vverbose<<"--> [ClientRegister][getClientNetInformation] Client not present into the register"<<'\n';
+        return nullptr;
+
+    }
+
+    int* ClientRegister::getClientReceiveNonce( int socket ){
+
+        for( int a = 0; a<this->clientRegister.size(); a++ )
+            if( this->clientRegister[a].getSocket() == socket )
+                return this->clientRegister[a].getReceiveNonce();
 
         vverbose<<"--> [ClientRegister][getClientNetInformation] Client not present into the register"<<'\n';
         return nullptr;
@@ -98,7 +120,20 @@ namespace server{
 
         for( int a = 0; a<this->clientRegister.size(); a++ )
             if( this->clientRegister[a].getSocket() == socket ) {
-                this->clientRegister[a].updateNonce();
+                this->clientRegister[a].updateSendNonce();
+                return true;
+            }
+
+        vverbose<<"--> [ClientRegister][getClientNetInformation] Client not present into the register"<<'\n';
+        return false;
+
+    }
+
+    bool ClientRegister::updateClientReceiveNonce( int socket, int nonce ){
+
+        for( int a = 0; a<this->clientRegister.size(); a++ )
+            if( this->clientRegister[a].getSocket() == socket ) {
+                this->clientRegister[a].updateReceiveNonce( nonce );
                 return true;
             }
 

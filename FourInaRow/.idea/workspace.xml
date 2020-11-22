@@ -30,13 +30,11 @@
     <list default="true" id="4cbb8ddf-e807-44fa-ae33-bda27674b47b" name="Default Changelist" comment="">
       <change afterPath="$PROJECT_DIR$/program" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/cipher/CipherRSA.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/cipher/CipherRSA.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/cipher/CipherServer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/cipher/CipherServer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/ClientInformation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/ClientInformation.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/ClientInformation.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/ClientInformation.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/ClientRegister.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/ClientRegister.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/ClientRegister.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/ClientRegister.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/server/MainServer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MainServer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/MainServer.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MainServer.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utility/Converter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/utility/Converter.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utility/Message.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/utility/Message.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utility/NetMessage.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/utility/NetMessage.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -200,7 +198,8 @@
       <workItem from="1605942149279" duration="2967000" />
       <workItem from="1605967252789" duration="1258000" />
       <workItem from="1605978831096" duration="2335000" />
-      <workItem from="1606026420763" duration="4497000" />
+      <workItem from="1606026420763" duration="4694000" />
+      <workItem from="1606049913463" duration="1747000" />
     </task>
     <servers />
   </component>

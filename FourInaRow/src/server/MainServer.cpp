@@ -157,7 +157,7 @@ namespace server {
             }
 
             //  verification of the given nonce with the expected one
-            int* userNonce = this->clientRegister.getClientNonce( socket );
+            int* userNonce = this->clientRegister.getClientReceiveNonce( socket );
             if ( !userNonce ){
 
                 verbose << "--> [MainServer][manageMessage]] Error, user nonce not present" << '\n';
@@ -168,7 +168,7 @@ namespace server {
 
             }
 
-            if( *nonce != *userNonce ){
+            if( *nonce >= *userNonce ){
 
                 vverbose<<"--> [MainServer][keyExchangeHandler] Error invalid nonce"<<'\n';
                 response = this->makeError(string( "Security error. The nonce you give is invalid" ), nonce );
@@ -180,14 +180,15 @@ namespace server {
 
             }
 
+            this->clientRegister.updateClientReceiveNonce( socket, *nonce );
             delete userNonce;
             delete nonce;
         }
         base<<"--> [MainServer][manageMessage] Message content verification passed"<<'\n';
 
         // asynchronous management of match
-        if( message->getMessageType() != GAME && message->getMessageType() != CERTIFICATE_REQ )
-            this->clientRegister.updateClientNonce( socket );
+    //    if( message->getMessageType() != GAME && message->getMessageType() != CERTIFICATE_REQ )
+      //      this->clientRegister.updateClientNonce( socket );
 
         // pass the message to the higher level handler
         response = this->userManager( message, username, socket );
@@ -716,7 +717,7 @@ namespace server {
         //  preparation of response message
         NetMessage* param = this->cipherServer.getServerCertificate();
 
-        int *nonce = this->clientRegister.getClientNonce(socket);
+        int *nonce = this->clientRegister.getNonce(socket);
         if( !nonce ) {
 
             nonce = new int(this->generateRandomNonce());
