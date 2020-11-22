@@ -5,12 +5,87 @@ namespace server{
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
     //                                                                                           //
+    //                                          GETTERS                                          //
+    //                                                                                           //
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+
+    //  it gives the ip address of a client searched by its socket
+    string ClientRegister::getClientNetInformation( int socket ){
+
+        for( int a = 0; a<this->clientRegister.size(); a++ )
+            if( this->clientRegister[a].getSocket() == socket )
+                return this->clientRegister[a].getIPaddress();
+
+        vverbose<<"--> [ClientRegister][getClientNetInformation] Client not present into the register"<<'\n';
+        return string();
+
+    }
+
+    //  it gives the global nonce assigned to the client(used for certificate message)
+    int* ClientRegister::getNonce( int socket ){
+
+        for( int a = 0; a<this->clientRegister.size(); a++ )
+            if( this->clientRegister[a].getSocket() == socket )
+                return this->clientRegister[a].getNonce();
+
+        vverbose<<"--> [ClientRegister][getClientNetInformation] Client not present into the register"<<'\n';
+        return nullptr;
+
+    }
+
+    //  it gives the nonce used by the server to send messages to the client
+    int* ClientRegister::getClientNonce( int socket ){
+
+        for( int a = 0; a<this->clientRegister.size(); a++ )
+            if( this->clientRegister[a].getSocket() == socket )
+                return this->clientRegister[a].getSendNonce();
+
+        vverbose<<"--> [ClientRegister][getClientNetInformation] Client not present into the register"<<'\n';
+        return nullptr;
+
+    }
+
+    //  it gives the nonce used by the server to receive messages from the client
+    int* ClientRegister::getClientReceiveNonce( int socket ){
+
+        for( int a = 0; a<this->clientRegister.size(); a++ )
+            if( this->clientRegister[a].getSocket() == socket )
+                return this->clientRegister[a].getReceiveNonce();
+
+        vverbose<<"--> [ClientRegister][getClientNetInformation] Client not present into the register"<<'\n';
+        return nullptr;
+
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    //                                                                                           //
+    //                                          SETTERS                                          //
+    //                                                                                           //
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    //  it set the global nonce of the client and from that derives the nonce used to send and receive messages
+    bool ClientRegister::setNonce( int socket , int nonce ){
+
+        for( int a = 0; a<this->clientRegister.size(); a++ )
+            if( this->clientRegister[a].getSocket() == socket ) {
+                this->clientRegister[a].setNonce(nonce);
+                return true;
+            }
+
+        vverbose<<"--> [ClientRegister][getClientNetInformation] Client not present into the register"<<'\n';
+        return false;
+
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    //                                                                                           //
     //                                      PUBLIC FUNCTIONS                                     //
     //                                                                                           //
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     //  add a new client connection information to the register. If the information is already present
-    //  it silently discard the request[socket MUST BE unique]
+    //  it silently discards the request[socket MUST BE unique]
     bool ClientRegister::addClient( string ip , int socket ){
 
         if( this->clientRegister.size() == this->clientRegister.max_size() ){
@@ -34,7 +109,7 @@ namespace server{
             vverbose<<"--> [ClientRegister][addClient] Client "<<socket<<" correctly added to the register"<<'\n';
             return true;
 
-        }catch(const bad_alloc& e){
+        }catch( bad_alloc e ){
 
             verbose<<"--> [ClientRegister][addClient] Error, during memory allocation"<<'\n';
             return false;
@@ -43,14 +118,16 @@ namespace server{
 
     }
 
-    //  it removes a client searched by its socket
+    //  it removes all information stored about a client searched by its socket
     bool ClientRegister::removeClient( int socket ){
 
         for( int a = 0; a<this->clientRegister.size(); a++ )
             if( this->clientRegister[a].getSocket() == socket ){
+
                 this->clientRegister.erase(this->clientRegister.begin()+a);
                 vverbose<<"--> [ClientRegister][removeClient] Client removed from the client Register"<<'\n';
                 return true;
+
             }
 
         vverbose<<"--> [ClientRegister][removeClient] Client not present into the register"<<'\n';
@@ -58,64 +135,7 @@ namespace server{
 
     }
 
-    //  it gives the ip address of a client searched by its socket
-    string ClientRegister::getClientNetInformation( int socket ){
-
-        for( int a = 0; a<this->clientRegister.size(); a++ )
-            if( this->clientRegister[a].getSocket() == socket )
-                return this->clientRegister[a].getIPaddress();
-
-        vverbose<<"--> [ClientRegister][getClientNetInformation] Client not present into the register"<<'\n';
-        return string();
-
-    }
-
-    int* ClientRegister::getNonce( int socket ){
-
-        for( int a = 0; a<this->clientRegister.size(); a++ )
-            if( this->clientRegister[a].getSocket() == socket )
-                return this->clientRegister[a].getNonce();
-
-        vverbose<<"--> [ClientRegister][getClientNetInformation] Client not present into the register"<<'\n';
-        return nullptr;
-
-    }
-
-    int* ClientRegister::getClientNonce( int socket ){
-
-        for( int a = 0; a<this->clientRegister.size(); a++ )
-            if( this->clientRegister[a].getSocket() == socket )
-                return this->clientRegister[a].getSendNonce();
-
-        vverbose<<"--> [ClientRegister][getClientNetInformation] Client not present into the register"<<'\n';
-        return nullptr;
-
-    }
-
-    int* ClientRegister::getClientReceiveNonce( int socket ){
-
-        for( int a = 0; a<this->clientRegister.size(); a++ )
-            if( this->clientRegister[a].getSocket() == socket )
-                return this->clientRegister[a].getReceiveNonce();
-
-        vverbose<<"--> [ClientRegister][getClientNetInformation] Client not present into the register"<<'\n';
-        return nullptr;
-
-    }
-
-    bool ClientRegister::setNonce( int socket , int nonce ){
-
-        for( int a = 0; a<this->clientRegister.size(); a++ )
-            if( this->clientRegister[a].getSocket() == socket ) {
-                this->clientRegister[a].setNonce(nonce);
-                return true;
-            }
-
-        vverbose<<"--> [ClientRegister][getClientNetInformation] Client not present into the register"<<'\n';
-        return false;
-
-    }
-
+    //  it increases the nonce used by the server to send messages to the client
     bool ClientRegister::updateClientNonce( int socket ){
 
         for( int a = 0; a<this->clientRegister.size(); a++ )
@@ -129,6 +149,7 @@ namespace server{
 
     }
 
+    //  it updates the nonce used by the server to receive messages from the client
     bool ClientRegister::updateClientReceiveNonce( int socket, int nonce ){
 
         for( int a = 0; a<this->clientRegister.size(); a++ )
@@ -142,6 +163,7 @@ namespace server{
 
     }
 
+    //  it updates the address assigned to the client(used to insert the port used by the client)
     bool ClientRegister::updateIp(int socket, int port){
 
         for( int a = 0; a<this->clientRegister.size(); a++ )
@@ -154,8 +176,6 @@ namespace server{
         return false;
 
     }
-
-
 
     //  verify the presence of a client searched by its socket
     bool ClientRegister::has( int socket ) {

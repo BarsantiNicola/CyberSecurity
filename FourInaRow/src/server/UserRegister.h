@@ -34,7 +34,6 @@ namespace server {
             bool removeUser(string username);                              //  REMOVES A USER IDENTIFIED BY ITS USERNAME
             bool removeUser(int socket);                                   //  REMOVES A USER IDENTIFIED BY ITS SOCKET
 
-            bool setNonce(string username, int nonce);                    //  SETS A NONCE FOR THE USER
             bool setLogged(string username, cipher::SessionKey *key);     //  SETS THE USER TO LOGGED
             bool setPlay(string username);                                 //  SETS THE USER TO PLAY A MATCH
             bool setWait(string username);                                 //  SETS THE USER TO WAIT A MATCH
@@ -45,7 +44,6 @@ namespace server {
             bool has(string username);                                     //  VERIFIES THE PRESENCE OF A USER BY ITS USERNAME
 
             cipher::SessionKey *getSessionKey(string username);            //  GIVES THE SESSION KEY OF A USER
-            int *getNonce(string username);                        //  GIVES THE NONCE OF A USER
             UserStatus *getStatus(string username);                       //  GIVES THE STATUS OF A USER
             string getUsername(int socket);                          //  GIVES THE USERNAME OF A USER
             int*   getSocket( string username );

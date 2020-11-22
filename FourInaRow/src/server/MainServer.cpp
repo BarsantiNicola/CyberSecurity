@@ -810,17 +810,6 @@ namespace server {
 
         }
 
-        if( !this->userRegister.setNonce(message->getUsername(), *nonce) ){    //  save nonce for key_exchange
-
-            verbose<<"-->[MainServer][loginHandler] Error, during the setting of user nonce"<<'\n';
-            this->userRegister.removeUser( socket );
-            response->setMessageType( LOGIN_FAIL );
-            this->cipherServer.toSecureForm( response, nullptr );
-
-            return response;
-
-        }
-
         this->clientRegister.updateIp( socket, *(message->getPort()));
 
         response->setMessageType( LOGIN_OK );
