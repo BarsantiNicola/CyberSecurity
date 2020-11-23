@@ -80,14 +80,16 @@ namespace client
      return false;
    }
    string snonce = to_string( *messRet->getNonce() );
-   new int(atoi(snonce.substr(0,snonce.length()/2).c_str())*10000);
-   int* nonceApp=new int(atoi(snonce.substr(0,snonce.length()/2).c_str())*10000);
+   
+   unsigned int* nonceApp=new unsigned int((unsigned int)atoi(snonce.substr(0,snonce.length()/2).c_str())*10000);
    this->sendNonce = *nonceApp;
    delete nonceApp;
-   nonceApp =new int(atoi(snonce.substr(snonce.length()/2,snonce.length()).c_str())*10000);
+   nonceApp =new unsigned int((unsigned int)atoi(snonce.substr(snonce.length()/2,snonce.length()).c_str())*10000);
    this->receiveNonce=*nonceApp;
    delete nonceApp;
+   
    vverbose<<"-->[MainClient][certificateProtocol] the vaulue of send nonce is "<<this->sendNonce<<'\n';
+   vverbose<<"-->[MainClient][certificateProtocol] the vaulue of receive nonce is "<<this->receiveNonce<<'\n';
    //res = cipher_client-> getSessionKey( netRet->getMessage() ,netRet->length() );
    //vverbose<<"-->[MainClient][certificateProtocol] sessionKey obtained"<<'\n';
    return res;
