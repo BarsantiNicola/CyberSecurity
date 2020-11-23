@@ -168,7 +168,9 @@ namespace server {
 
             }
 
-            if( *nonce >= *userNonce ){
+            cout<<"RECEIVE NONCE: "<<*userNonce<<endl;
+            cout<<"Message NONCE: "<<*nonce<<endl;
+            if( *nonce < *userNonce ){
 
                 vverbose<<"--> [MainServer][keyExchangeHandler] Error invalid nonce"<<'\n';
                 response = this->makeError(string( "Security error. The nonce you give is invalid" ), nonce );
