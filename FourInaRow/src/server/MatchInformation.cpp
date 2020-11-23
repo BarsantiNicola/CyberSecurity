@@ -8,13 +8,8 @@ namespace server{
         this->challenger = challenger;
         this->challenged = challenged;
         this->status = OPENED;
-        this->token = 0;
         this->control = false;
-
-        if( NUMBER_ROW <= 0 || NUMBER_COLUMN <= 0 )
-            this->nMoves = 0;
-        else
-            this->nMoves = NUMBER_ROW*NUMBER_COLUMN;
+        this->nMoves = 42;
 
     }
 
@@ -29,6 +24,7 @@ namespace server{
         return this->challenger;
 
     }
+
     string MatchInformation::getChallenged(){
 
         return this->challenged;
@@ -66,75 +62,114 @@ namespace server{
     //                                                                                           //
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
-    //  used to register users moves during the challenge
+    //  the function from the chosen column search the first available row and put it a token. Then it verify if the new putted
+    //  moves make the player win or tie.
     int MatchInformation::addChallengerMove( int chosen_col ){
 
-        if( this->status != STARTED ) return -2;
-        int row = -1;
-        if( chosen_col >-1 || chosen_col <= NUMBER_COLUMN)
-            for( int a = NUMBER_ROW-1; a>0; a-- )
-                if( !this->gameBoard[chosen_col][a] ){
-                    row = a;
-                    break;
-                }
-        if( row == -1 ){
-            verbose<<"--> [MatchInformation][addChallengedMove] Error, column full"<<'\n';
+        if( this->status != STARTED ){
+
+            verbose<<"--> [MatchInformation][addChallengerMove] Error match not started yet"<<'\n';
             return -2;
+
         }
+
+        if( chosen_col < 0 || chosen_col > NUMBER_COLUMN ){
+
+            verbose<<"--> [MatchInformation][addChallengerMove] Error, bad column"<<'\n';
+            return -2;
+
+        }
+
+        int row = -1;
+        for( int a = NUMBER_ROW-1; a>0; a-- )
+            if( !this->gameBoard[chosen_col][a] ){
+
+                row = a;
+                break;
+
+            }
+
+        if( row == -1 ){
+
+            verbose<<"--> [MatchInformation][addChallengedMove] Error, column full"<<'\n';
+            return -1;
+
+        }
+
         this->gameBoard[chosen_col][row] = 2;
         return this->verifyGame( row, chosen_col,this->challenger );
 
     }
 
-    //  used to register users moves during the challenge
+    //  the function from the chosen column search the first available row and put it a token. Then it verify if the new putted
+    //  moves make the player win or tie.
     int MatchInformation::addChallengedMove( int chosen_col ){
 
 
-        if( this->status != STARTED ) return -2;
-        int row = -1;
-        if( chosen_col >-1 || chosen_col <= NUMBER_COLUMN)
-            for( int a = NUMBER_ROW-1; a>0; a-- )
-                if( !this->gameBoard[chosen_col][a] ){
-                    row = a;
-                    break;
-                }
-        if( row == -1 ){
-            verbose<<"--> [MatchInformation][addChallengedMove] Error, column full"<<'\n';
+        if( this->status != STARTED ){
+
+            verbose<<"--> [MatchInformation][addChallengerMove] Error match not started yet"<<'\n';
             return -2;
+
         }
+
+        if( chosen_col < 0 || chosen_col > NUMBER_COLUMN ){
+
+            verbose<<"--> [MatchInformation][addChallengerMove] Error, bad column"<<'\n';
+            return -2;
+
+        }
+
+        int row = -1;
+        for( int a = NUMBER_ROW-1; a>0; a-- )
+            if( !this->gameBoard[chosen_col][a] ){
+
+                row = a;
+                break;
+
+            }
+
+        if( row == -1 ){
+
+            verbose<<"--> [MatchInformation][addChallengedMove] Error, column full"<<'\n';
+            return -1;
+
+        }
+
         this->gameBoard[chosen_col][row] = 2;
+
         return this->verifyGame( row, chosen_col,this->challenged );
 
     }
 
-    //  the function calculates the result of the match to verify the winner
-    int  MatchInformation::verifyMatch(){
-        return 0;
-    }
-
-    //  the function controls if a user is present as a challenger or challenged
+    //  the function controls if a user is present as a challenger or challenged for the current match
     bool MatchInformation::hasUser( string username ){
 
         return (this->challenger.compare(username) == 0) || (this->challenged.compare(username) == 0);
+
     }
 
-    //  the function controls if a user is set as challenger
+    //  the function controls if the user is set as challenger for the current game
     bool MatchInformation::isChallenger( string username ){
 
         return this->challenger.compare(username) == 0;
     }
 
+    //  the function returns the moves remaining until the gameboard is full
     int MatchInformation::getTotalMoves(){
 
         return this->nMoves;
 
     }
+
+    //  the function returns true if the passed user is in charge for doing the next move
     bool MatchInformation::hasControl( string username ){
 
         return (!this->challenger.compare(username) && !control) || (!this->challenged.compare(username) && control);
 
     }
 
+    //  the function verify if the user has won or tied the match with the last inserted token
     int MatchInformation::verifyGame(int row, int column, string username) {
 
         if( !this->hasControl(username))
@@ -276,13 +311,4 @@ namespace server{
 
     }
 
-    bool MatchInformation::verifyToken( int token ){
-
-        if( this->token == 0 || this->token == token-1 ){
-            this->token = token;
-            return true;
-        }
-
-        return false;
-    }
 }
