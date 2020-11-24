@@ -28,10 +28,10 @@ namespace utility {
             myCopy( this->message,  mess, length);
             this->len = length;
 
-            cout << "--> [NetMessage][Costructor] Message correctly generated: [\t";
+            vverbose << "--> [NetMessage][Costructor] Message correctly generated: [\t";
             for( int a = 0; a<len; a++ )
-                cout<<this->message[a];
-            cout<<"\t]\n";
+                vverbose<<this->message[a];
+            vverbose<<"\t]\n";
 
 
         }catch( bad_alloc e ){

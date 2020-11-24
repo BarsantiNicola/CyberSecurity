@@ -10,16 +10,16 @@ namespace server {
     //                                                                                           //
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
+    //  the constructor binds the server socket for accepting the clients requests
     MainServer::MainServer( string ipAddr , int port ){
 
         this->manager = new utility::ConnectionManager( true , ipAddr.c_str(), port );
-        base<<"--> [MainServer][MainServer] Server build completed"<<'\n';
-
+        base << "---> [MainServer][Constructor] Server build completed" << '\n';
 
     }
 
     //  starts the server. The function doesn't return. It will continue until a fatal error happens or the user manually close
-    //  the program by Control-C
+    //  the program by typing Control-C
     void MainServer::server() {
 
         Message *message;
@@ -27,48 +27,54 @@ namespace server {
         int socket;
         string ipAddr;
         vector<int> waitSockets;
-        base<<"--> [MainServer][server] Starting server.."<<'\n';
+        base<<"---> [MainServer][server] Starting server.."<<'\n';
 
         if( !this->manager ){
+
             verbose<<"--> [MainServer][server] Fatal error, unable to find connectionManager"<<'\n';
             return;
+
         }
 
-        base<<"--> [MainServer][server] Server ready to receive messages"<<'\n';
+        base<<"---> [MainServer][server] Server ready to receive messages"<<'\n';
         while( true ){
 
             socket = -1;
             ipAddr.clear();
             waitSockets.clear();
 
+            //  wait for a new message
             waitSockets = this->manager->waitForMessage( &socket, &ipAddr );
-
 
             if( socket != -1 && !ipAddr.empty() ){
 
-                base<<"--> [MainServer][server] New client connection received: "<<socket<<'\n';
+                base<<"---> [MainServer][server] New client connection received on socket: "<<socket<<'\n';
                 this->clientRegister.addClient( ipAddr, socket );
                 continue;
 
             }
 
             if( !waitSockets.size() ){
-                verbose<<"--> [MainServer][server] Error into connection management"<<'\n';
+
+                verbose<<"--> [MainServer][server] Error into connection management. Unable to find sockets"<<'\n';
                 continue;
 
             }
 
+            //  for each socket we verify if there is a pending message
             for( int sock : waitSockets ){
 
                 if( sock == -1 ) continue;
 
                 try {
 
+                    //  the generation of the Message class perform a first sanitization of the tainted data
+                    //  if something invalid its found(missing fields, invalid characters into a field) a null message will be given
                     message = this->manager->getMessage( sock );
 
-                }catch( runtime_error ){
+                }catch( runtime_error e ){
 
-                    base<<"--> [MainServer][server] Client "<<sock<<" disconnected"<<'\n';
+                    base<<"---> [MainServer][server] Client "<<sock<<" disconnected"<<'\n';
                     this->logoutClient( sock );
                     this->clientRegister.removeClient( sock );
                     continue;
@@ -77,23 +83,27 @@ namespace server {
 
                 if( message ) {
 
-                    base << "--> [MainServer][server] New message received from client: " << sock << '\n';
+                    base << "---> [MainServer][server] New message received from client: " << sock << '\n';
 
+                    //  send the message to the management level which will return back a response if needed
                     response = this->manageMessage( message, sock );
                     delete message;
 
                     bool socketClosed = false;
 
-                    if (response) {
-                        if (!this->manager->sendMessage(*response, sock, &socketClosed, nullptr, 0) && socketClosed) {
+                    // if there is a response we send it back
+                    if ( response ) {
 
-                            vverbose << "--> [MainServer][server] Error, unable to send message, client " << socket << " disconnected" << '\n';
+                        if ( !this->manager->sendMessage( *response, sock, &socketClosed, nullptr, 0 ) && socketClosed ){
+
+                            verbose << "--> [MainServer][server] Error, unable to send message, client " << socket << " disconnected" << '\n';
 
                             this->logoutClient( sock );
                             this->clientRegister.removeClient(sock);
 
                         }else
-                            base << "--> [MainServer][server] Response sent: "<<response->getMessageType()<<'\n';
+                            base << "---> [MainServer][server] Response to client "<<sock<<" sent: "<<response->getMessageType()<<'\n';
+
                     }
 
                     delete response;
@@ -109,54 +119,59 @@ namespace server {
     //                                                                                           //
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
-    //  the function verify the message consistency then it will pass it to the correct handler
+    //  The function performs a verification of the message nonce validity.
+    //  Then eventually decrypts the message fields and finally assign it to a skeleton function to its management
     Message* MainServer::manageMessage( Message* message, int socket ){
 
         //  verification of function parameters
         if( !message || socket < 0 ){
-            verbose<<"--> [MainServer][manageMessage] Error, missing parameter. Operation Aborted"<<'\n';
+
+            verbose<<"--> [MainServer][manageMessage] Error, invalid parameter. Operation aborted"<<'\n';
             return nullptr;
+
         }
 
-        base<<"--> [MainServer][manageMessage] Starting base message content verification"<<'\n';
-        //  verify the user is not already registered
+        base<<"----> [MainServer][manageMessage] Starting message content verification"<<'\n';
+
         if ( !this->clientRegister.has(socket) ) {
 
             verbose << "--> [MainServer][manageMessage] Error, unregistered socket tried to contact the server" << '\n';
-            return this->makeError(string( "Invalid request. Your socket is not registered into the service. Try to restart your application" ), message->getNonce());
+            return this->makeError( string( "Invalid request. Your socket is not registered into the service. Try to restart your application" ), message->getNonce() );
 
         }
 
         //  CERTIFICATE_REQ and LOGIN_REQ must fail if the user is already logged into the service
-        if (!this->userRegister.has(socket) && message->getMessageType() != CERTIFICATE_REQ && message->getMessageType() != LOGIN_REQ ){
+        if ( !this->userRegister.has(socket) && message->getMessageType() != CERTIFICATE_REQ && message->getMessageType() != LOGIN_REQ ){
 
-            vverbose << "--> [MainServer][manageMessage] Warning, user not already logged. Invalid request" << '\n';
-            return this->makeError(string( "Invalid request. You have to login to the service before"), message->getNonce());
+            verbose << "--> [MainServer][manageMessage] Warning, user not already logged. Invalid request" << '\n';
+            return this->makeError( string( "Invalid request. You have to login to the service before" ), message->getNonce() );
 
         }
 
         //  verification of the user registration
         string username = this->userRegister.getUsername(socket);
-        if (username.empty() && message->getMessageType() != CERTIFICATE_REQ && message->getMessageType() != LOGIN_REQ ) {
+        if ( username.empty() && message->getMessageType() != CERTIFICATE_REQ && message->getMessageType() != LOGIN_REQ ) {
 
-            vverbose << "--> [MainServer][manageMessage] Error, username not found" << '\n';
-            return this->makeError(string( "Invalid request. You have to login to the service before" ), message->getNonce());
+            verbose << "--> [MainServer][manageMessage] Error, username not found" << '\n';
+            return this->makeError( string( "Invalid request. You have to login to the service before" ), message->getNonce() );
 
         }
 
         Message* response;
+        //  if the message is a CERTIFICATE_REQ or GAME the nonce verification is not needed for nonce miss(CERTIFICATE_REQ) or
+        //  it is performed separately(GAME) for particular management
         if( message->getMessageType() != CERTIFICATE_REQ && message->getMessageType() != GAME ) {
 
-            //  verification of nonce presence
+            //  NONCE VERIFICATION
+
             int *nonce = message->getNonce();
             if ( !nonce ) {
 
                 vverbose << "--> [MainServer][manageMessage] Error, invalid message. Missing Nonce" << '\n';
-                return this->makeError(string("Invalid request. The service requires a nonce"), nonce );
+                return this->makeError( string( "Invalid request. The service requires a nonce" ), nonce );
 
             }
 
-            //  verification of the given nonce with the expected one
             int* userNonce = this->clientRegister.getClientReceiveNonce( socket );
             if ( !userNonce ){
 
@@ -168,15 +183,13 @@ namespace server {
 
             }
 
-            cout<<"RECEIVE NONCE: "<<*userNonce<<endl;
-            cout<<"Message NONCE: "<<*nonce<<endl;
             if( *nonce < *userNonce ){
 
                 vverbose<<"--> [MainServer][keyExchangeHandler] Error invalid nonce"<<'\n';
                 response = this->makeError(string( "Security error. The nonce you give is invalid" ), nonce );
 
                 delete nonce;
-               // delete userNonce;
+                delete userNonce;
 
                 return response;
 
@@ -185,14 +198,11 @@ namespace server {
             this->clientRegister.updateClientReceiveNonce( socket, *nonce+1 );
             delete userNonce;
             delete nonce;
+
         }
-        base<<"--> [MainServer][manageMessage] Message content verification passed"<<'\n';
 
-        // asynchronous management of match
-    //    if( message->getMessageType() != GAME && message->getMessageType() != CERTIFICATE_REQ )
-      //      this->clientRegister.updateClientNonce( socket );
+        base<<"----> [MainServer][manageMessage] Nonce verification passed. Start message management.."<<'\n';
 
-        // pass the message to the higher level handler
         response = this->userManager( message, username, socket );
 
         if( response )
@@ -202,54 +212,56 @@ namespace server {
 
     }
 
-    //  the function manages the messages which involve only him and the contacted server(no other clients have to be contacted)
-    //  if the function has not the authority to manage the message it passes it to the matchManager to manage it
+    //  the function manages the messages which involve only a single client that contacts the server(no other clients have to be contacted)
+    //  if the function hasn't the authority to manage the message it passes it to the matchManager to manage it
     Message* MainServer::userManager(Message* message, string username , int socket ) {
 
         if( !message || socket<0 ){
 
-            verbose<<"--> [MainServer][userManager] Error, missing parameters. Operation Aborted"<<'\n';
+            verbose<<"--> [MainServer][userManager] Error, invalid parameters. Operation aborted"<<'\n';
             return nullptr;
 
         }
 
-        int* nonce = this->clientRegister.getClientNonce(socket);
+        int* nonce = this->clientRegister.getClientNonce( socket );
         Message* ret;
+
         switch( message->getMessageType() ){
 
             case utility::CERTIFICATE_REQ:
-                base<<"--> [MainServer][userManager] Message received: CERTIFICATE_REQ"<<'\n';
-                ret = this->certificateHandler(message, socket );
+                base<<"-----> [MainServer][userManager] Message received: CERTIFICATE_REQ"<<'\n';
+                ret = this->certificateHandler( message, socket );
                 break;
 
             case utility::LOGIN_REQ:
-                base<<"--> [MainServer][userManager] Message received: LOGIN_REQ"<<'\n';
-                ret = this->loginHandler(message, socket, nonce );
+                base<<"-----> [MainServer][userManager] Message received: LOGIN_REQ"<<'\n';
+                ret = this->loginHandler( message, socket, nonce );
                 break;
 
             case utility::KEY_EXCHANGE:
-                base<<"--> [MainServer][userManager] Message received: KEY_EXCHANGE"<<'\n';
-                ret = this->keyExchangeHandler(message, username, nonce );
+                base<<"-----> [MainServer][userManager] Message received: KEY_EXCHANGE"<<'\n';
+                ret = this->keyExchangeHandler( message, username, nonce );
                 break;
 
             case utility::USER_LIST_REQ:
-                base<<"--> [MainServer][userManager] Message received: USER_LIST_REQ"<<'\n';
-                ret = this->userListHandler(message, username, nonce );
+                base<<"-----> [MainServer][userManager] Message received: USER_LIST_REQ"<<'\n';
+                ret = this->userListHandler( message, username, nonce );
                 break;
 
             case utility::RANK_LIST_REQ:
-                base<<"--> [MainServer][userManager] Message received: RANK_LIST_REQ"<<'\n';
-                ret = this->rankListHandler(message, username, nonce );
+                base<<"-----> [MainServer][userManager] Message received: RANK_LIST_REQ"<<'\n';
+                ret = this->rankListHandler( message, username, nonce );
                 break;
 
             case utility::LOGOUT_REQ:
-                base<<"--> [MainServer][userManager] Message received: LOGOUT_REQ"<<'\n';
-                ret = this->logoutHandler(message, username, socket, nonce );
+                base<<"-----> [MainServer][userManager] Message received: LOGOUT_REQ"<<'\n';
+                ret = this->logoutHandler( message, username, socket, nonce );
                 break;
 
             default:
                 ret = this->matchManager( message , username, nonce );
                 break;
+
         }
 
         if( nonce )
@@ -259,49 +271,49 @@ namespace server {
 
     }
 
+    //  the function manages the messages which involve two clients which interact exchanging messages using the server acting as a relay
     Message* MainServer::matchManager(Message* message, string username, int* nonce ){
 
         if( !message || username.empty() ){
 
-            verbose<<"--> [MainServer][matchManager] Error, missing parameters. Operation Aborted"<<'\n';
+            verbose<<"--> [MainServer][matchManager] Error, missing parameters. Operation aborted"<<'\n';
             return nullptr;
 
         }
 
         Message* ret;
-
         switch( message->getMessageType() ){
 
             case utility::MATCH:
-                base<<"--> [MainServer][matchManager] Message received: MATCH"<<'\n';
+                base<<"-----> [MainServer][matchManager] Message received: MATCH"<<'\n';
                 ret = this->matchHandler( message, username, nonce );
                 break;
 
             case utility::ACCEPT:
-                base<<"--> [MainServer][matchManager] Message received: ACCEPT"<<'\n';
+                base<<"-----> [MainServer][matchManager] Message received: ACCEPT"<<'\n';
                 ret = this->acceptHandler( message, username, nonce );
                 break;
 
             case utility::REJECT:
-                base<<"--> [MainServer][matchManager] Message received: REJECT"<<'\n';
+                base<<"-----> [MainServer][matchManager] Message received: REJECT"<<'\n';
                 ret = this->rejectHandler( message, username, nonce );
                 break;
 
             case utility::WITHDRAW_REQ:
-                base<<"--> [MainServer][matchManager] Message received: WITHDRAW_REQ"<<'\n';
+                base<<"-----> [MainServer][matchManager] Message received: WITHDRAW_REQ"<<'\n';
                 ret = this->withdrawHandler( message, username, nonce );
                 break;
 
             case utility::DISCONNECT:
-                base<<"--> [MainServer][matchManager] Message received: DISCONNECT"<<'\n';
+                base<<"-----> [MainServer][matchManager] Message received: DISCONNECT"<<'\n';
                 ret = this->disconnectHandler( message, username, nonce );
                 break;
             case utility::GAME:
-                base<<"--> [MainServer][matchManager] Message received: GAME"<<'\n';
+                base<<"-----> [MainServer][matchManager] Message received: GAME"<<'\n';
                 ret = this->gameHandler( message, username, nonce );
                 break;
             default:
-                base<<"--> [MainServer][matchManager] Unknown message type"<<'\n';
+                base<<"-----> [MainServer][matchManager] Unknown message type"<<'\n';
                 break;
 
         }
@@ -312,29 +324,34 @@ namespace server {
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
     //                                                                                           //
-    //                                        EVENT HANDLERS                                     //
+    //                                           UTILITIES                                       //
     //                                                                                           //
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
-    //  Function to remove a client from the service. The function removes all the pending matches from the client
+    //  Function to remove a user from the service. The function removes all the pending matches from the client
     //  and then removes it from the service
     void MainServer::logoutClient( int socket ) {
 
         if( socket < 0 ){
-            verbose<<"--> [MainServer][logoutClient] Error, invalid parameter. Undo operation"<<'\n';
+
+            verbose<<"--> [MainServer][logoutClient] Error, invalid parameter. Operation aborted"<<'\n';
             return;
+
         }
 
-        //  we take all the matches in which the user is involved and we close them
+        base<<"-----> [MainServer][logoutClient] Performing logout of the client"<<'\n';
+
+        //  searching of all the matches in which the user is involved to close them
         vector<int> matches = this->matchRegister.getMatchIds( this->userRegister.getUsername( socket ));
         string username = this->userRegister.getUsername( socket );
 
         for( int matchID: matches )
             this->closeMatch( username, matchID );
 
+        //  removing the user information
         this->userRegister.removeUser( socket );
 
-        base<<"--> [MainServer][logoutClient] Logout of client: "<<socket<<" completed"<<'\n';
+        base<<"-----> [MainServer][logoutClient] Logout of user "<<username<<" completed"<<'\n';
 
     }
 
@@ -342,16 +359,19 @@ namespace server {
     void MainServer::closeMatch( string username, int matchID ){
 
         if( matchID < 0 || username.empty() ){
-            verbose<<"--> [MainServer][closeMatch] Error, invalid parameter. Undo operation"<<'\n';
+
+            verbose<<"--> [MainServer][closeMatch] Error, invalid parameter. Operation aborted"<<'\n';
             return;
+
         }
 
+        base<<"------> [MainServer][closeMatch] Closing match: "<<matchID<<'\n';
         string challenged = this->matchRegister.getChallenged(matchID);
         string challenger = this->matchRegister.getChallenger(matchID);
 
         if( challenged.empty() || challenger.empty() ){
 
-            verbose<<"--> [MainServer][closeMatch] Error, unable to find users"<<'\n';
+            verbose<<"--> [MainServer][closeMatch] Error, unable to find the users"<<'\n';
             return;
 
         }
@@ -364,18 +384,29 @@ namespace server {
 
         }
 
-        //  if the user which disconnect is the challenged and the match isn't started we send reject
+        //  if the user which disconnect is the challenged and the match isn't started we send to the challenger a reject to close its request
         if( !challenged.compare(username) && *(this->matchRegister.getMatchStatus( matchID )) == OPENED ) {
+
+            base<<"------> [MainServer][closeMatch] Restoring behavior: sending reject to "<<challenger<<'\n';
             this->userRegister.setLogged( challenger, this->userRegister.getSessionKey( challenger ));
             this->sendRejectMessage(challenger, challenged, this->userRegister.getSocket(challenger));
+
         }else //  otherwise we send a disconnect to the other client
-            if( !challenged.compare(username))
-                this->sendDisconnectMessage( challenger );
-            else
-                this->sendDisconnectMessage( challenged);
+            if( !challenged.compare(username)) {
+
+                base<<"------> [MainServer][closeMatch] Restoring behavior: sending disconnect to challenged: "<<challenged<<'\n';
+                this->sendDisconnectMessage(challenger);
+
+            }else {
+
+                base<<"------> [MainServer][closeMatch] Restoring behavior: sending disconnect to challenger: "<<challenger<<'\n';
+                this->sendDisconnectMessage(challenged);
+
+            }
 
         //  finally we remove the match
         this->matchRegister.removeMatch( matchID );
+        base<<"------> [MainServer][closeMatch] Match "<<matchID<<" closed"<<'\n';
 
     }
 
@@ -392,22 +423,31 @@ namespace server {
         struct timespec ts;
 
         if( !randFile ){
+
             verbose<<" [MainServer][generateRandomNonce] Error, unable to locate urandom file"<<'\n';
             if( timespec_get( &ts, TIME_UTC )==0 ) {
+
                 verbose << "--> [MainServer][generateRandomNonce] Error, unable to use timespec" << '\n';
                 srand( time( nullptr ));
+
             }else
                 srand( ts.tv_nsec^ts.tv_sec );
+
             return rand();
+
         }
 
         if( fread( &seed, 1, sizeof( seed ),randFile ) != sizeof( seed )){
+
             verbose<<" [MainServer][generateRandomNonce] Error, unable to load enough data to generate seed"<<'\n';
             if( timespec_get( &ts, TIME_UTC ) == 0 ) {
+
                 verbose << "--> [MainServer][generateRandomNonce] Error, unable to use timespec" << '\n';
                 srand( time( NULL ));
+
             }else
                 srand( ts.tv_nsec^ts.tv_sec );
+
         }else
             srand(seed);
 
@@ -426,17 +466,29 @@ namespace server {
 
         }
 
-        vverbose<<"--> [MainServer][makeError] Generation of error message: "<<errorMessage<<'\n';
+        base<<"-------> [MainServer][makeError] Generation of error message: "<<errorMessage<<'\n';
 
-        Message* response = new Message();
+        Message* response = nullptr;
+        try {
+
+            response = new Message();
+
+        }catch( bad_alloc e ){
+
+            verbose<<"--> [MainServer][makeError] Error during memory allocation. Operation aborted"<<'\n';
+            return nullptr;
+
+        }
+
         response->setMessageType( ERROR );
 
-        //  for error made into the CERTIFICATE_REQ we generate a one-time nonce
+        //  can happen that the server doesn't have a valid nonce(error caused for a missing nonce into messages
+        //  and user nonce not present
         if( !nonce )
             response->setNonce(generateRandomNonce());
         else
             response->setNonce(*nonce);
-        response->setMessage( (unsigned char*)errorMessage.c_str() , errorMessage.length() );
+        response->setMessage( (unsigned char*)errorMessage.c_str(), errorMessage.length() );
 
         //  sign the message with a server rsa signature
         if( !this->cipherServer.toSecureForm( response , nullptr )){
@@ -446,6 +498,7 @@ namespace server {
 
         }
 
+        base<<"-------> [MainServer][makeError] Error message generated"<<'\n';
         return response;
 
     }
@@ -455,14 +508,14 @@ namespace server {
 
         if( !message || socket < 0 ){
 
-            verbose<<"--> [MainServer][sendMessage] Error invalid arguments. Abort operation"<<'\n';
+            verbose<<"--> [MainServer][sendMessage] Error invalid arguments. Operation aborted"<<'\n';
             return false;
 
         }
 
         bool socketClosed = false;
 
-        if (!this->manager->sendMessage(*message, socket, &socketClosed, nullptr, 0) && socketClosed) {
+        if ( !this->manager->sendMessage(*message, socket, &socketClosed, nullptr, 0) && socketClosed ) {
 
             // if the connection with a client is closed we disconnect the user from the service
             vverbose << "--> [MainServer][sendMessage] Error, unable to send message, client " << socket << " disconnected" << '\n';
@@ -471,9 +524,10 @@ namespace server {
 
         }
         return true;
+
     }
 
-    // sends directly an ACCEPT message to the challenger client
+    // sends directly an ACCEPT message to the challenger client given as parameter
     bool MainServer::sendAcceptMessage( string challenger, string challenged, int* socket ){
 
         if( challenger.empty() || challenged.empty() || !socket ){
@@ -483,7 +537,9 @@ namespace server {
 
         }
 
-        int* nonce = this->clientRegister.getClientNonce(*socket);
+        base<<"-------> [MainServer][sendAcceptMessage] Sending an accept message to "<<challenger<<'\n';
+
+        int* nonce = this->clientRegister.getClientNonce( *socket );
         if( !nonce ){
 
             verbose<<"--> [MainServer][sendAcceptMessage] Error unable to found user nonce. Operation aborted"<<'\n';
@@ -491,12 +547,21 @@ namespace server {
 
         }
 
-        Message* message = new Message();
-        message->setMessageType( ACCEPT );
-        message->setAdversary_1(challenger);
-        message->setAdversary_2(challenged);
-        message->setNonce(*nonce);
+        Message* message = nullptr;
+        try{
 
+            message = new Message();
+            message->setMessageType( ACCEPT );
+            message->setAdversary_1( challenger );
+            message->setAdversary_2( challenged );
+            message->setNonce( *nonce );
+
+        }catch( bad_alloc e ){
+
+            verbose<<"--> [MainServer][sendAcceptMessage] Error during memory allocation. Operation aborted"<<'\n';
+            return false;
+
+        }
         delete nonce;
 
         if( !this->cipherServer.toSecureForm( message , this->userRegister.getSessionKey(this->userRegister.getUsername(*socket)))){
@@ -505,7 +570,7 @@ namespace server {
             return false;
 
         }
-        this->clientRegister.updateClientNonce(*socket);
+        this->clientRegister.updateClientNonce( *socket );
         return this->sendMessage( message, *socket );
 
     }
@@ -520,7 +585,9 @@ namespace server {
 
         }
 
-        int* nonce = this->clientRegister.getClientNonce(*socket);
+        base<<"-------> [MainServer][sendRejectMessage] Sending a reject message to "<<challenger<<'\n';
+
+        int* nonce = this->clientRegister.getClientNonce( *socket );
         if( !nonce ){
 
             verbose<<"--> [MainServer][sendRejectMessage] Error unable to found user nonce. Operation aborted"<<'\n';
@@ -528,12 +595,21 @@ namespace server {
 
         }
 
-        Message* message = new Message();
-        message->setMessageType( REJECT );
-        message->setAdversary_1(challenger);
-        message->setAdversary_2(challenged);
-        message->setNonce(*nonce);
+        Message* message = nullptr;
+        try{
 
+            message = new Message();
+            message->setMessageType( REJECT );
+            message->setAdversary_1( challenger );
+            message->setAdversary_2( challenged );
+            message->setNonce( *nonce );
+
+        }catch( bad_alloc e ){
+
+            verbose<<"--> [MainServer][sendRejectMessage] Error during memory allocation. Operation aborted"<<'\n';
+            return false;
+
+        }
         delete nonce;
 
         if( !this->cipherServer.toSecureForm( message , this->userRegister.getSessionKey(this->userRegister.getUsername(*socket)))){
@@ -542,7 +618,7 @@ namespace server {
             return false;
 
         }
-        this->clientRegister.updateClientNonce(*socket);
+        this->clientRegister.updateClientNonce( *socket );
         return this->sendMessage( message, *socket );
 
     }
@@ -557,24 +633,35 @@ namespace server {
 
         }
 
-        int* nonce = this->clientRegister.getClientNonce(*socket);
+        base<<"-------> [MainServer][sendWithdrawMessage] Sending a withdraw_req message to "<<username<<'\n';
+
+        int* nonce = this->clientRegister.getClientNonce( *socket );
         if( !nonce ){
 
-            verbose<<"--> [MainServer][sendRejectMessage] Error unable to found user nonce. Operation aborted"<<'\n';
+            verbose<<"--> [MainServer][sendWithdrawMessage] Error unable to found user nonce. Operation aborted"<<'\n';
             return false;
 
         }
 
-        Message* message = new Message();
-        message->setMessageType( WITHDRAW_REQ );
-        message->setUsername(username);
-        message->setNonce(*nonce);
+        Message* message = nullptr;
+        try{
 
+            message = new Message();
+            message->setMessageType( WITHDRAW_REQ );
+            message->setUsername( username );
+            message->setNonce( *nonce );
+
+        }catch( bad_alloc e ){
+
+            verbose<<"--> [MainServer][sendWithdrawMessage] Error during memory allocation. Operation aborted"<<'\n';
+            return false;
+
+        }
         delete nonce;
 
-        if( !this->cipherServer.toSecureForm( message , this->userRegister.getSessionKey(username))){
+        if( !this->cipherServer.toSecureForm( message, this->userRegister.getSessionKey(username))){
 
-            verbose<<"--> [MainServer][sendRejectMessage] Error unable to secure the message. Operation aborted"<<'\n';
+            verbose<<"--> [MainServer][sendWithdrawMessage] Error unable to secure the message. Operation aborted"<<'\n';
             return false;
 
         }
@@ -586,14 +673,16 @@ namespace server {
     // sends directly a DISCONNECT message to a client identified by a username
     bool MainServer::sendDisconnectMessage( string username ){
 
-        if( username.empty()){
+        if( username.empty() ){
 
             verbose<<"--> [MainServer][sendDisconnectMessage] Error invalid arguments. Abort operation"<<'\n';
             return false;
 
         }
 
-        int* socket = this->userRegister.getSocket(username);
+        base<<"-------> [MainServer][sendDisconnectMessage] Sending a disconnect message to "<<username<<'\n';
+
+        int* socket = this->userRegister.getSocket( username );
         if( !socket ){
 
             verbose<<"--> [MainServer][sendDisconnectMessage] Error unable to find user socket. Abort operation"<<'\n';
@@ -601,7 +690,7 @@ namespace server {
 
         }
 
-        int* nonce = this->clientRegister.getClientNonce(*socket);
+        int* nonce = this->clientRegister.getClientNonce( *socket );
         if( !nonce ){
 
             verbose<<"--> [MainServer][sendDisconnectMessage] Error unable to find user nonce. Abort operation"<<'\n';
@@ -611,12 +700,22 @@ namespace server {
 
         }
 
-        Message* message = new Message();
-        message->setMessageType( DISCONNECT );
-        message->setNonce( *nonce );
+        Message* message = nullptr;
+        try{
+
+            message = new Message();
+            message->setMessageType( DISCONNECT );
+            message->setNonce( *nonce );
+
+        }catch( bad_alloc e ){
+
+            verbose<<"--> [MainServer][sendDisconnectMessage] Error during memory allocation. Operation aborted"<<'\n';
+            return false;
+
+        }
         delete nonce;
 
-        if( !this->cipherServer.toSecureForm( message , this->userRegister.getSessionKey( username ))){
+        if( !this->cipherServer.toSecureForm( message, this->userRegister.getSessionKey( username ))){
 
             verbose<<"--> [MainServer][sendDisconnectMessage] Error unable to secure the message. Operation aborted"<<'\n';
             delete socket;
@@ -626,7 +725,7 @@ namespace server {
         }
 
         bool ret = this->sendMessage( message, *socket );
-        this->clientRegister.updateClientNonce(*socket);
+        this->clientRegister.updateClientNonce( *socket );
         delete socket;
         return ret;
 
@@ -641,6 +740,8 @@ namespace server {
             return false;
 
         }
+
+        base<<"-------> [MainServer][sendGameParam] Sending a game_param message to "<<username<<'\n';
 
         int* socket = this->userRegister.getSocket(username);
         if( !socket ){
@@ -673,16 +774,25 @@ namespace server {
 
         }
 
-        Message* message = new Message();
-        message->setMessageType( GAME_PARAM );
-        message->setNonce(*nonce);
-        message->setNetInformations( (unsigned char*)param.c_str(), param.length());
-        message->setPubKey( pubKey->getMessage(), pubKey->length());
+        Message* message = nullptr;
+        try{
 
+            message = new Message();
+            message->setMessageType( GAME_PARAM );
+            message->setNonce(*nonce);
+            message->setNetInformations( (unsigned char*)param.c_str(), param.length());
+            message->setPubKey( pubKey->getMessage(), pubKey->length());
+
+        }catch( bad_alloc e ){
+
+            verbose<<"--> [MainServer][sendGameParam] Error during memory allocation. Operation aborted"<<'\n';
+            return false;
+
+        }
         delete nonce;
         delete pubKey;
 
-        if( !this->cipherServer.toSecureForm( message , this->userRegister.getSessionKey(username ))){
+        if( !this->cipherServer.toSecureForm( message, this->userRegister.getSessionKey(username ))){
 
             verbose<<"--> [MainServer][sendGameParam] Error unable to secure the message. Operation aborted"<<'\n';
             delete socket;
