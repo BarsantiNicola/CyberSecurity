@@ -65,7 +65,6 @@ namespace client{
 		int adj_x;
         int adj_y;
 		void* game;
-        unordered_map<string,Statistic> rank;
 
 	public:
 		TextualInterfaceManager();
@@ -74,6 +73,7 @@ namespace client{
 		void printRankList( char* rankList, int len, bool print=true );
 		void printUserPending( string username );
 		void printLoginInterface();
+		void printMessage( string message );
 		void printColoredLogin();
 		void printMainInterface(string username,string activeUser,string serverStatus,string matchStatus,string pendingStatus);
         void printColoredMain( string page );

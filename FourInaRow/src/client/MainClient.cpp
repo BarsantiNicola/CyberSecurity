@@ -224,7 +224,7 @@ namespace client
       verbose<<"--> [MainClient][reciveUserListProtocol] start receiveUserListProtocol:"<<'\n';
       int* nonce_s;
       bool res;
-      string search="username";
+      string search="-";
       
       if(message==nullptr)
       {
