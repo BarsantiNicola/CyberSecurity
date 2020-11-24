@@ -17,7 +17,7 @@
 #include<exception>
 #include<vector>
 #include<sstream>
-
+#include<csignal>
 #define SLEEP_TIME 2
 #define TOKEN_GAP 45
 #define NUMBER_SEPARATOR 4
@@ -138,6 +138,7 @@ namespace client
       bool deconcatenateTwoField(unsigned char* originalField,unsigned int originalFieldSize,unsigned char* firsField,unsigned int* firstFieldSize,unsigned char* secondField,unsigned int* secondFieldSize,unsigned char separator,unsigned int numberSeparator);//ok
       bool getDeconcatenateLength(unsigned char* originalField,unsigned int originalFieldSize,unsigned int* firstFieldSize,unsigned int* secondFieldSize,unsigned char separator,unsigned int numberSeparator);
        void printWhiteSpace();
+      // void signalHandler(int signum);
     public:
       MainClient(const char* ipAddr , int port ); 
       ~MainClient();
