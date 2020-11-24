@@ -29,12 +29,11 @@
   <component name="ChangeListManager">
     <list default="true" id="4cbb8ddf-e807-44fa-ae33-bda27674b47b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/program" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/ClientInformation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/ClientInformation.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/MatchInformation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MatchInformation.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/MatchInformation.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MatchInformation.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/MatchRegister.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MatchRegister.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/MatchRegister.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MatchRegister.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/program" beforeDir="false" afterPath="$PROJECT_DIR$/program" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/client/MainClient.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/MainClient.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/client/TextualInterfaceManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/TextualInterfaceManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/client/TextualInterfaceManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/TextualInterfaceManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/UserRegister.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/UserRegister.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -72,9 +71,9 @@
     <property name="settings.editor.selected.configurable" value="org.jetbrains.plugins.github.ui.GithubSettingsConfigurable" />
   </component>
   <component name="RunManager">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
   </component>
@@ -209,6 +208,7 @@
       <workItem from="1606049913463" duration="2031000" />
       <workItem from="1606052337317" duration="1042000" />
       <workItem from="1606076595960" duration="9373000" />
+      <workItem from="1606210724392" duration="8548000" />
     </task>
     <servers />
   </component>
@@ -259,9 +259,10 @@
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
     <state x="660" y="252" key="run.anything.popup/72.27.1848.1053@72.27.1848.1053" timestamp="1605943299762" />
-    <state x="659" y="259" width="672" height="678" key="search.everywhere.popup" timestamp="1605476200179">
+    <state x="659" y="259" width="672" height="678" key="search.everywhere.popup" timestamp="1606211862619">
       <screen x="72" y="27" width="1848" height="1053" />
     </state>
+    <state x="659" y="259" width="672" height="678" key="search.everywhere.popup/72.27.1848.1053/1920.0.1920.1080@72.27.1848.1053" timestamp="1606211862619" />
     <state x="659" y="259" width="672" height="678" key="search.everywhere.popup/72.27.1848.1053@72.27.1848.1053" timestamp="1605476200179" />
   </component>
 </project>

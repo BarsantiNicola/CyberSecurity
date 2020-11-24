@@ -112,12 +112,15 @@ namespace server{
 
     //  gives a formatted list of all the available users excepts the one given as argument
     NetMessage* UserRegister::getUserList( string username ){
-        string user_list = " ";
+        string user_list = "";
         for( int a = 0; a<this->userRegister.size(); a++ )
             if( *(this->userRegister[a].getStatus()) != PLAY && *(this->userRegister[a].getStatus()) != CONNECTED && this->userRegister[a].getUsername().compare(username) != 0 ) {
-                user_list.append("\n\tusername: ");
                 user_list.append(this->userRegister[a].getUsername());
+                user_list.append("-");
             }
+
+        if( user_list.length() == 0 )
+            user_list = " ";
 
         try{
 

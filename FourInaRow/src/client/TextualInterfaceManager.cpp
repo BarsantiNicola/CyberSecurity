@@ -149,24 +149,68 @@ namespace client{
 	}
 
     void TextualInterfaceManager::printUserList( char* userList, int len ){
-	    int prev = 0;
-	    for( int a = 0; a<len; a++ ){
-	        if( userList[a] == '\n' || a == len ){
-	            for( int b = 0; b<adj_x; b++ )
+
+	    string formatter = "";
+        for( int b = 0; b<adj_x+45; b++ )
+            formatter.append(" ");
+
+        vector<string> users;
+        int prev = 0;
+        for( int a = 0; a<len; a++ )
+            if( userList[a] == '-' || a == len-1 ) {
+                userList[a] = '\0';
+                users.push_back(string(userList + prev));
+                prev = a+1;
+            }
+
+        cout<<formatter<< "\033[0;34m"<<"//////////////////////////////"<< "\033[0m"<<'\n';
+        cout<<formatter<< "\033[0;34m"<<"//                          //"<< "\033[0m"<<'\n';
+        cout<<formatter<< "\033[0;34m"<<"//"<<"\033[0;33m"<<"        USER LIST         "<<"\033[0;34m"<<"//"<< "\033[0m"<<'\n';
+        cout<<formatter<< "\033[0;34m"<<"//                          //"<< "\033[0m"<<'\n';
+        int extra = 0;
+        for( int a= 0; a<users.size(); a++ ){
+            cout<<formatter<< "\033[0;34m"<<"//  "<< "\033[0m"<<users[a];
+            extra = 22-users[a].length();
+            for( int b = 0; b<extra; b++ )
 	                cout<<' ';
-	            for( int b = prev; b<a; b++ )
-	                cout<<userList[b];
-	            prev = a+1;
-	        }
+            cout<< "\033[0;34m"<<"  //\n"<< "\033[0m";
+
 	    }
+
+	    if( users.size() == 0 )
+            cout<<formatter<< "\033[0;34m"<<"//"<< "\033[0m"<<"    NO USERS AVAILABLE    "<< "\033[0;34m"<<"//"<< "\033[0m"<<'\n';
+	    else
+            users.clear();
+
+        cout<<formatter<< "\033[0;34m"<<"//                          //"<< "\033[0m"<<'\n';
+        cout<<formatter<< "\033[0;34m"<<"//////////////////////////////\n"<< "\033[0m"<<'\n';
+
+
 	}
 
     void TextualInterfaceManager::printRankList( char* rankList, int len, bool print ){
+
+        string formatter = "";
+        for( int b = 0; b<adj_x+28; b++ )
+            formatter.append(" ");
         rank.clear();
+
+        cout<<formatter<< "\033[0;34m"<<"//////////////////////////////////////////////////////////////"<< "\033[0m"<<'\n';
+        cout<<formatter<< "\033[0;34m"<<"//                                                          //"<< "\033[0m"<<'\n';
+        cout<<formatter<< "\033[0;34m"<<"//"<<"\033[0;33m"<<"                          RANK LIST                       "<<"\033[0;34m"<<"//"<< "\033[0m"<<'\n';
+        cout<<formatter<< "\033[0;34m"<<"//                                                          //"<< "\033[0m"<<'\n';
+        cout<<formatter<< "\033[0;34m"<<"//////////////////////////////////////////////////////////////"<< "\033[0m"<<'\n';
+        cout<<formatter<< "\033[0;34m"<<"//"<< "\033[0m"<<"    USERNAME    "<<"\033[0;34m"<<"//"<<"\033[0m"<<"  WON  "<<"\033[0;34m"<<"//"<<"\033[0m"<<"  LOST  "<<"\033[0;34m"<<"//"<<"\033[0m"<<"  TIED  "<<"\033[0;34m"<<"//"<<"\033[0m"<<"   TOTAL   "<<"\033[0;34m"<<"//"<< "\033[0m"<<'\n';
+        cout<<formatter<< "\033[0;34m"<<"//////////////////////////////////////////////////////////////"<< "\033[0m"<<'\n';
+        cout<<formatter<< "\033[0;34m"<<"//                //       //        //        //           //"<< "\033[0m"<<'\n';
+
         string username;
+        string app;
         Statistic stat;
         int count = 0;
         int prev = 0;
+        int extra;
+
         for( int a =0; a<len; a++ )
             if( rankList[a] == ' ' || rankList[a] == '\n' ){
                 rankList[a] = '\0';
@@ -187,10 +231,43 @@ namespace client{
                         stat.tie = stoi( string(rankList+prev));
                         rank[username] = stat;
                         if( print ){
-                            for( int b = 0; b<adj_x; b++ )
-                                cout<<' ';
-                            cout<<"username: "<<username<<"\twon: "<<stat.won<<"\tlose: "<<stat.lose;
-                            cout<<"\ttie: "<<stat.tie<<"\ttotal: "<<stat.won+stat.tie+stat.lose<<'\n';
+
+                            cout<<formatter<< "\033[0;34m"<<"//    "<< "\033[0m";
+                            extra = 8-username.length();
+                            cout<<username;
+                            for( int a = 0; a<extra; a++ )
+                                cout<<" ";
+
+                            cout<<"\033[0;34m"<<"    //  "<<"\033[0m";
+                            app = to_string( stat.won );
+                            extra = 3-app.length();
+                            cout<<app;
+                            for( int a = 0; a<extra; a++ )
+                                cout<<" ";
+
+                            cout<<"\033[0;34m"<<"  //  "<<"\033[0m";
+                            app = to_string( stat.lose );
+                            extra = 4-app.length();
+                            cout<<app;
+                            for( int a = 0; a<extra; a++ )
+                                cout<<" ";
+
+                            cout<<"\033[0;34m"<<"  //   "<<"\033[0m";
+                            app = to_string( stat.tie );
+                            extra = 5-app.length();
+                            cout<<app;
+                            for( int a = 0; a<extra; a++ )
+                                cout<<" ";
+
+                            cout<<"\033[0;34m"<<"//    "<<"\033[0m";
+                            app = to_string( stat.won+stat.lose+stat.tie );
+                            extra = 6-app.length();
+                            cout<<app;
+                            for( int a = 0; a<extra; a++ )
+                                cout<<" ";
+
+                            cout<<"\033[0;34m"<<" //"<< "\033[0m"<<'\n';
+
                         }
                         stat = {0,0,0};
                         count = 0;
@@ -203,7 +280,8 @@ namespace client{
                 prev = a+1;
 
             }
-
+        cout<<formatter<< "\033[0;34m"<<"//                //       //        //        //           //"<< "\033[0m"<<'\n';
+        cout<<formatter<< "\033[0;34m"<<"//////////////////////////////////////////////////////////////\n"<< "\033[0m"<<'\n';
 	}
 
     void TextualInterfaceManager::printUserPending( string username ){

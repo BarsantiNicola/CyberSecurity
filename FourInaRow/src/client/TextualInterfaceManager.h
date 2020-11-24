@@ -3,6 +3,7 @@
 #define TEXTUAL_INTERFACE_MANAGER
 #include <iostream>
 #include <fstream>
+#include <vector>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <unordered_map>

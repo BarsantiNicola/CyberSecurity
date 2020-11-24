@@ -271,7 +271,7 @@ namespace client
         if(!implicitUserListReq)
         {
           //printWhiteSpace();
-          this->textual_interface_manager->printRankOrUserList(app);
+          this->textual_interface_manager->printUserList( (char*)app.c_str(), app.length());
           //std::cout<<app<<endl;
         }
         implicitUserListReq=false;
@@ -439,7 +439,7 @@ namespace client
 
         //printWhiteSpace();
         //std::cout<<app<<'\n';
-        this->textual_interface_manager->printRankOrUserList(app);
+        this->textual_interface_manager->printRankList( (char*)app.c_str(), app.length(), true);
         printWhiteSpace();
         std::cout<<"\t# Insert a command:";
         cout.flush();
