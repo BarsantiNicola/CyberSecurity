@@ -221,9 +221,11 @@ namespace client
 */
     bool MainClient::receiveUserListProtocol(Message* message)
   {
+      verbose<<"--> [MainClient][reciveUserListProtocol] start receiveUserListProtocol:"<<'\n';
       int* nonce_s;
       bool res;
       string search="username";
+      
       if(message==nullptr)
       {
         verbose<<"--> [MainClient][reciveUserListProtocol] error the message is null"<<'\n';
@@ -268,8 +270,9 @@ namespace client
        // std::cout<<"\t# Insert a command:";
         if(!implicitUserListReq)
         {
-          printWhiteSpace();
-          std::cout<<app<<endl;
+          //printWhiteSpace();
+          this->textual_interface_manager->printRankOrUserList(app);
+          //std::cout<<app<<endl;
         }
         implicitUserListReq=false;
         return true;
@@ -277,6 +280,8 @@ namespace client
   }
   bool MainClient::sendImplicitUserListReq()
   {
+    if(clientPhase!=ClientPhase::NO_PHASE)
+      return true;
     bool res;
     implicitUserListReq=true;
     res=sendReqUserListProtocol(); 
@@ -354,7 +359,8 @@ namespace client
       sendImplicitUserListReq();
     }
     clearGameParam();
-    challenged_username = ""; 
+    challenged_username.clear(); 
+    startChallenge=false;
     return res;
   }
 /*
@@ -421,10 +427,19 @@ namespace client
         delete nonce_s;
         clientPhase=ClientPhase::NO_PHASE;
         unsigned char* userList=message->getRankList();
+        
         int userListLen=message->getRankListLen();
         app=printableString(userList,userListLen);
-        printWhiteSpace();
-        std::cout<<app<<'\n';
+        stringstream sstr;
+        sstr<<nUser;
+        stringstream ssreq;
+        int nreq=challenge_register->getDimension();
+        ssreq<<nreq;
+        textual_interface_manager->printMainInterface(this->username,sstr.str(),"online","none",ssreq.str());        
+
+        //printWhiteSpace();
+        //std::cout<<app<<'\n';
+        this->textual_interface_manager->printRankOrUserList(app);
         printWhiteSpace();
         std::cout<<"\t# Insert a command:";
         cout.flush();
@@ -758,7 +773,8 @@ namespace client
     //printWhiteSpace();
     //std::cout<<"\t# Insert a command:";
     //cout.flush();
-    challenged_username = "";
+    challenged_username.clear();
+    startChallenge=false;
     sendImplicitUserListReq();
     return res;
   }
@@ -1160,7 +1176,8 @@ namespace client
      this->receiveNonce=(*message->getNonce())+1;
      //clientPhase=START_GAME_PHASE;
      adv_username_1 = "";
-     challenged_username = "";
+     challenged_username.clear();
+     startChallenge=false;
      sendImplicitUserListReq();
      return true;
   }
@@ -1939,12 +1956,30 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       clearGameParam();
     }
     textual_interface_manager->printMainInterface(this->username,sstr.str(),"online","none",ssreq.str());
-    clientPhase=ClientPhase::NO_PHASE;
+    if(clientPhase!=ClientPhase::USER_LIST_PHASE)
+      clientPhase=ClientPhase::NO_PHASE;
     printWhiteSpace();
     std:cout<<errorMessage<<'\n';
     if(errorMessage.compare("Invalid request. User doesn't exists")==0)
     {
-      challenged_username="";
+      textualMessageToUser="Invalid request. User doesn't exist. \n";
+      if(clientPhase!=ClientPhase::USER_LIST_PHASE)
+      {
+           sendImplicitUserListReq();
+      }
+      challenged_username.clear();
+      startChallenge=false;
+    }
+    else if(errorMessage.compare("Invalid Request. You have to send a valid username")==0)
+    {
+      textualMessageToUser="Invalid Request. You have to send a valid username. \n";
+      if(clientPhase!=ClientPhase::USER_LIST_PHASE)
+      {
+           sendImplicitUserListReq();
+      }
+      challenged_username.clear();
+      startChallenge=false;
+
     }
     printWhiteSpace();
     std::cout<<"\t# Insert a command:";
@@ -2470,7 +2505,11 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                  printWhiteSpace();
                  std::cout<<"\t# Insert a command:";
                  cout.flush();
-                 textualMessageToUser="";
+                 textualMessageToUser.clear();
+               }
+               else
+               {
+                 verbose<<"-->[MainClient][client] phase error type";
                }
                break;
 
@@ -2542,7 +2581,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 
               case ACCEPT:
                  res=receiveAcceptProtocol(message);
-                 challenged_username = "";
+                 challenged_username.clear();
+                 startChallenge=false;
                  if(res)
                    startingMatch=true;
                  break;
@@ -2712,8 +2752,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 
   void MainClient::clearGameParam()
   {
-    adv_username_1 = "";
-    challenged_username = "";
+    adv_username_1.clear();
+    challenged_username.clear();
+    startChallenge=false;
     if(game!=nullptr)
     {
       delete game;
