@@ -28,12 +28,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4cbb8ddf-e807-44fa-ae33-bda27674b47b" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/program" beforeDir="false" afterPath="$PROJECT_DIR$/program" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/client/MainClient.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/MainClient.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/client/TextualInterfaceManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/TextualInterfaceManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/client/TextualInterfaceManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/TextualInterfaceManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/UserRegister.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/UserRegister.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -208,7 +203,7 @@
       <workItem from="1606049913463" duration="2031000" />
       <workItem from="1606052337317" duration="1042000" />
       <workItem from="1606076595960" duration="9373000" />
-      <workItem from="1606210724392" duration="8548000" />
+      <workItem from="1606210724392" duration="8718000" />
     </task>
     <servers />
   </component>
