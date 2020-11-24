@@ -2100,7 +2100,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         if(!cipher_client->getRSA_is_start())
         {
           textual_interface_manager->printLoginInterface();
-          string app="login failed retry \n";
+          string app="login failed retry";
           textual_interface_manager->printMessage( app );
           //printWhiteSpace();
           //std::cout<<"login failed retry \n";
@@ -2124,7 +2124,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           else
           {
              textual_interface_manager->printLoginInterface();
-             string app="login failed retry \n";
+             string app="login failed retry";
              textual_interface_manager->printMessage( app );
              //printWhiteSpace();
              //std::cout<<"login failed retry"<<'\n';
@@ -2450,6 +2450,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
      bool res;
     while(true)
     {
+
       try{
        if(notConnected==true)
        {
@@ -2509,7 +2510,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                 }
                 break;
               case USER_LIST:
-               if(clientPhase==ClientPhase::USER_LIST_PHASE)
+               if(clientPhase==ClientPhase::USER_LIST_PHASE || implicitUserListReq)
                {
                  
                  res=receiveUserListProtocol(message);
@@ -2825,7 +2826,16 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     }
   }
 }
-  
+/*
+--------------------------signalHandler----------------------------------
+*/
+ 
+
+ void signalHandler(int signum)
+ {
+   
+    exit(signum);
+ }  
 /*
 --------------------main function-----------------
 */  
@@ -2834,6 +2844,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     //Logger::setThreshold(  NO_VERBOSE );
     Logger::setThreshold(  VERY_VERBOSE );
     client::MainClient* main_client;
+    signal(SIGTSTP,signalHandler);
     if(argc==1)
     {
       main_client=new client::MainClient("127.0.0.1",12000);
