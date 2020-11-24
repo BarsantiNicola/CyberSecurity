@@ -2100,8 +2100,10 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         if(!cipher_client->getRSA_is_start())
         {
           textual_interface_manager->printLoginInterface();
-          printWhiteSpace();
-          std::cout<<"login failed retry \n";
+          string app="login failed retry \n";
+          textual_interface_manager->printMessage( app );
+          //printWhiteSpace();
+          //std::cout<<"login failed retry \n";
           printWhiteSpace();
           std::cout<<"\t# Insert a command:";
           cout.flush();
@@ -2122,8 +2124,10 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           else
           {
              textual_interface_manager->printLoginInterface();
-             printWhiteSpace();
-             std::cout<<"login failed retry"<<'\n';
+             string app="login failed retry \n";
+             textual_interface_manager->printMessage( app );
+             //printWhiteSpace();
+             //std::cout<<"login failed retry"<<'\n';
              printWhiteSpace();
              std::cout<<"\t# Insert a command:";
              cout.flush();  
@@ -2154,6 +2158,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
          }
          else if(comand_line.compare(5,7,"pending")==0)
          {
+            
             string toPrint=challenge_register->printChallengeList();
             if(toPrint.empty())
             {
@@ -2162,10 +2167,12 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
             }
             else
             {
-              printWhiteSpace();
-              std::cout<<"challenger list:"<<endl;
-              printWhiteSpace();
-              std::cout<<toPrint<<endl;
+              textual_interface_manager->printUserPending( challenge_register->getUserlistString() );
+              
+              //printWhiteSpace();
+              //std::cout<<"challenger list:"<<endl;
+              //printWhiteSpace();
+              //std::cout<<toPrint<<endl;
             }
             printWhiteSpace();
             std::cout<<"\t# Insert a command:";
@@ -2379,8 +2386,27 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       }
       else
       {
-        printWhiteSpace();
-        std::cout<<"\t  comand: "<<comand_line<<" not valid"<<endl;
+        if(!logged)
+        {
+          textual_interface_manager->printLoginInterface();
+          string app="comand:" + comand_line + "not valid";
+          textual_interface_manager->printMessage( app );
+        }
+        else if(clientPhase == ClientPhase::INGAME_PHASE)
+        {
+          textual_interface_manager->printGameInterface(startingMatch, std::to_string(timer)," ",game->printGameBoard());
+          string app="comand:" + comand_line + "not valid";
+          textual_interface_manager->printMessage( app );
+        }
+        else if(logged)
+        {
+          if(!sendImplicitUserListReq())
+            implicitUserListReq=false;
+          string app="comand:" + comand_line + "not valid";
+          textualMessageToUser=app;
+        }
+       // printWhiteSpace();
+        //std::cout<<"\t  comand: "<<comand_line<<" not valid"<<endl;
         printWhiteSpace();
         std::cout<<"\t# Insert a command:";
         cout.flush();
@@ -2391,6 +2417,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       catch(exception e)
       {
           std::cerr<<e.what()<<'\n';
+
           printWhiteSpace();
           std::cout<<"comand not valid"<<endl;
           printWhiteSpace();
@@ -2499,8 +2526,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                  }
                  if(!textualMessageToUser.empty())
                  {
-                   printWhiteSpace();
-                   cout<<textualMessageToUser;
+                   //printWhiteSpace();
+                   textual_interface_manager->printMessage(textualMessageToUser);
                  }
                  printWhiteSpace();
                  std::cout<<"\t# Insert a command:";

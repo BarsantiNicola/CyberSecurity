@@ -16,6 +16,7 @@ namespace client
       bool removeData(string username);
       bool findData(ChallengeInformation data);
       int getDimension();
+      vector<string> getUserlistString();
       ChallengeInformation* getData(int dataPosition);
       string printChallengeList();
       ~ChallengeRegister();

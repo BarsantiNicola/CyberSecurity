@@ -114,4 +114,21 @@ namespace client
  {
    challengeInformationList.clear();
  }
+
+ vector<string> ChallengeRegister:: getUserlistString()
+ {
+   vector<string> vectorRes;
+   for(int i=0;i<challengeInformationList.size();i++)
+   {
+     try
+     {
+       vectorRes.emplace_back(challengeInformationList.at(i).getUserName());
+     }
+     catch(out_of_range& e)
+     {
+       break;
+     }
+   }
+   return vectorRes;
+ }
 }
