@@ -296,45 +296,63 @@ namespace client{
                  << "\033[0m" << '\n';
 	}
 
-    void TextualInterfaceManager::printUserPending( string username ){
-	    /*
-	    Statistic stat = it->second;
-	    int totalMatch = stat.won+stat.tie+stat.lose;
-	    for( int a= 0; a<adj_x; a++ )
-	        cout<<' ';
-	    if( totalMatch )
-	        cout<< "Username: "<<username<<"\tTotalMatches: "<<totalMatch<<"\tWinPercentage: "<<(double)stat.won/totalMatch<<endl;
+    void TextualInterfaceManager::printUserPending( vector<string> users ){
+
+        string formatter = "";
+        for( int b = 0; b<adj_x+45; b++ )
+            formatter.append(" ");
+
+        cout<<formatter<< "\033[0;34m"<<"//////////////////////////////"<< "\033[0m"<<'\n';
+        cout<<formatter<< "\033[0;34m"<<"//                          //"<< "\033[0m"<<'\n';
+        cout<<formatter<< "\033[0;34m"<<"//"<<"\033[0;33m"<<"      PENDING LIST        "<<"\033[0;34m"<<"//"<< "\033[0m"<<'\n';
+        cout<<formatter<< "\033[0;34m"<<"//                          //"<< "\033[0m"<<'\n';
+        int extra = 0;
+        for( int a= 0; a<users.size(); a++ ){
+            cout<<formatter<< "\033[0;34m"<<"//  "<< "\033[0m"<<users[a];
+            extra = 22-users[a].length();
+            for( int b = 0; b<extra; b++ )
+                cout<<' ';
+            cout<< "\033[0;34m"<<"  //\n"<< "\033[0m";
+
+        }
+
+        if( users.size() == 0 )
+            cout<<formatter<< "\033[0;34m"<<"//"<< "\033[0m"<<"     NO PENDANT USERS      "<< "\033[0;34m"<<"//"<< "\033[0m"<<'\n';
         else
-            cout<< "Username: "<<username<<"\tTotalMatches: "<<totalMatch<<"\tWinPercentage: 0.0" <<endl;*/
+            users.clear();
+
+        cout<<formatter<< "\033[0;34m"<<"//                          //"<< "\033[0m"<<'\n';
+        cout<<formatter<< "\033[0;34m"<<"//////////////////////////////\n"<< "\033[0m"<<'\n';
 
     }
 
     void TextualInterfaceManager::printMessage( string message ){
 
         string formatter = "";
-        for( int b = 0; b<adj_x+28; b++ )
+        for( int b = 0; b<adj_x+8; b++ )
             formatter.append(" ");
 
-        if( message.length() >54 )
+        if( message.length() >96 )
             cout<<"--> [TextualInterface][printMessage] Warning, function admits message up to 54 character. Reduce dimension"<<'\n';
 
         int extra = 0;
-        cout << formatter << "\033[0;34m" << "//////////////////////////////////////////////////////////////\n"<< "\033[0m" << '\n';
-        cout << formatter << "\033[0;34m" << "//                                                          //\n"<< "\033[0m" << '\n';
+        cout << formatter << "\033[0;34m" << "////////////////////////////////////////////////////////////////////////////////////////////////////////"<< "\033[0m" << '\n';
+        cout << formatter << "\033[0;34m" << "//                                                                                                    //"<< "\033[0m" << '\n';
         cout << formatter << "\033[0;34m" << "//  "<<"\033[0m";
-        if( message.length() > 54 )
-            cout<<message.substr(0,54)<< "\033[0;34m" <<"  //\n"<< "\033[0m" << '\n';
+        if( message.length() > 96 )
+            cout<<message.substr(0,96)<< "\033[0;34m" <<"  //"<< "\033[0m" << '\n';
         else{
 
-            extra = 54-message.length();
+            extra = 96-message.length();
             cout<<message;
             for( int a = 0; a<extra; a++ )
                 cout<<' ';
-            cout<< "\033[0;34m" <<"  //\n"<< "\033[0m" << '\n';
+            cout<< "\033[0;34m" <<"  //"<< "\033[0m" << '\n';
 
         }
-        cout << formatter << "\033[0;34m" << "//                                                          //\n"<< "\033[0m" << '\n';
-        cout << formatter << "\033[0;34m" << "//////////////////////////////////////////////////////////////\n"<< "\033[0m" << '\n';
+        cout << formatter << "\033[0;34m" << "//                                                                                                    //"<< "\033[0m" << '\n';
+        cout << formatter << "\033[0;34m" << "////////////////////////////////////////////////////////////////////////////////////////////////////////\n"<< "\033[0m" << '\n';
+
 
 	}
 	void TextualInterfaceManager::printLoginInterface(){

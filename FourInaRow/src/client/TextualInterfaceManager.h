@@ -71,7 +71,7 @@ namespace client{
 		string* getUsername();
 		void printUserList( char* userList, int len );
 		void printRankList( char* rankList, int len, bool print=true );
-		void printUserPending( string username );
+		void printUserPending( vector<string> username );
 		void printLoginInterface();
 		void printMessage( string message );
 		void printColoredLogin();
