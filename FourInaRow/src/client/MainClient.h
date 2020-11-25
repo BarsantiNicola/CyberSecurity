@@ -52,6 +52,7 @@ namespace client
   class MainClient
   {
     private:
+      bool partialKeyCreated=false;
       NetMessage* partialKey;
       long timer=15;
       int nonceAdv=0;

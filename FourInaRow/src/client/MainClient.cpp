@@ -562,8 +562,12 @@ namespace client
        }
        else
        {
-         if(!startChallenge)
+         if(!partialKeyCreated)
+         {
            partialKey = this->cipher_client->getPartialKey();
+           vverbose<<"-->[MainClient][keyExchangeReciveProtoco] partial key generated"<<'\n';
+         }
+        partialKeyCreated=false;
         this->aesKeyClient=cipher_client->getSessionKey( app , len );
         if(this->aesKeyClient==nullptr||this->aesKeyClient->iv==nullptr || this->aesKeyClient->sessionKey==nullptr)
           return false;
@@ -765,7 +769,7 @@ namespace client
     
     this->receiveNonce=(*message->getNonce())+1;
     verbose<<"--> [MainClient][reciveRejectProtocol] the actual send nonce is:"<<sendNonce<<'\n';
-    startChallenge=false;
+    
     cout<<"\n \n";
     //printWhiteSpace();
      textualMessageToUser="the user " + challenged_username + " reject your request " + '\n';
@@ -1221,7 +1225,10 @@ namespace client
         {
           message->setNonce(this->currentToken);
           if(startChallenge)
+          {
+            partialKeyCreated=true;
             partialKey = this->cipher_client->getPartialKey();
+          }
           message->set_DH_key( partialKey->getMessage(), partialKey->length() );
           cipherRes=this->cipher_client->toSecureForm( message,aesKey);
           this->currentToken++;
@@ -2534,6 +2541,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                  std::cout<<"\t# Insert a command:";
                  cout.flush();
                  textualMessageToUser.clear();
+                 
                }
                else
                {
@@ -2610,7 +2618,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
               case ACCEPT:
                  res=receiveAcceptProtocol(message);
                  challenged_username.clear();
-                 startChallenge=false;
+                 //startChallenge=false;
                  if(res)
                    startingMatch=true;
                  break;
@@ -2680,6 +2688,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                      chatWait.clear();
                    }
                    startingMatch=false;
+                   startChallenge=false;
                    textual_interface_manager->printGameInterface(startingMatch, std::to_string(timer)," ",game->printGameBoard());
                  }
                  break;
@@ -2794,7 +2803,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       delete messageChatToACK;
       messageChatToACK=nullptr;
     }
-    clientPhase=ClientPhase::NO_PHASE;
+    if(clientPhase!=ClientPhase::USER_LIST_PHASE)
+      clientPhase=ClientPhase::NO_PHASE;
   }
   void MainClient::printWhiteSpace()
   {
