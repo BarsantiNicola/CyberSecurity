@@ -70,8 +70,6 @@ namespace server{
 
         this->sendNonce = new int(((unsigned int)atoi(snonce.substr(snonce.length()/2, snonce.length()).c_str())*10000));
         this->receiveNonce = new int(((unsigned int)atoi(snonce.substr(0,snonce.length()/2).c_str())*10000));
-    	cout<<"-->[ClientInformation][setNonce] the send nonce is "<<*(this->sendNonce)<<'\n';
-        cout<<"-->[ClientInformation][setNonce] the receive nonce is"<<*(this->receiveNonce)<<'\n';
 
     }
 
