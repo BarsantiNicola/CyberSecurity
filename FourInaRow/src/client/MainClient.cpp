@@ -573,6 +573,7 @@ namespace client
           return false;
         vverbose<<"-->[MainClient][keyExchangeReciveProtoco] key iv "<<aesKeyClient->iv<<" session key: "<<aesKeyClient->sessionKey<<'\n';//da eliminare
         delete nonce_s;
+        vverbose<<"-->[MainClient][keyExchangeReciveProtoco] nonce_s deleted"<<'\n';
         return true;
        } 
       }
@@ -2654,22 +2655,28 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           }
           else if(idSock==connection_manager->getsocketUDP())
           {
-             vverbose<<"[MainClient][client] message from client"<<'\n';
+             vverbose<<"-->[MainClient][client] message from client"<<'\n';
              message=connection_manager->getMessage(connection_manager->getsocketUDP());
-             vverbose<<"[MainClient][client] message type"<<message->getMessageType()<<'\n';
+             vverbose<<"-->[MainClient][client] message type"<<message->getMessageType()<<'\n';
              switch(message->getMessageType())
              {
                case KEY_EXCHANGE:
                  if(keyExchangeReciveProtocol(message,false))
                  {
+                   vverbose<<"-->[MainClient][client] keyExchangeReciveProtocol finished correctly"<<'\n';
                    clientPhase=INGAME_PHASE;
                    if(game!=nullptr)
                    {
+                     vverbose<<"-->[MainClient][client] deleting game"<<'\n';
                      delete game;
                      game=nullptr;
+                     vverbose<<"-->[MainClient][client] delete game"<<'\n';
                    }
                    game=new Game(250,startingMatch);
+                   vverbose<<"-->[MainClient][client] new object game created"<<'\n';
+                   
                    textual_interface_manager->setGame(game->getGameBoard());
+                   vverbose<<"-->[MainClient][client] gameBoard setted"<<'\n';
                    nonceAdv=0;
                    if(!startingMatch)
                    {
@@ -2691,6 +2698,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                    startChallenge=false;
                    textual_interface_manager->printGameInterface(startingMatch, std::to_string(timer)," ",game->printGameBoard());
                  }
+                 //vverbose<<"-->[MainClient][client] finish KEY_EXCHANGE"<<'\n';
                  break;
                case MOVE:
                  ReciveGameMove(message);
@@ -2792,6 +2800,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     adv_username_1.clear();
     challenged_username.clear();
     startChallenge=false;
+    startingMatch=false;
     if(game!=nullptr)
     {
       delete game;

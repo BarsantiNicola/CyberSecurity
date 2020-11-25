@@ -79,11 +79,11 @@ namespace client{
     bool TextualInterfaceManager::setGame(int** game){
 	    
 	    if( !game ) return false;
-        if( gameBoard ) {
+      /*  if( gameBoard ) {
             for (int a = 0; a < 6; a++)
                 delete[] gameBoard[a];
             delete[] gameBoard;
-        }
+        }*/
 	    gameBoard = game;
         return true;
 
