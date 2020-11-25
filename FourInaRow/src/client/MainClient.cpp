@@ -841,7 +841,7 @@ namespace client
       res=cipher_client->fromSecureForm( message , username ,aesKeyClient,false);
       if(!res)
       {
-        verbose<<"--> [MainClient][reciveChatProtocol] error to decrypt"<<this->currTokenChatAdv<<" != "<<*nonce_s<<'\n';
+        verbose<<"--> [MainClient][reciveChatProtocol] error to decrypt "<<this->currTokenChatAdv<<" != "<<*nonce_s<<'\n';
         return false;
       }
       messageACK=createMessage(ACK,nullptr,nullptr,0,aesKeyClient,*nonce_s,false);
@@ -854,7 +854,7 @@ namespace client
       verbose<<"--> [MainClient][reciveChatProtocol] message type not expected"<<'\n';
         return false;
     }
-    res=cipher_client->fromSecureForm( message , username ,aesKeyServer,false);
+    res=cipher_client->fromSecureForm( message , username ,aesKeyClient,false);
     if(!res)
     {
       verbose<<"--> [MainClient][reciveChatProtocol] error to decrypt"<<'\n';
