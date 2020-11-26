@@ -221,7 +221,7 @@ namespace cipher{
 
         }
 
-        verbose<<"--> [CipherRSA][verifySignature] Authentication Success!"<<'\n';
+        vverbose<<"--> [CipherRSA][verifySignature] Authentication Success!"<<'\n';
         EVP_MD_CTX_free( ctx );
         return true;
 

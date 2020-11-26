@@ -817,44 +817,74 @@ namespace server {
 
 
     //  the handler manages the CERTIFICATE_REQ requests by generating a formatted message containing the server certificate
+    //  and an authenticated nonce to be used for next client requests
     Message* MainServer::certificateHandler( Message* message , int socket ){
 
-        if( !message || socket<0 ){
+        if( !message || socket < 0 ){
 
             verbose<<"--> [MainServer][certificateHandler] Error invalid parameters. Operation Aborted"<<'\n';
             return nullptr;
 
         }
+        Message* result = nullptr;
+
+        //  the client could already have a nonce registered from a previous certificate request and he need just to refresh it
+        int *nonce = this->clientRegister.getNonce( socket );
+        if( !nonce ) {
+
+            try {
+                nonce = new int( this->generateRandomNonce() );
+                this->clientRegister.setNonce( socket, *nonce );
+                base<<"------> [MainServer][certificateHandler] Generation of random nonce completed: "<<*nonce<<'\n';
+
+            }catch( bad_alloc e ){
+
+                verbose<<"--> [MainServer][certificateHandler] Error during memory allocation. Operation aborted"<<'\n';
+                return nullptr;
+
+            }
+
+        }
 
         //  preparation of response message
         NetMessage* param = this->cipherServer.getServerCertificate();
-
-        int *nonce = this->clientRegister.getNonce(socket);
-        if( !nonce ) {
-
-            nonce = new int(this->generateRandomNonce());
-            this->clientRegister.setNonce(socket, *nonce);
-
-        }
-
-        if(! param ){
+        if( !param ){
 
             verbose<<"--> [MainServer][certificateHandler] Error, unable to load server certificate"<<'\n';
-            return this->makeError( string("Server error. The service in unable to find its security information"), nonce );
+            result = this->makeError( string( "Server error. The service in unable to find its security information" ), nonce );
+            delete nonce;
+            return result;
 
         }
 
-        if( this->userRegister.has(socket)){
+        if( this->userRegister.has( socket )){
 
             verbose<<"--> [MainServer][certificateHandler] Error, user already registered"<<'\n';
-            return this->makeError( string("Invalid request. The user is already logged"), nonce );
+            delete param;
+            result = this->makeError( string( "Invalid request. The user is already logged" ), nonce );
+            delete nonce;
+            return result;
 
         }
 
-        Message* result = new Message();
-        result->setNonce( *nonce );
-        result->setMessageType(CERTIFICATE );
-        result->setServer_Certificate( param->getMessage(), param->length());
+
+        try{
+
+            result = new Message();
+            result->setNonce( *nonce );
+            result->setMessageType(CERTIFICATE );
+            result->setServer_Certificate( param->getMessage(), param->length() );
+
+        }catch( bad_alloc e ){
+
+            verbose<<"--> [MainServer][certificateHandler] Error during memory allocation. Operation aborted"<<'\n';
+            if( result ) delete result;
+            result = this->makeError(  string("Internal server error. Try again"), nonce );
+            delete nonce;
+            delete param;
+            return result;
+
+        }
 
         delete param;
 
@@ -862,10 +892,10 @@ namespace server {
 
             verbose << "--> [MainServer][certificateHandler] Error, message didn't pass security verification" << '\n';
             delete result;
-            result = this->makeError(string("Security error. Invalid message'signature"), nonce );
+            result = this->makeError( string( "Security error. Invalid message'signature" ), nonce );
 
         }else
-            vverbose<<"--> [MainServer][certificateHandler] CERTIFICATE message correctly generated"<<'\n';
+            base<<"------> [MainServer][certificateHandler] CERTIFICATE message correctly generated"<<'\n';
 
         delete nonce;
         return result;
@@ -873,9 +903,9 @@ namespace server {
     }
 
     //  the handler manages the LOGIN_REQ requests verifying if the user is already registered and its signature is valid
-    Message* MainServer::loginHandler( Message* message , int socket, int* nonce ){
+    Message* MainServer::loginHandler( Message* message, int socket, int* nonce ){
 
-        if( !message || socket<0 ){
+        if( !message || socket<0 || !nonce ){
 
             verbose<<"--> [MainServer][loginHandler] Error invalid parameters. Operation Aborted"<<'\n';
             return nullptr;
@@ -883,30 +913,57 @@ namespace server {
         }
 
         if( message->getUsername().empty() ){
+
             verbose<<"--> [MainServer][loginHandler] Error, invalid message. Missing username"<<'\n';
-            return this->makeError(string("Invalid request. Missing username"), nonce );
+            return this->makeError( string( "Invalid request. Missing username" ), nonce );
+
         }
 
-        Message* response = new Message();
-        response->setNonce(*nonce);
+        Message* response = nullptr;
 
-        if( !this->cipherServer.fromSecureForm( message , message->getUsername(), nullptr )){
+        try{
+
+            response = new Message();
+            response->setNonce( *nonce );
+
+        }catch( bad_alloc e ){
+
+            verbose<<"--> [MainServer][loginHandler] Error, during memory allocation. Operation aborted"<<'\n';
+            return this->makeError( string("Internal server error. Try again"), nonce );
+
+        }
+        base<<"------> [MainServer][loginHandler] Starting analysis of login request validity"<<'\n';
+
+        //  verification of signature
+        if( !this->cipherServer.fromSecureForm( message, message->getUsername(), nullptr )){
 
             verbose<<"--> [MainServer][loginHandler] Error during security verification"<<'\n';
             response->setMessageType( LOGIN_FAIL );
-            this->cipherServer.toSecureForm( response , nullptr );
+            if( !this->cipherServer.toSecureForm( response, nullptr )){
+
+                verbose << "-->[MainServer][loginHandler] Error, server unable to secure the message"<<'\n';
+                delete response;
+                response = this->makeError( string( "Internal server error. Try again" ), nonce );
+
+            }
 
             return response;
 
         }
 
-        vverbose<<"--> [MainServer][loginHandler] Message has passed validation check"<<'\n';
-
+        base<<"------> [MainServer][loginHandler] Request has passed signature verification"<<'\n';
+        //  verification of user not already logged
         if( this->userRegister.has( message->getUsername() )){  //  if a user is already logger login has to fail
 
             verbose<<"--> [MainServer][loginHandler] Error, user already logged"<<'\n';
             response->setMessageType( LOGIN_FAIL );
-            this->cipherServer.toSecureForm( response , nullptr );
+            if( !this->cipherServer.toSecureForm( response, nullptr )){
+
+                verbose << "-->[MainServer][loginHandler] Error, server unable to secure the message"<<'\n';
+                delete response;
+                response = this->makeError( string( "Internal server error. Try again" ), nonce );
+
+            }
 
             return response;
 
@@ -916,24 +973,32 @@ namespace server {
 
             verbose<<"--> [MainServer][loginHandler] Error, during user registration"<<'\n';
             response->setMessageType( LOGIN_FAIL );
-            this->cipherServer.toSecureForm( response, nullptr );
+            if( !this->cipherServer.toSecureForm( response, nullptr )){
+
+                verbose << "-->[MainServer][loginHandler] Error, server unable to secure the message"<<'\n';
+                delete response;
+                response = this->makeError( string( "Internal server error. Try again" ), nonce );
+
+            }
 
             return response;
 
         }
-
+        base<<"------> [MainServer][loginHandler] User correctly registered into the service"<<'\n';
+        //  we had to the ip previously registered(from first connection) the UDP port given with the login message
         this->clientRegister.updateIp( socket, *(message->getPort()));
 
         response->setMessageType( LOGIN_OK );
 
         if( !this->cipherServer.toSecureForm( response , nullptr )){
-            verbose << "-->[MainServer][loginHandler] Error, invalid message Missing Diffie-Hellman Parameter" << '\n';
-
+            verbose << "-->[MainServer][loginHandler] Error, server unable to sign the messager" << '\n';
+            this->userRegister.removeUser( socket );
             delete response;
-            response = this->makeError(string( "Server Error. The service is unable to generate a Diffie-Hellman parameter" ), nonce );
+            response = this->makeError( string( "Server Error. The service is unable to secure the message" ), nonce );
 
         }
 
+        base<<"------> [MainServer][certificateHandler] LOGIN_OK message correctly generated"<<'\n';
         return response;
 
     }
@@ -941,30 +1006,30 @@ namespace server {
     //  the handler manages the KEY_EXCHANGE requests. After has verified the user is correctly registered and the used nonce is the
     //  same of the user login, the service sends a diffie-hellman parameter to the client and combining it with
     //  the received param generates the values necessary to create a secure net-channel
-    Message* MainServer::keyExchangeHandler( Message* message , string username, int* nonce ){
+    Message* MainServer::keyExchangeHandler( Message* message, string username, int* nonce ){
 
-        if( !message || username.empty() ){
+        if( !message || username.empty() || !nonce ){
 
             verbose<<"--> [MainServer][keyExchangeHandler] Error invalid parameters. Operation Aborted"<<'\n';
             return nullptr;
 
         }
 
-        Message* response;
+        Message* response = nullptr;
 
-        if( !this->userRegister.has(username)){
+        if( !this->userRegister.has( username )){
 
             verbose << "--> [MainServer][keyExchangeHandler] Error, user not logged" << '\n';
-            response = this->makeError(string( "Invalid request. You must login into the service before" ), nonce );
+            response = this->makeError( string( "Invalid request. You must login into the service before" ), nonce );
 
             return response;
 
         }
 
-        if( *(this->userRegister.getStatus(username)) != CONNECTED ){
+        if( *(this->userRegister.getStatus( username )) != CONNECTED ){
 
             verbose << "--> [MainServer][keyExchangeHandler] Error, key already exchanged" << '\n';
-            response = this->makeError(string( "Invalid request. Session key already generated" ), nonce );
+            response = this->makeError( string( "Invalid request. Session key already generated" ), nonce );
 
             return response;
 
@@ -973,13 +1038,13 @@ namespace server {
         if( !this->cipherServer.fromSecureForm( message, username, nullptr )){
 
             verbose << "--> [MainServer][keyExchangeHandler] Error, message didn't pass the security checks" << '\n';
-            response = this->makeError(string( "Security error. Invalid message'signature" ), nonce );
+            response = this->makeError( string( "Security error. Invalid message'signature" ), nonce );
 
             return response;
 
         }
 
-        vverbose << "--> [MainServer][keyExchangeHandler] Request has passed security checks" << '\n';
+        base<<"------> [MainServer][keyExchangeHandler] Request has passed signature verification"<<'\n';
         NetMessage* param = this->cipherServer.getPartialKey();
         if( !param ){
 
@@ -987,25 +1052,38 @@ namespace server {
             return nullptr;
 
         }
-
+        base<<"------> [MainServer][keyExchangeHandler] Starting generation of user session key"<<'\n';
         //  nonce presence has already been verified in low level functions
+        try {
 
-        response = new Message();
-        response->setMessageType( KEY_EXCHANGE );
-        response->setNonce( *nonce );
-        response->set_DH_key( param->getMessage(), param->length() );
+            response = new Message();
+            response->setMessageType( KEY_EXCHANGE );
+            response->setNonce( *nonce );
+            response->set_DH_key( param->getMessage(), param->length() );
+
+        }catch( bad_alloc e ){
+
+            verbose<<"--> [MainServer][keyExchangeHandler] Error during memory allocation. Operation aborted"<<'\n';
+            delete param;
+            if( response ) delete response;
+            this->userRegister.removeUser( username );
+            return this->makeError( string( "Server internal error. Try again" ) , nonce );
+
+        }
         delete param;
 
-        this->userRegister.setLogged( username , this->cipherServer.getSessionKey( message->getDHkey() , message->getDHkeyLength()));
+        this->userRegister.setLogged( username , this->cipherServer.getSessionKey( message->getDHkey() , message->getDHkeyLength() ));
 
         if( !this->cipherServer.toSecureForm( response, nullptr )){
 
             verbose << "--> [MainServer][keyExchangeHandler] Error, during message generation" << '\n';
             delete response;
+            this->userRegister.removeUser( username );
             response = this->makeError(string( "Server error. Service unable to generate message'signature" ), nonce );
 
         }
-
+        base<<"------> [MainServer][keyExchangeHandler] User "<<username<<" correctly logged into the service"<<'\n';
+        base<<"------> [MainServer][certificateHandler] KEY_EXCHANGE message correctly generated"<<'\n';
         return response;
 
     }
@@ -1014,16 +1092,16 @@ namespace server {
     //  a message containing a formatted list of all the match-available users connected to the server
     Message* MainServer::userListHandler( Message* message  , string username, int* nonce ) {
 
-        if( !message || username.empty() ){
+        if( !message || username.empty() || !nonce ){
 
             verbose<<"--> [MainServer][userListHandler] Error invalid parameters. Operation Aborted"<<'\n';
             return nullptr;
 
         }
 
-        Message* response;
+        Message* response = nullptr;
 
-        if( !this->cipherServer.fromSecureForm( message, message->getUsername(), this->userRegister.getSessionKey(username) )){
+        if( !this->cipherServer.fromSecureForm( message, message->getUsername(), this->userRegister.getSessionKey( username ))){
 
             verbose<<"--> [MainServer][userListHandler] Error. Verification Failure"<<'\n';
             response = this->makeError( string( "Security error. Invalid message'signature" ), nonce );
@@ -1032,6 +1110,7 @@ namespace server {
 
         }
 
+        //  if a user is not logged or is playing a match he cannot request a USER_LIST
         if( *(this->userRegister.getStatus( username )) == CONNECTED || *(this->userRegister.getStatus( username )) == PLAY ){
 
             verbose << "--> [MainServer][userListHandler] Error, user not allowed" << '\n';
@@ -1041,7 +1120,7 @@ namespace server {
 
         }
 
-        vverbose << "--> [MainServer][userListHandler] Request has passed security checks" << '\n';
+        base<<"------> [MainServer][userListHandler] Request has passed signature verification"<<'\n';
         NetMessage *user_list = this->userRegister.getUserList( username );
 
         if( !user_list ){
@@ -1050,12 +1129,23 @@ namespace server {
             return nullptr;
 
         }
+        base<<"------> [MainServer][userListHandler] User list generated"<<'\n';
 
-        response = new Message();
-        response->setMessageType( USER_LIST );
-        response->setNonce( *nonce );
-        response->setUserList( user_list->getMessage(), user_list->length() );
+        try {
 
+            response = new Message();
+            response->setMessageType(USER_LIST);
+            response->setNonce(*nonce);
+            response->setUserList(user_list->getMessage(), user_list->length());
+
+        }catch( bad_alloc e ){
+
+            delete user_list;
+            if( response )delete response;
+            verbose<<"--> [MainServer][userListHandler] Error during memory allocation. Operation aborted"<<'\n';
+            return this->makeError( string("Server Internal Error, Try again"), nonce );
+
+        }
         delete user_list;
 
         if( !this->cipherServer.toSecureForm(response, this->userRegister.getSessionKey(username)) ){
@@ -1066,6 +1156,7 @@ namespace server {
 
         }
 
+        base<<"------> [MainServer][userListHandler] USER_LIST message correctly generated"<<'\n';
         return response;
 
     }
@@ -1074,7 +1165,7 @@ namespace server {
     //  a message containing a formatted list of all the users game statistics mantained in a remote MySQL server
     Message* MainServer::rankListHandler( Message* message  , string username, int* nonce ){
 
-        if( !message || username.empty() ){
+        if( !message || username.empty() || !nonce ){
 
             verbose<<"--> [MainServer][rankListHandler] Error invalid parameters. Operation Aborted"<<'\n';
             return nullptr;
@@ -1082,7 +1173,7 @@ namespace server {
         }
 
         //  nonce presence has already been verified in low level functions
-        Message* response;
+        Message* response = nullptr;
 
         if( !this->cipherServer.fromSecureForm( message, message->getUsername(),this->userRegister.getSessionKey(username) )){
 
@@ -1092,7 +1183,7 @@ namespace server {
             return response;
 
         }
-
+        base<<"------> [MainServer][rankListHandler] Request has passed signature verification"<<'\n';
 
         if( *(this->userRegister.getStatus( username )) == CONNECTED || *(this->userRegister.getStatus( username )) == PLAY ){
 
@@ -1103,7 +1194,8 @@ namespace server {
 
         }
 
-        response = new Message();
+
+        base<<"------> [MainServer][rankListHandler] Contacting remote SQL database for rank list"<<'\n';
         string rank_list = SQLConnector::getRankList();
 
         if( rank_list.empty() ){
@@ -1113,9 +1205,21 @@ namespace server {
 
         }
 
-        response->setMessageType( RANK_LIST );
-        response->setNonce( *nonce );
-        response->setRankList( (unsigned char*) rank_list.c_str(), rank_list.length() );
+        base<<"------> [MainServer][rankListHandler] Rank list generated"<<'\n';
+        try {
+
+            response = new Message();
+            response->setMessageType(RANK_LIST);
+            response->setNonce(*nonce);
+            response->setRankList((unsigned char *) rank_list.c_str(), rank_list.length());
+
+        }catch( bad_alloc e ){
+
+            if( response )delete response;
+            verbose<<"--> [MainServer][rankListHandler] Error during memory allocation. Operation aborted"<<'\n';
+            return this->makeError( string("Server Internal Error, Try again"), nonce );
+
+        }
 
         if( !this->cipherServer.toSecureForm(response, this->userRegister.getSessionKey(username) ) ){
 
@@ -1125,6 +1229,7 @@ namespace server {
 
         }
 
+        base<<"------> [MainServer][rankListHandler] RANK_LIST message correctly generated"<<'\n';
         return response;
 
     }
@@ -1132,22 +1237,25 @@ namespace server {
     //  the handler manages LOGOUT_REQ requests. It closes any pending match then it securely delete the user from the service
     Message* MainServer::logoutHandler( Message* message , string username, int socket, int* nonce ){
 
-        if( !message || username.empty() || socket<0 ){
+        if( !message || username.empty() || socket<0 || !nonce ){
 
             verbose<<"--> [MainServer][logoutHandler] Error invalid parameters. Operation Aborted"<<'\n';
             return nullptr;
 
         }
 
-        Message* response;
+        Message* response = nullptr;
+
         if( !this->cipherServer.fromSecureForm( message , username, this->userRegister.getSessionKey(username) ) ){
 
             verbose << "--> [MainServer][logoutHandler] Error, Verification failure" << '\n';
-            response = this->makeError(string( "Security error. Invalid message'signature" ), nonce );
+            response = this->makeError( string( "Security error. Invalid message'signature" ), nonce );
 
             return response;
-        }
 
+        }
+        base<<"------> [MainServer][logoutHandler] Request has passed signature verification"<<'\n';
+        
         if( *(this->userRegister.getStatus(username)) != LOGGED ){
 
             verbose << "--> [MainServer][logoutHandler] Error, user not in the correct state" << '\n';
@@ -1157,10 +1265,20 @@ namespace server {
 
         }
 
-        response = new Message();
-        response->setMessageType(LOGOUT_OK );
-        response->setNonce( *nonce );
+        base<<"------> [MainServer][logoutHandler] Starting logout procedure"<<'\n';
+        try {
 
+            response = new Message();
+            response->setMessageType(LOGOUT_OK);
+            response->setNonce(*nonce);
+
+        }catch( bad_alloc e ){
+
+            if( response )delete response;
+            verbose<<"--> [MainServer][logoutHandler] Error during memory allocation. Operation aborted"<<'\n';
+            return this->makeError( string("Server Internal Error, Try again"), nonce );
+
+        }
 
         if( !this->cipherServer.toSecureForm( response, this->userRegister.getSessionKey(username) )){
 
@@ -1172,7 +1290,8 @@ namespace server {
         }
 
         this->logoutClient( socket );
-
+        base<<"------> [MainServer][logoutHandler] User "<<username<<" correctly logged out"<<'\n';
+        base<<"------> [MainServer][logoutHandler] LOGOUT_OK message correctly generated"<<'\n';
         return response;
 
     }

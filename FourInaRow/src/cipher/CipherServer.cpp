@@ -326,7 +326,7 @@ namespace cipher{
 
         }
 
-        verbose<<"--> [CipherServer][toSecureForm]returning true for message type:"<<message->getMessageType()<<'\n';
+        vverbose<<"--> [CipherServer][toSecureForm]returning true for message type:"<<message->getMessageType()<<'\n';
         return true;
 
     }
