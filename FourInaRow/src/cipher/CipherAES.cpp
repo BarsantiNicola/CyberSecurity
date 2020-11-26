@@ -207,7 +207,7 @@ This function encryptMessage with AES_256 gcm
     int ciphertextLength;
     unsigned char* ciphertext;
     unsigned char* tag;
-    verbose<<"-->[CipherAES][decryptMessage] enter to encryptMessage function"<<'\n';
+    vverbose<<"-->[CipherAES][decryptMessage] enter to encryptMessage function"<<'\n';
     try
     {
       tag=new unsigned char[16];
@@ -228,7 +228,7 @@ This function encryptMessage with AES_256 gcm
     //vverbose<<"-->[CipherAES][encryptMessage] key and iv is nullptr"<<'\n';
     if(netMessage==nullptr)
     {
-       verbose<<"-->[CipherAES][encryptMessage] errorTo create a message compact"<<'\n';
+       verbose<<"-->[CipherAES][encryptMessage] error To create a message compact"<<'\n';
        delete[]tag;
        return nullptr;
     }
@@ -261,7 +261,7 @@ This function encryptMessage with AES_256 gcm
 
       newMessage->setSignature( tag , 16 );
       //delete[]tag;
-      verbose<<"-->[CipherAES][encryptMessage] end correctly the encrypt message"<<'\n';
+      vverbose<<"-->[CipherAES][encryptMessage] end correctly the encrypt message"<<'\n';
       return newMessage;
     }
     else
@@ -281,7 +281,7 @@ This function encryptMessage with AES_256 gcm
       bool res= copyToFrom(0,lengthPlaintext,netMessage->getMessage(),textInPlain);
       if (res==false)
       {
-       verbose<<"-->[CipherAES][encryptMessage] errorTo copy a message"<<'\n';
+       verbose<<"-->[CipherAES][encryptMessage] error To copy a message"<<'\n';
        return nullptr;
       }
       res=copyToFrom(lengthPlaintext,netMessage->length(),netMessage->getMessage(),textToCipher);
@@ -326,12 +326,12 @@ This function encryptMessage with AES_256 gcm
       }
       if(newMessage->getMessageType()==GAME)
       {
-        verbose<<"-->[CipherAES][encryptMessage] setSignatureAES"<<'\n';
+        vverbose<<"-->[CipherAES][encryptMessage] setSignatureAES"<<'\n';
         newMessage->setSignatureAES( tag , 16 );
       }
       else
       {
-        verbose<<"-->[CipherAES][encryptMessage] setSignature"<<'\n';
+        vverbose<<"-->[CipherAES][encryptMessage] setSignature"<<'\n';
         newMessage->setSignature( tag , 16 );
       }
 
@@ -345,14 +345,14 @@ This function encryptMessage with AES_256 gcm
       }
       delete[]ciphertext;
       //delete[]tag;
-      verbose<<"-->[CipherAES][encryptMessage] end correctly the encrypt message 2 "<<'\n';
+      vverbose<<"-->[CipherAES][encryptMessage] end correctly the encrypt message 2 "<<'\n';
       return newMessage;
     }
   }
 /*--------------------Function decryptMessage--------------------------------------*/
   Message* CipherAES::decryptMessage(Message message)
  {
-    verbose<<"-->[CipherAES][decryptMessage] enter to decryptMessage"<<'\n';
+    vverbose<<"-->[CipherAES][decryptMessage] enter to decryptMessage"<<'\n';
     int lengthCleareText=0;
     int lengthToDecrypt=0;
     int ciphertextLength;
@@ -473,12 +473,12 @@ This function encryptMessage with AES_256 gcm
       }
       if(newMessage->getMessageType()==GAME)
       {
-        verbose<<"-->[CipherAES][encryptMessage] getSignatureAES"<<'\n';
+        vverbose<<"-->[CipherAES][encryptMessage] getSignatureAES"<<'\n';
         tag=newMessage->getSignatureAES();
       }
       else
       {
-        verbose<<"-->[CipherAES][encryptMessage] getSignature"<<'\n';
+        vverbose<<"-->[CipherAES][encryptMessage] getSignature"<<'\n';
         tag=newMessage->getSignature();
       }
 

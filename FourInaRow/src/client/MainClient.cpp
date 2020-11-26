@@ -842,7 +842,8 @@ namespace client
     nonce_s=message->getCurrent_Token();
     if(*nonce_s!=(this->currTokenChatAdv))
     {
-      verbose<<"--> [MainClient][reciveChatProtocol] error the nonce isn't valid"<<'\n';
+      verbose<<"--> [MainClient][reciveChatProtocol] error the nonce isn't valid "<<*nonce_s<<" != "<<this->currTokenChatAdv<< '\n';
+      
       res=cipher_client->fromSecureForm( message , username ,aesKeyClient,false);
       if(!res)
       {
@@ -2400,7 +2401,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         if(!logged)
         {
           textual_interface_manager->printLoginInterface();
-          string app="comand:" + comand_line + "not valid";
+          string app="comand: " + comand_line + " not valid";
           textual_interface_manager->printMessage( app );
         }
         else if(clientPhase == ClientPhase::INGAME_PHASE)
@@ -2610,8 +2611,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                     this->currentToken=generateRandomNonce();
                     
                    
-                    this->currTokenChat=this->currentToken+TOKEN_GAP+1;
-                    this->currTokenChatAdv=this->currentToken+TOKEN_GAP;
+                    this->currTokenChat=this->currentToken+TOKEN_GAP+2;
+                    this->currTokenChatAdv=this->currentToken+TOKEN_GAP+1;
                     keyExchangeClientSend();
                     
                   }
@@ -2641,7 +2642,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                   printWhiteSpace();
                   cout<<"an error occured"<<'\n';
                   printWhiteSpace();
-                  std::cout<<"\t# Insert a command:";
+                  std::cout<<"\t# Insert a comand:";
                   cout.flush();
                   
                 }
@@ -2684,8 +2685,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                    if(!startingMatch)
                    {
                      this->currentToken=*message->getNonce()+1;
-                     this->currTokenChatAdv=this->currentToken+TOKEN_GAP;
-                     this->currTokenChat=this->currTokenChatAdv + 1;
+                     this->currTokenChatAdv=this->currentToken+TOKEN_GAP+1;
+                     this->currTokenChat=this->currentToken +TOKEN_GAP;
                      currTokenIninzialized=true;
                      keyExchangeClientSend();
                    }
