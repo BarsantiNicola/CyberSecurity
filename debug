@@ -2,6 +2,14 @@
 
 /////////////CLIENT BUGS
 
+- inserire un comando non valido genera un messaggio di errore scorretto
+
+- errori di reject/accept/withdraw non utilizzato printMessage e non aggiornano interfaccia
+
+- dare un comando scorretto manda in stallo il programma che sembra perdere un carattere(ad esempio show u)
+
+- reject presenta un \n al termine
+
 
 
 
