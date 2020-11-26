@@ -1592,6 +1592,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         vverbose<<"-->[MainClient][MakeAndSendGameMove] start game move with column: "<<column<<'\n';
         currTokenIninzialized=false;
         std::string app=std::to_string(column);
+        vverbose<<"-->[MainClient][MakeAndSendGameMove] game columns string: "<<app<<'\n';
         appMess = createMessage(MessageType::GAME,nullptr,(unsigned char*) app.c_str(),app.size(),nullptr,MessageGameType::MOVE_TYPE,false);
         
         if(appMess==nullptr)
@@ -1846,8 +1847,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 
    app=printableString(chosenColl,chosenCollLen);
    collMove=std::stoi(app,nullptr,10);
-   app= printableString(message->getChosenColumn(),message->getChosenColumnLength());
-   collGame=std::stoi(app,nullptr,10);
+
    Message appG=*messG;
    res=cipher_client->fromSecureForm( &appG, username ,aesKeyClient,false); 
    if(!res)
@@ -1855,6 +1855,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
      verbose<<"-->[MainClient][ReceiveGameMove] error to decrypt the message appG"<<'\n';
      return;
    }
+   app= printableString(messG->getChosenColumn(),messG->getChosenColumnLength());
+   vverbose<<"-->[MainClient][ReceiveGameMove] the column in the GAME message is: "<<app<<'\n';
+   collGame=std::stoi(app,nullptr,10);
    if(*appG.getCurrent_Token() < nonceAdv || collMove!=collGame )
    {
      verbose<<"-->[MainClient][ReceiveGameMove] the twoColl are difference: "<<collMove<<" != "<<collGame<<" or"<<'\n';
@@ -2607,8 +2610,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                     this->currentToken=generateRandomNonce();
                     
                    
-                    this->currTokenChat=this->currentToken+TOKEN_GAP;
-                    this->currTokenChatAdv=this->currTokenChat+1;
+                    this->currTokenChat=this->currentToken+TOKEN_GAP+1;
+                    this->currTokenChatAdv=this->currentToken+TOKEN_GAP;
                     keyExchangeClientSend();
                     
                   }
