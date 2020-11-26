@@ -214,6 +214,13 @@ namespace server{
 
     }
 
+    //  return the challenger username from the match identified by its matchID
+    int MatchRegister::getTotalMoves( int matchID ){
+
+        return this->matchRegister[matchID].getTotalMoves();
+
+    }
+
     //  insert a move into the match identified by its matchID
     int MatchRegister::addChallengerMove( int matchID, int chosen_col ){
 

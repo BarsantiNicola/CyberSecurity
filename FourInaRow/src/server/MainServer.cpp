@@ -229,32 +229,32 @@ namespace server {
         switch( message->getMessageType() ){
 
             case utility::CERTIFICATE_REQ:
-                base<<"-----> [MainServer][userManager] Message received: CERTIFICATE_REQ"<<'\n';
+                verbose<<"-----> [MainServer][userManager] Message received: CERTIFICATE_REQ"<<'\n';
                 ret = this->certificateHandler( message, socket );
                 break;
 
             case utility::LOGIN_REQ:
-                base<<"-----> [MainServer][userManager] Message received: LOGIN_REQ"<<'\n';
+                verbose<<"-----> [MainServer][userManager] Message received: LOGIN_REQ"<<'\n';
                 ret = this->loginHandler( message, socket, nonce );
                 break;
 
             case utility::KEY_EXCHANGE:
-                base<<"-----> [MainServer][userManager] Message received: KEY_EXCHANGE"<<'\n';
+                verbose<<"-----> [MainServer][userManager] Message received: KEY_EXCHANGE"<<'\n';
                 ret = this->keyExchangeHandler( message, username, nonce );
                 break;
 
             case utility::USER_LIST_REQ:
-                base<<"-----> [MainServer][userManager] Message received: USER_LIST_REQ"<<'\n';
+                verbose<<"-----> [MainServer][userManager] Message received: USER_LIST_REQ"<<'\n';
                 ret = this->userListHandler( message, username, nonce );
                 break;
 
             case utility::RANK_LIST_REQ:
-                base<<"-----> [MainServer][userManager] Message received: RANK_LIST_REQ"<<'\n';
+                verbose<<"-----> [MainServer][userManager] Message received: RANK_LIST_REQ"<<'\n';
                 ret = this->rankListHandler( message, username, nonce );
                 break;
 
             case utility::LOGOUT_REQ:
-                base<<"-----> [MainServer][userManager] Message received: LOGOUT_REQ"<<'\n';
+                verbose<<"-----> [MainServer][userManager] Message received: LOGOUT_REQ"<<'\n';
                 ret = this->logoutHandler( message, username, socket, nonce );
                 break;
 
@@ -285,35 +285,37 @@ namespace server {
         switch( message->getMessageType() ){
 
             case utility::MATCH:
-                base<<"-----> [MainServer][matchManager] Message received: MATCH"<<'\n';
+                verbose<<"-----> [MainServer][matchManager] Message received: MATCH"<<'\n';
                 ret = this->matchHandler( message, username, nonce );
                 break;
 
             case utility::ACCEPT:
-                base<<"-----> [MainServer][matchManager] Message received: ACCEPT"<<'\n';
+                verbose<<"-----> [MainServer][matchManager] Message received: ACCEPT"<<'\n';
                 ret = this->acceptHandler( message, username, nonce );
                 break;
 
             case utility::REJECT:
-                base<<"-----> [MainServer][matchManager] Message received: REJECT"<<'\n';
+                verbose<<"-----> [MainServer][matchManager] Message received: REJECT"<<'\n';
                 ret = this->rejectHandler( message, username, nonce );
                 break;
 
             case utility::WITHDRAW_REQ:
-                base<<"-----> [MainServer][matchManager] Message received: WITHDRAW_REQ"<<'\n';
+                verbose<<"-----> [MainServer][matchManager] Message received: WITHDRAW_REQ"<<'\n';
                 ret = this->withdrawHandler( message, username, nonce );
                 break;
 
             case utility::DISCONNECT:
-                base<<"-----> [MainServer][matchManager] Message received: DISCONNECT"<<'\n';
+                verbose<<"-----> [MainServer][matchManager] Message received: DISCONNECT"<<'\n';
                 ret = this->disconnectHandler( message, username, nonce );
                 break;
+
             case utility::GAME:
-                base<<"-----> [MainServer][matchManager] Message received: GAME"<<'\n';
+                verbose<<"-----> [MainServer][matchManager] Message received: GAME"<<'\n';
                 ret = this->gameHandler( message, username, nonce );
                 break;
+
             default:
-                base<<"-----> [MainServer][matchManager] Unknown message type"<<'\n';
+                verbose<<"-----> [MainServer][matchManager] Unknown message type"<<'\n';
                 break;
 
         }
@@ -1255,7 +1257,7 @@ namespace server {
 
         }
         base<<"------> [MainServer][logoutHandler] Request has passed signature verification"<<'\n';
-        
+
         if( *(this->userRegister.getStatus(username)) != LOGGED ){
 
             verbose << "--> [MainServer][logoutHandler] Error, user not in the correct state" << '\n';
@@ -1299,74 +1301,88 @@ namespace server {
     //  manages the MATCH requests. It verifies the users are in the correct states and have the correct information to start a match
     Message* MainServer::matchHandler( Message* message, string username, int* nonce ){
 
-        if( !message || username.empty() ){
+        if( !message || username.empty() || !nonce ){
 
             verbose<<"--> [MainServer][matchHandler] Error invalid parameters. Operation Aborted"<<'\n';
             return nullptr;
 
         }
 
-        Message* response;
-        if( !this->cipherServer.fromSecureForm( message , username, this->userRegister.getSessionKey(username) ) ){
+        Message* response = nullptr;
+        if( !this->cipherServer.fromSecureForm( message, username, this->userRegister.getSessionKey( username ))){
 
             verbose << "--> [MainServer][matchHandler] Error, Verification failure" << '\n';
-            response = this->makeError(string( "Security error. Invalid message'signature" ), nonce );
+            return this->makeError( string( "Security error. Invalid message'signature" ), nonce );
 
-            return response;
         }
+
+        base<<"------> [MainServer][matchHandler] Request has passed signature verification"<<'\n';
 
         if( message->getUsername().empty() ){
 
             verbose<<"--> [MainServer][matchHandler] Error missing user informations"<<'\n';
-            return this->makeError( "Invalid Request. You have to send a valid username", nonce );
+            return this->makeError( string( "Invalid Request. You have to send a valid username" ), nonce );
 
         }
 
-        if( !message->getUsername().compare(username)){
+        if( !message->getUsername().compare( username )){
+
             verbose<<"--> [MainServer][matchHandler] Error invalid user information"<<'\n';
-            return this->makeError( "Invalid Request. You have to send a valid username", nonce );
+            return this->makeError( string( "Invalid Request. You have to send a valid username" ), nonce );
+
         }
 
-        if( this->matchRegister.getMatchID(username) != -1 ){
+        if( this->matchRegister.getMatchID( username ) != -1 ){
 
             verbose<<"--> [MainServer][matchHandler] Error, user already has registered a match"<<'\n';
-            response = this->makeError(string( "Invalid request. You're already registerd a match. Withdraw it before create a new match" ), nonce );
-
-            return response;
+            return this->makeError( string( "Invalid request. You're already registerd a match. Withdraw it before create a new match" ), nonce );
 
         }
 
-        if( !this->userRegister.has(message->getUsername())){
+        if( !this->userRegister.has(message->getUsername()) ){
+
             verbose<<"--> [MainServer][matchHandler] Error, requested user doesn't exits"<<'\n';
-            response = this->makeError(string( "Invalid request. User doesn't exists" ), nonce );
-
-            return response;
+            return this->makeError( string( "Invalid request. User doesn't exists" ), nonce );
 
         }
 
-        if( *(this->userRegister.getStatus(username) ) != LOGGED ){
+        try{
+
+            response = new Message();
+
+        }catch( bad_alloc e ){
+
+            verbose<<"--> [MainServer][matchHandler] Error during memory allocation. Operation aborted"<<'\n';
+            return this->makeError( string( "Internal Server Error. Try again" ), nonce );
+
+        }
+
+        base<<"------> [MainServer][matchHandler] Status verification of challenger user: "<<username<<'\n';
+        if( *(this->userRegister.getStatus( username )) != LOGGED ){
 
             verbose<<"--> [MainServer][matchHandler] Error, challenger unable to accept match requests"<<'\n';
-            response = new Message();
             response->setMessageType( REJECT );
             response->setAdversary_1( username );
             response->setAdversary_2( message->getUsername() );
             response->setNonce( *nonce );
+
             if( !this->cipherServer.toSecureForm( response , this->userRegister.getSessionKey(username) )){
 
                 verbose<<"--> [MainServer][matchHandler] Error during security conversion"<<'\n';
                 delete response;
-                response = this->makeError(string("Server error. Service unable to generate the message'signature"), nonce );
+                response = this->makeError(string( "Server error. Service unable to generate the message'signature" ), nonce );
 
             }
 
             return response;
 
         }
+
+        base<<"------> [MainServer][matchHandler] Status verification of challenged user: "<<message->getUsername()<<'\n';
+
         if( *(this->userRegister.getStatus(message->getUsername()) ) == CONNECTED || *(this->userRegister.getStatus(message->getUsername()) ) == PLAY  ){
 
             verbose<<"--> [MainServer][matchHandler] Error, challenged unable to accept match requests"<<'\n';
-            response = new Message();
             response->setMessageType( REJECT );
             response->setAdversary_1( username );
             response->setAdversary_2( message->getUsername() );
@@ -1382,6 +1398,9 @@ namespace server {
             return response;
 
         }
+
+        base<<"------> [MainServer][matchHandler] Users verification passed"<<'\n';
+
         int* adv_socket = this->userRegister.getSocket( message->getUsername() );
         int* adv_nonce = nullptr;
         if( adv_socket )
@@ -1393,7 +1412,6 @@ namespace server {
 
             verbose<<"--> [MainServer][matchHandler] Error, challenged unable to accept match requests"<<'\n';
 
-            response = new Message();
             response->setMessageType( REJECT );
             response->setAdversary_1( username );
             response->setAdversary_2( message->getUsername() );
@@ -1418,7 +1436,6 @@ namespace server {
 
             verbose<<"--> [MainServer][matchHandler] Error, challenged unable to accept match requests"<<'\n';
 
-            response = new Message();
             response->setMessageType( REJECT );
             response->setAdversary_1( username );
             response->setAdversary_2( message->getUsername() );
@@ -1439,31 +1456,49 @@ namespace server {
 
         }
 
+        base<<"------> [MainServer][matchHandler] New match correctly created"<<'\n';
+
         this->userRegister.setWait( username );
 
-        response = new Message();
         response->setMessageType( MATCH );
         response->setUsername( username );
         response->setNonce( *adv_nonce );
 
-        if( !this->cipherServer.toSecureForm( response , userKey )){
+        if( !this->cipherServer.toSecureForm( response, userKey )){
 
             verbose<<"--> [MainServer][matchHandler] Error, challenged unable to accept match requests"<<'\n';
-            this->userRegister.setLogged( username, this->userRegister.getSessionKey(username));
-            this->matchRegister.removeMatch(this->matchRegister.getMatchID(username));
+            this->userRegister.setLogged( username, this->userRegister.getSessionKey( username ));
+            this->matchRegister.removeMatch(this->matchRegister.getMatchID( username ));
 
             delete response;
-            response = new Message();
-            response->setMessageType( REJECT );
-            response->setAdversary_1( username );
-            response->setAdversary_2( message->getUsername() );
-            response->setNonce( *nonce );
+            try{
 
-            if( !this->cipherServer.toSecureForm( response , this->userRegister.getSessionKey( username ))){
+                response = new Message();
+                response->setMessageType( REJECT );
+                response->setAdversary_1( username );
+                response->setAdversary_2( message->getUsername() );
+                response->setNonce( *nonce );
+
+            }catch( bad_alloc e ){
+
+                verbose<<"--> [MainServer][matchHandler] Error during memory allocation. Operation aborted"<<'\n';
+                delete userKey;
+                delete adv_socket;
+                delete adv_nonce;
+                this->userRegister.setLogged( username , this->userRegister.getSessionKey( username ));
+                this->matchRegister.removeMatch( this->matchRegister.getMatchID( username ));
+                return this->makeError( string( "Internal Server Error. Try again" ), nonce );
+
+            }
+
+
+            if( !this->cipherServer.toSecureForm( response, this->userRegister.getSessionKey( username ))){
 
                 verbose<<"--> [MainServer][matchHandler] Error during security conversion"<<'\n';
                 delete response;
-                response = this->makeError(string("Server error. Service unable to generate the message'signature"), nonce );
+                response = this->makeError( string( "Server error. Service unable to generate the message'signature" ), nonce );
+                this->userRegister.setLogged( username , this->userRegister.getSessionKey( username ));
+                this->matchRegister.removeMatch( this->matchRegister.getMatchID( username ));
 
             }
 
@@ -1473,25 +1508,45 @@ namespace server {
             return response;
 
         }
+
+        base<<"------> [MainServer][matchHandler] MATCH message correctly generated"<<'\n';
 
         if( !this->sendMessage( response , *adv_socket )){
 
             verbose<<"--> [MainServer][matchHandler] Error, challenged unable to accept match requests"<<'\n';
-            this->userRegister.setLogged( username , this->userRegister.getSessionKey(username));
-            this->matchRegister.removeMatch(this->matchRegister.getMatchID(username));
+            this->userRegister.setLogged( username , this->userRegister.getSessionKey( username ));
+            this->matchRegister.removeMatch( this->matchRegister.getMatchID( username ));
 
             delete response;
-            response = new Message();
-            response->setMessageType( REJECT );
-            response->setAdversary_1( username );
-            response->setAdversary_2( message->getUsername() );
-            response->setNonce( *nonce );
+
+            try{
+
+                response = new Message();
+                response->setMessageType( REJECT );
+                response->setAdversary_1( username );
+                response->setAdversary_2( message->getUsername() );
+                response->setNonce( *nonce );
+
+            }catch( bad_alloc e ){
+
+                verbose<<"--> [MainServer][matchHandler] Error during memory allocation. Operation aborted"<<'\n';
+                delete userKey;
+                delete adv_socket;
+                delete adv_nonce;
+                this->userRegister.setLogged( username , this->userRegister.getSessionKey( username ));
+                this->matchRegister.removeMatch( this->matchRegister.getMatchID( username ));
+                return this->makeError( string( "Internal Server Error. Try again" ), nonce );
+
+            }
+
 
             if( !this->cipherServer.toSecureForm( response , this->userRegister.getSessionKey( username ))){
 
                 verbose<<"--> [MainServer][matchHandler] Error during security conversion"<<'\n';
                 delete response;
                 response = this->makeError(string("Server error. Service unable to generate the message'signature"), nonce );
+                this->userRegister.setLogged( username , this->userRegister.getSessionKey( username ));
+                this->matchRegister.removeMatch( this->matchRegister.getMatchID( username ));
 
             }
 
@@ -1501,6 +1556,8 @@ namespace server {
             return response;
 
         }
+
+        base<<"------> [MainServer][matchHandler] Match correctly sent to: "<<message->getUsername()<<'\n';
 
         this->clientRegister.updateClientNonce(*adv_socket);
         delete adv_socket;
@@ -1510,40 +1567,38 @@ namespace server {
 
     }
 
-    //  manages the ACCEPT requests. It verifies that a match is present and in the correct state
-    Message* MainServer::acceptHandler( Message* message , string username, int* nonce ){
+    //  manages the ACCEPT requests. It verifies that a match is present and in the correct state then if forwards the accept request
+    Message* MainServer::acceptHandler( Message* message, string username, int* nonce ){
 
-        if( !message || username.empty() ){
+        if( !message || username.empty() || !nonce ){
 
             verbose<<"--> [MainServer][acceptHandler] Error invalid parameters. Operation Aborted"<<'\n';
             return nullptr;
 
         }
 
-        Message* response;
+        Message* response = nullptr;
 
-        if( !this->cipherServer.fromSecureForm( message , username, this->userRegister.getSessionKey(username) ) ){
+        if( !this->cipherServer.fromSecureForm( message, username, this->userRegister.getSessionKey(username) ) ){
 
             verbose << "--> [MainServer][acceptHandler] Error, Verification failure" << '\n';
-            response = this->makeError(string( "Security error. Invalid message'signature" ), nonce );
-
-            return response;
+            return this->makeError(string( "Security error. Invalid message'signature" ), nonce );
 
         }
 
-        if( message->getAdversary_1().empty() || message->getAdversary_2().empty()){
+        base<<"------> [MainServer][acceptHandler] Request has passed signature verification"<<'\n';
+
+        if( message->getAdversary_1().empty() || message->getAdversary_2().empty() ){
 
             verbose<< "--> [MainServer][acceptHandler] Error, Missing usernames"<<'\n';
-            response = this->makeError( "Invalid request. You have to insert your username and the challenger one" , nonce );
-            return response;
+            return this->makeError( string( "Invalid request. You have to insert your username and the challenger one" ), nonce );
 
         }
 
         if( *(this->userRegister.getStatus( username )) == CONNECTED || *(this->userRegister.getStatus( username )) == PLAY   ){
 
             verbose<< "--> [MainServer][acceptHandler] Error, user try to accept a challenge before undo previous sent"<<'\n';
-            response = this->makeError( "Invalid request. You aren't in the correct state to accept a match" , nonce );
-            return response;
+            return this->makeError( string( "Invalid request. You aren't in the correct state to accept a match" ), nonce );
 
         }
 
@@ -1552,11 +1607,21 @@ namespace server {
         if( matchID == -1 ){
 
             verbose<<"--> [MainServer][acceptHandler] Error, match doesn't exists"<<'\n';
-            response = new Message();
-            response->setMessageType( DISCONNECT );
-            response->setNonce( *nonce );
 
-            if( !this->cipherServer.toSecureForm( response , this->userRegister.getSessionKey(username) )){
+            try {
+
+                response = new Message();
+                response->setMessageType( DISCONNECT );
+                response->setNonce( *nonce );
+
+            }catch( bad_alloc e ){
+
+                verbose<<"--> [MainServer][acceptHandler] Error during memory allocation. Operation aborted"<<'\n';
+                return this->makeError( string( "Server Internal Error. Try again" ), nonce );
+
+            }
+
+            if( !this->cipherServer.toSecureForm( response , this->userRegister.getSessionKey( username ))){
 
                 verbose<<"--> [MainServer][acceptHandler] Error during security conversion"<<'\n';
                 delete response;
@@ -1568,11 +1633,13 @@ namespace server {
 
         }
 
+        base<<"------> [MainServer][acceptHandler] Identified membership match: "<<matchID<<'\n';
 
-        if( this->sendAcceptMessage( message->getAdversary_1(), message->getAdversary_2(), this->userRegister.getSocket( message->getAdversary_1()))){
+        if( this->sendAcceptMessage( message->getAdversary_1(), message->getAdversary_2(), this->userRegister.getSocket( message->getAdversary_1() ))){
 
-            this->userRegister.setPlay(message->getAdversary_1());
-            this->userRegister.setPlay(message->getAdversary_2());
+            base<<"------> [MainServer][acceptHandler] ACCEPT message forwarded to: "<<message->getAdversary_1()<<'\n';
+            this->userRegister.setPlay( message->getAdversary_1() );
+            this->userRegister.setPlay( message->getAdversary_2() );
             this->matchRegister.setAccepted( matchID );
 
             vector<int> matches = this->matchRegister.getMatchIds( username );
@@ -1582,28 +1649,42 @@ namespace server {
 
         }else {
 
-            int* socket = this->userRegister.getSocket( message->getAdversary_1());
+            verbose<<"--> [MainServer][acceptHandler] Error unable to identify challenger user. Abort"<<'\n';
+            int* socket = this->userRegister.getSocket( message->getAdversary_1() );
             if( socket ) {
-                this->logoutClient(*socket);
+
+                this->logoutClient( *socket );
                 delete socket;
                 return nullptr;
 
             }else {
 
-                verbose << "--> [MainServer][acceptHandler] Something goes wrong. Server repair" << '\n';
-                this->matchRegister.removeMatch(matchID);
+                verbose << "--> [MainServer][acceptHandler] Something goes wrong. Server repairing unconsistence" << '\n';
+                this->matchRegister.removeMatch( matchID );
 
             }
 
-            response = new Message();
-            response->setMessageType( DISCONNECT );
-            response->setNonce( *nonce );
+            try {
 
-            if( !this->cipherServer.toSecureForm( response , this->userRegister.getSessionKey(username) )){
+                response = new Message();
+                response->setMessageType( DISCONNECT );
+                response->setNonce( *nonce );
+
+            }catch( bad_alloc e ){
+
+                verbose<<"--> [MainServer][acceptHandler] Error during memory allocation. Operation aborted"<<'\n';
+                return this->makeError( string( "Server Internal Error. Try again" ), nonce );
+
+            }
+
+            if( !this->cipherServer.toSecureForm( response , this->userRegister.getSessionKey( username ))){
 
                 verbose<<"--> [MainServer][acceptHandler] Error during security conversion"<<'\n';
+                this->userRegister.setLogged( message->getAdversary_1(), this->userRegister.getSessionKey( message->getAdversary_1() ));
+                this->userRegister.setLogged( message->getAdversary_2(), this->userRegister.getSessionKey( message->getAdversary_2() ));
+                this->matchRegister.removeMatch( matchID );
                 delete response;
-                response = makeError( string("Server error. Service unable to generate the message'signature") , nonce );
+                response = makeError( string( "Server error. Service unable to generate the message'signature. Match aborted" ), nonce );
 
             }
 
@@ -1611,174 +1692,192 @@ namespace server {
 
         }
 
-        if( !this->sendGameParam( message->getAdversary_1(), message->getAdversary_2())){
+        if( !this->sendGameParam( message->getAdversary_1(), message->getAdversary_2() )){
 
-
-            int* socket = this->userRegister.getSocket( message->getAdversary_1());
+            int* socket = this->userRegister.getSocket( message->getAdversary_1() );
             if( socket ) {
 
-                this->logoutClient(*socket);
+                this->logoutClient( *socket );
                 delete socket;
                 return nullptr;
 
-            }else {
+            }else{
 
-                verbose << "--> [MainServer][acceptHandler] Something goes wrong. Server repair" << '\n';
-                this->matchRegister.removeMatch(matchID);
+                verbose << "--> [MainServer][acceptHandler] Something goes wrong. Server repairing unconsistence" << '\n';
+                this->matchRegister.removeMatch( matchID );
 
             }
+
             this->userRegister.setLogged( username, this->userRegister.getSessionKey( username ));
 
-            response = new Message();
-            response->setMessageType( DISCONNECT );
-            response->setNonce( *nonce );
+            try {
 
-            if( !this->cipherServer.toSecureForm( response , this->userRegister.getSessionKey(username) )){
+                response = new Message();
+                response->setMessageType( DISCONNECT );
+                response->setNonce( *nonce );
+
+            }catch( bad_alloc e ){
+
+                verbose<<"--> [MainServer][acceptHandler] Error during memory allocation. Operation aborted"<<'\n';
+                return nullptr;
+
+            }
+
+            if( !this->cipherServer.toSecureForm( response, this->userRegister.getSessionKey( username ))){
 
                 verbose<<"--> [MainServer][acceptHandler] Error during security conversion"<<'\n';
                 delete response;
-                response = makeError( string("Server error. Service unable to generate the message'signature") , nonce );
+                response = makeError( string( "Server error. Service unable to generate the message'signature" ), nonce );
 
             }
 
             return response;
 
         }
-        this->matchRegister.setReady(matchID);
 
-        if( !this->sendGameParam( message->getAdversary_2(), message->getAdversary_1())){
+        this->matchRegister.setReady( matchID );
 
+        if( !this->sendGameParam( message->getAdversary_2(), message->getAdversary_1() )){
 
-            int* socket = this->userRegister.getSocket( message->getAdversary_2());
-            if( socket ) {
+            int* socket = this->userRegister.getSocket( message->getAdversary_2() );
+            if( socket ){
 
-                this->logoutClient(*socket);
+                this->logoutClient( *socket );
                 delete socket;
                 return nullptr;
 
             }else {
 
                 verbose << "--> [MainServer][acceptHandler] Something goes wrong. Server repair" << '\n';
-                this->matchRegister.removeMatch(matchID);
+                this->matchRegister.removeMatch( matchID );
 
             }
-            this->userRegister.setLogged( message->getAdversary_1(), this->userRegister.getSessionKey( message->getAdversary_1()));
 
-            if(!this->sendRejectMessage( message->getAdversary_1(), message->getAdversary_2(), this->userRegister.getSocket(message->getAdversary_1()))) {
-                int *socket = this->userRegister.getSocket(message->getAdversary_1());
-                if (socket) {
-                    this->logoutClient(*socket);
+            this->userRegister.setLogged( message->getAdversary_1(), this->userRegister.getSessionKey( message->getAdversary_1() ));
+
+            if(!this->sendRejectMessage( message->getAdversary_1(), message->getAdversary_2(), this->userRegister.getSocket( message->getAdversary_1() ))) {
+
+                int *socket = this->userRegister.getSocket( message->getAdversary_1() );
+                if( socket ){
+
+                    this->logoutClient( *socket );
                     delete socket;
+
                 }
             }
 
         }
-        this->matchRegister.setStarted(matchID);
+
+        this->matchRegister.setStarted( matchID );
+        base<<"-------> [MainServer][acceptHandler] Match "<<matchID<<" started"<<'\n';
         return nullptr;
 
     }
 
-    //  manages the REJECT requests. It verifies that a match is present and in the correct state
-    Message* MainServer::rejectHandler( Message* message , string username, int* nonce ){
+    //  manages the REJECT requests. It verifies that a match is present and in the correct state then it forwards the reject message
+    Message* MainServer::rejectHandler( Message* message, string username, int* nonce ){
 
-        if( !message || username.empty() ){
+        if( !message || username.empty() || !nonce ){
 
             verbose<<"--> [MainServer][rejectHandler] Error invalid parameters. Operation Aborted"<<'\n';
             return nullptr;
 
         }
 
-        Message* response;
-
-        if( !this->cipherServer.fromSecureForm( message , username, this->userRegister.getSessionKey(username) ) ){
+        if( !this->cipherServer.fromSecureForm( message, username, this->userRegister.getSessionKey( username ))){
 
             verbose << "--> [MainServer][acceptHandler] Error, Verification failure" << '\n';
-            response = this->makeError(string( "Security error. Invalid message'signature" ), nonce );
-
-            return response;
+            return this->makeError( string( "Security error. Invalid message'signature" ), nonce );
 
         }
 
-        if( message->getAdversary_1().empty() || message->getAdversary_2().empty()){
+        base<<"------> [MainServer][rejectHandler] Request has passed signature verification"<<'\n';
+
+        if( message->getAdversary_1().empty() || message->getAdversary_2().empty() ){
 
             verbose<< "--> [MainServer][acceptHandler] Error, Missing usernames"<<'\n';
-            response = this->makeError( "Invalid request. You have to specify the challenger and challenged usernames" , nonce );
+            return this->makeError( string( "Invalid request. You have to specify the challenger and challenged usernames" ), nonce );
 
         }
+
         int matchID = this->matchRegister.getMatchID( message->getAdversary_1() );
         if( matchID == -1 )
             return nullptr;
 
+        base<<"------> [MainServer][rejectHandler] Identified membership match: "<<matchID<<'\n';
         if( this->sendRejectMessage( message->getAdversary_1(), message->getAdversary_2(), this->userRegister.getSocket( message->getAdversary_1()))){
 
-            this->userRegister.setLogged(message->getAdversary_1(), this->userRegister.getSessionKey(message->getAdversary_1()));
+            base<<"------> [MainServer][rejectHandler] REJECT message forwarded to "<<message->getAdversary_1()<<'\n';
+            this->userRegister.setLogged( message->getAdversary_1(), this->userRegister.getSessionKey( message->getAdversary_1() ));
             this->matchRegister.removeMatch(matchID);
-            return nullptr;
 
         }else {
 
             int* socket = this->userRegister.getSocket( message->getAdversary_1());
             if( socket ) {
+
                 this->logoutClient(*socket);
                 delete socket;
-            }
 
-            return nullptr;
+            }
+            this->matchRegister.removeMatch(matchID);
 
         }
+
+        return nullptr;
 
     }
 
-    //  manages the WITHDRAW_REQ requests. It verifies that a match is present and handles it depending on its state
+    //  manages the WITHDRAW_REQ requests. It verifies that a match is present and forwards the message
     Message* MainServer::withdrawHandler( Message* message , string username, int* nonce ){
 
-        if( !message || username.empty() ){
+        if( !message || username.empty() || !nonce ){
 
-            verbose<<"--> [MainServer][rejectHandler] Error invalid parameters. Operation Aborted"<<'\n';
+            verbose<<"--> [MainServer][withdrawHandler] Error invalid parameters. Operation Aborted"<<'\n';
             return nullptr;
 
         }
 
-        Message* response;
+        Message* response = nullptr;
 
-        if( !this->cipherServer.fromSecureForm( message , username, this->userRegister.getSessionKey(username) ) ){
+        if( !this->cipherServer.fromSecureForm( message, username, this->userRegister.getSessionKey( username ))){
 
-            verbose << "--> [MainServer][acceptHandler] Error, Verification failure" << '\n';
-            response = this->makeError(string( "Security error. Invalid message'signature" ), nonce );
-
-            return response;
+            verbose << "--> [MainServer][withdrawHandler] Error, Verification failure" << '\n';
+            return this->makeError(string( "Security error. Invalid message'signature" ), nonce );
 
         }
+
+        base<<"------> [MainServer][withdrawHandler] Request has passed signature verification"<<'\n';
 
         int matchID = this->matchRegister.getMatchID( username );
-
         if( matchID == -1 ){
 
-            verbose << "--> [MainServer][withdrawReqHandler] Error, match doesn't exist" << '\n';
-            response = this->makeError(string( "Invalid request. The match is already deleted" ), nonce );
-
-            return response;
+            verbose << "--> [MainServer][withdrawHandler] Error, match doesn't exist" << '\n';
+            return this->makeError(string( "Invalid request. The match is already deleted" ), nonce );
 
         }
 
-        if( *(this->matchRegister.getMatchStatus(matchID)) == STARTED ){
+        base<<"------> [MainServer][withdrawHandler] Identified membership match: "<<matchID<<'\n';
 
-            verbose << "--> [MainServer][withdrawReqHandler] Match already started" << '\n';
-            response = this->makeError(string( "Invalid request. You can't close a started game with withdraw. Use disconnect instead" ), nonce );
+        if( *(this->matchRegister.getMatchStatus( matchID )) == STARTED ){
 
-            return response;
+            verbose << "--> [MainServer][withdrawHandler] Match already started" << '\n';
+            return this->makeError(string( "Invalid request. You can't close a started game with withdraw. Use disconnect instead" ), nonce );
+
         }
 
-        this->userRegister.setLogged( username, this->userRegister.getSessionKey(username));
+        this->userRegister.setLogged( username, this->userRegister.getSessionKey( username ));
         string selUsername = this->matchRegister.getChallenged( matchID );
         if( !selUsername.empty() ) {
 
-            if (!this->sendWithdrawMessage(selUsername, this->userRegister.getSocket(selUsername))) {
+            if (!this->sendWithdrawMessage( selUsername, this->userRegister.getSocket( selUsername ))) {
 
-                int *socket = this->userRegister.getSocket(selUsername);
-                if (socket) {
+                int *socket = this->userRegister.getSocket( selUsername );
+                if( socket ){
+
                     this->logoutClient(*socket);
                     delete socket;
+
                 }
 
                 return nullptr;
@@ -1789,15 +1888,24 @@ namespace server {
         this->matchRegister.removeMatch( matchID );
         this->userRegister.setLogged( username , this->userRegister.getSessionKey(username));
 
-        response = new Message();
-        response->setMessageType( WITHDRAW_OK );
-        response->setNonce(*nonce);
+        try {
 
-        if( !this->cipherServer.toSecureForm( response , this->userRegister.getSessionKey( username ))){
+            response = new Message();
+            response->setMessageType(WITHDRAW_OK);
+            response->setNonce(*nonce);
+
+        }catch( bad_alloc e ){
+
+            verbose<<"--> [MainServer][withdrawHandler] Error during memory allocation. Operation aborted"<<'\n';
+            return this->makeError( string( "Internal Server Error, Try again" ), nonce );
+
+        }
+
+        if( !this->cipherServer.toSecureForm( response, this->userRegister.getSessionKey( username ))){
 
             verbose << "--> [MainServer][withdrawHandler] Error, Verification failure" << '\n';
             delete response;
-            response = this->makeError(string( "Server error. Service unable to generate the message'signature" ), nonce );
+            response = this->makeError( string( "Server error. Service unable to generate the message'signature" ), nonce );
 
         }
 
@@ -1805,54 +1913,55 @@ namespace server {
 
     }
 
-    //  manages the DISCONNECT requests. It verifies that a match is present and in the correct state
+    //  manages the DISCONNECT requests. It verifies that a match is present and in the correct state then it forwards the message
     Message* MainServer::disconnectHandler( Message* message, string username, int* nonce ){
 
-        if( !message || username.empty() ){
+        if( !message || username.empty() || !nonce ){
 
             verbose<<"--> [MainServer][disconnectHandler] Error invalid parameters. Operation Aborted"<<'\n';
             return nullptr;
 
         }
 
-        Message* response;
+        if( !this->cipherServer.fromSecureForm( message, username, this->userRegister.getSessionKey( username ))){
 
-        if( !this->cipherServer.fromSecureForm( message , username, this->userRegister.getSessionKey(username) ) ){
-
-            verbose << "--> [MainServer][acceptHandler] Error, Verification failure" << '\n';
-            response = this->makeError(string( "Security error. Invalid message'signature" ), nonce );
-
-            return response;
+            verbose << "--> [MainServer][disconnectHandler] Error, Verification failure" << '\n';
+            return this->makeError(string( "Security error. Invalid message'signature" ), nonce );
 
         }
 
+        base<<"------> [MainServer][disconnectHandler] Request has passed signature verification"<<'\n';
         string opposite;
-        int matchID = this->matchRegister.getMatchID(username);
+        int matchID = this->matchRegister.getMatchID( username );
 
+        if( matchID != -1 )
+            opposite = this->matchRegister.getChallenged( matchID );
 
-        if( matchID != -1 ){
-            opposite = this->matchRegister.getChallenged(matchID);
-        }else{
-            matchID = this->matchRegister.getMatchPlay(username);
+        else{
+
+            matchID = this->matchRegister.getMatchPlay( username );
             if( matchID != -1 )
                 opposite = this->matchRegister.getChallenger(matchID);
+
             else{
 
                 verbose << "--> [MainServer][disconnectHandler] Error, unable to identify match" << '\n';
-                response = this->makeError(string( "Invalid request. The match is already closed" ), nonce );
-
-                return response;
+                return this->makeError(string( "Invalid request. The match is already closed" ), nonce );
 
             }
         }
 
-        
-        this->sendDisconnectMessage(opposite);
-        this->userRegister.setLogged( username, this->userRegister.getSessionKey(username));
-        this->userRegister.setLogged( opposite, this->userRegister.getSessionKey(opposite));
-        this->matchRegister.removeMatch(matchID);
-        SQLConnector::incrementUserGame(opposite, WIN );
-        SQLConnector::incrementUserGame(username,LOOSE);
+        this->sendDisconnectMessage( opposite );
+
+        this->userRegister.setLogged( username, this->userRegister.getSessionKey( username ));
+        this->userRegister.setLogged( opposite, this->userRegister.getSessionKey( opposite ));
+
+        if( this->matchRegister.getTotalMoves( matchID ) > 5 ) {
+            base<<"--> [MainServer][disconnectHandler] Disconnection after 5 moves. Penalization applied on :" <<username<<'\n';
+            SQLConnector::incrementUserGame(opposite, WIN);
+            SQLConnector::incrementUserGame(username, LOOSE);
+
+        }
 
         return nullptr;
     }
@@ -1872,7 +1981,7 @@ namespace server {
         if( matchID == -1 ){
 
             verbose<<"--> [MainServer][gameHandler] Error unable to find match"<<'\n';
-            return this->makeError( "Invalid request. Match already closed", nonce );
+            return this->makeError( string( "Invalid request. Match already closed" ), nonce );
 
         }
 
@@ -1887,7 +1996,7 @@ namespace server {
         if( !advSocket ){
             verbose<<"--> [MainServer][gameHandler] Error, Adversary logged out"<<'\n';
             this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
-            response = this->makeError( string( "Error, Adversary is logged out"),nonce );
+            response = this->makeError( string( "Error, Adversary is logged out" ),nonce );
 
             return response;
         }
@@ -1933,13 +2042,15 @@ namespace server {
         int col = atoi( (const char*)message->getChosenColumn());
 
         if( col<0 || col>= NUMBER_COLUMN ){
+
             verbose<<"--> [MainServer][gameHandler] Error invalid message column field"<<'\n';
             this->sendDisconnectMessage(adversary);
-            response = this->makeError( "Invalid request. Invalid column field", nonce );
+            response = this->makeError( string( "Invalid request. Invalid column field" ), nonce );
             this->userRegister.setLogged(adversary, this->userRegister.getSessionKey(adversary));
             this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
             delete adv_nonce;
             return response;
+
         }
         /*
         int status;

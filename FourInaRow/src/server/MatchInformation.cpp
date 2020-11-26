@@ -158,7 +158,7 @@ namespace server{
     //  the function returns the moves remaining until the gameboard is full
     int MatchInformation::getTotalMoves(){
 
-        return this->nMoves;
+        return 42 - this->nMoves;
 
     }
 
