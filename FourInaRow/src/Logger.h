@@ -39,7 +39,7 @@ class Logger{
         Logger operator<<(string value);
         Logger operator<<(Verbose value);
         static void setThreshold(Verbose threshold);        //  set the global verbose threshold
-        static void test();                                 //  test function
+        void flush();
 
 };
 

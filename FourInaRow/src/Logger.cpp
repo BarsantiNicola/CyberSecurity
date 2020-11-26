@@ -11,6 +11,12 @@ Logger::Logger( Verbose level ){
     this->level = level;
 }
 
+void Logger::flush(){
+
+    cout.flush();
+
+}
+
 Logger Logger::operator<<(int value){
 
     if( this->level == VERBOSE  && threshold >= this->level ) {
@@ -149,25 +155,7 @@ Logger Logger::operator<<(const char* value){
     return *this;
 }
 
-void Logger::test(){
 
-    Logger::setThreshold( NO_VERBOSE );
-    base << "Test very_verbose"<<'\n';
-    base <<"\t---BASE OK"<<'\n';
-    verbose <<"\t---VERBOSE OK"<<'\n';
-    vverbose <<"\t---VERY VERBOSE OK"<<'\n';
-    Logger::setThreshold( VERBOSE );
-    base << "Test verbose"<<'\n';
-    base <<"\t---BASE OK"<<'\n';
-    verbose <<"\t---VERBOSE OK"<<'\n';
-    vverbose <<"\t---VERY VERBOSE ERROR"<<'\n';
-    Logger::setThreshold( VERY_VERBOSE);
-    base << "Test no verbose"<<'\n';
-    base <<"\t---BASE OK"<<'\n';
-    verbose <<"\t---VERBOSE ERROR"<<'\n';
-    vverbose <<"\t---VERY VERBOSE ERROR"<<'\n';
-
-}
 
 
 

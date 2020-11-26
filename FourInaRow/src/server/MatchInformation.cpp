@@ -86,7 +86,7 @@ namespace server{
 
         int row = -1;
         for( int a = NUMBER_ROW-1; a>0; a-- )
-            if( !this->gameBoard[chosen_col][a] ){
+            if( !this->gameBoard[a][chosen_col] ){
 
                 row = a;
                 break;
@@ -100,7 +100,7 @@ namespace server{
 
         }
 
-        this->gameBoard[chosen_col][row] = 2;
+        this->gameBoard[row][chosen_col] = 1;
         return this->verifyGame( row, chosen_col,this->challenger );
 
     }
@@ -108,7 +108,6 @@ namespace server{
     //  the function from the chosen column search the first available row and put it a token. Then it verify if the new putted
     //  moves make the player win or tie.
     int MatchInformation::addChallengedMove( int chosen_col ){
-
 
         if( this->status != STARTED ){
 
@@ -126,7 +125,7 @@ namespace server{
 
         int row = -1;
         for( int a = NUMBER_ROW-1; a>0; a-- )
-            if( !this->gameBoard[chosen_col][a] ){
+            if( !this->gameBoard[a][chosen_col] ){
 
                 row = a;
                 break;
@@ -181,8 +180,7 @@ namespace server{
 
         int userTraduction = this->isChallenger(username)?1:2;
 
-        cout<<"ROW: "<<row<<" COL: "<<column<<endl;
-        int result = this->controlAlignment( column, row, userTraduction );
+        int result = this->controlAlignment( row, column, userTraduction );
         if( result != -1 ) this->nMoves -= 1;
         this->control = !this->control;
         switch( result ){

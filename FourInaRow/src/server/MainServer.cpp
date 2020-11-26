@@ -185,7 +185,7 @@ namespace server {
 
             if( *nonce < *userNonce ){
 
-                vverbose<<"--> [MainServer][keyExchangeHandler] Error invalid nonce"<<'\n';
+                vverbose<<"--> [MainServer][manageMessage] Error invalid nonce"<<'\n';
                 response = this->makeError(string( "Security error. The nonce you give is invalid" ), nonce );
 
                 delete nonce;
@@ -2071,7 +2071,6 @@ namespace server {
         base<<"------> [MainServer][gameHandler] Request has passed signature verification"<<'\n';
 
         int col = atoi( (const char*)message->getChosenColumn());
-        cout<<"COL: "<<col<<endl;
 
         if( col<0 || col>= NUMBER_COLUMN ){
 
@@ -2094,8 +2093,6 @@ namespace server {
             status = this->matchRegister.addChallengedMove( matchID, col);
         else
             status = this->matchRegister.addChallengerMove( matchID, col );
-
-        cout<<"Status: "<<status<<endl;
 
         switch( status ){
 

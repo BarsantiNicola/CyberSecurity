@@ -501,18 +501,17 @@ namespace cipher{
 
                 }
 
-                newMsg = new Message();
                 this->aes->modifyParam( key );
                 app = this->aes->decryptMessage( *message );
 
                 if( !app ) return false;
-                
-                newMsg->setMessageType(GAME);
-                newMsg->setChosenColumn(app->getChosenColumn(), app->getChosenColumnLength());
-                newMsg->setCurrent_Token(*(app->getCurrent_Token()));
-                newMsg->setSignature(message->getSignature(),message->getSignatureLen());
 
-                return this->rsa->serverVerifySignature(*newMsg, username );
+                message->setMessageType(GAME);
+                message->setChosenColumn(app->getChosenColumn(), app->getChosenColumnLength());
+                message->setCurrent_Token(*(app->getCurrent_Token()));
+                message->setSignature(message->getSignature(),message->getSignatureLen());
+
+                return this->rsa->serverVerifySignature(*message, username );
                 
             default:
 
