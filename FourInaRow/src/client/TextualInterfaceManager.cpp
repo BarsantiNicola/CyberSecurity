@@ -790,7 +790,7 @@ namespace client{
 	}
 	//  prints an interface to permits the the user to center the layout of the application
     bool TextualInterfaceManager::setter(){
-	    
+
         ofstream out;
         printSetterPage();
         execCommand(RAW);

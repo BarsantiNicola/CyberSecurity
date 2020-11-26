@@ -63,6 +63,18 @@ namespace client{
 
 	};
 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //                                                                                   //
+    //                                TEXTUALINTERFACEMANAGER                            //
+    //                                                                                   //
+    //    The class is in charge of generating the user interface of the application     //
+    //    In particular to format the information to be printed and insert them into a   //
+    //    colored textual interface. The class maintains methods to completely manage    //
+    //    every aspects of the output from printing the interface to update and insert   //
+    //    information into it                                                            //
+    //                                                                                   //
+    ///////////////////////////////////////////////////////////////////////////////////////
+
 	class TextualInterfaceManager{
 	
 	    private:
