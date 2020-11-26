@@ -1855,7 +1855,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
      verbose<<"-->[MainClient][ReceiveGameMove] error to decrypt the message appG"<<'\n';
      return;
    }
-   app= printableString(messG.getChosenColumn(),messG.getChosenColumnLength());
+   app= printableString(messG->getChosenColumn(),messG->getChosenColumnLength());
+   vverbose<<"-->[MainClient][ReceiveGameMove] the column in the GAME message is: "<<app<<'\n';
    collGame=std::stoi(app,nullptr,10);
    if(*appG.getCurrent_Token() < nonceAdv || collMove!=collGame )
    {
