@@ -396,21 +396,29 @@ namespace server {
         }
 
         //  if the user which disconnect is the challenged and the match isn't started we send to the challenger a reject to close its request
-        if( !challenged.compare(username) && *(this->matchRegister.getMatchStatus( matchID )) == OPENED ) {
+        if( *(this->matchRegister.getMatchStatus( matchID )) == OPENED ) {
+            if( !challenged.compare(username) ) {
 
-            base<<"------> [MainServer][closeMatch] Restoring behavior: sending reject to "<<challenger<<'\n';
-            this->userRegister.setLogged( challenger, this->userRegister.getSessionKey( challenger ));
-            this->sendRejectMessage(challenger, challenged, this->userRegister.getSocket(challenger));
+                base << "------> [MainServer][closeMatch] Restoring behavior: sending reject to " << challenged << '\n';
+                this->userRegister.setLogged(challenger, this->userRegister.getSessionKey(challenger));
+                this->sendRejectMessage(challenger, challenged, this->userRegister.getSocket(challenger));
+
+            }else{
+
+                base << "------> [MainServer][closeMatch] Restoring behavior: sending withdraw to " << challenger << '\n';
+                this->sendWithdrawMessage( challenged,  this->userRegister.getSocket(challenged));
+
+            }
 
         }else //  otherwise we send a disconnect to the other client
             if( !challenged.compare(username)) {
 
-                base<<"------> [MainServer][closeMatch] Restoring behavior: sending disconnect to challenged: "<<challenged<<'\n';
+                base<<"------> [MainServer][closeMatch] Restoring behavior: sending disconnect to challenger: "<<challenger<<'\n';
                 this->sendDisconnectMessage(challenger);
 
             }else {
 
-                base<<"------> [MainServer][closeMatch] Restoring behavior: sending disconnect to challenger: "<<challenger<<'\n';
+                base<<"------> [MainServer][closeMatch] Restoring behavior: sending disconnect to challenged: "<<challenged<<'\n';
                 this->sendDisconnectMessage(challenged);
 
             }
@@ -1983,8 +1991,6 @@ namespace server {
             return nullptr;
 
         }
-        int* socket = this->userRegister.getSocket(username);
-        Message* response;
 
         int matchID = this->matchRegister.getMatchPlay( username );
         if( matchID == -1 ){
@@ -2003,49 +2009,63 @@ namespace server {
         int *advSocket = this->userRegister.getSocket(adversary);
 
         if( !advSocket ){
+
             verbose<<"--> [MainServer][gameHandler] Error, Adversary logged out"<<'\n';
             this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
-            response = this->makeError( string( "Error, Adversary is logged out" ),nonce );
+            this->matchRegister.removeMatch( matchID );
+            return this->makeError( string( "Error, Adversary is logged out" ), nonce );
 
-            return response;
         }
 
         int *adv_nonce = message->getCurrent_Token();
-        int *myNonce = this->clientRegister.getClientReceiveNonce(*advSocket);
 
-        if( !adv_nonce || !myNonce ){
+        if( !adv_nonce ){
 
             verbose<<"--> [MainServer][gameHandler] Error, Missing Nonce"<<'\n';
-            this->sendDisconnectMessage(adversary);
+            delete advSocket;
+            return this->makeError( string( "Security error, Missing nonce"),nonce );
+
+        }
+
+        int *myNonce = this->clientRegister.getClientReceiveNonce(*advSocket);
+
+        if( !myNonce ){
+
             this->userRegister.setLogged(adversary, this->userRegister.getSessionKey(adversary));
             this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
-            response = this->makeError( string( "Security error, Missing nonce"),nonce );
-            if( adv_nonce ) delete adv_nonce;
-            if( myNonce ) delete myNonce;
-            return response;
+            this->matchRegister.removeMatch( matchID );
+
+            delete adv_nonce;
+            delete advSocket;
+            return this->makeError( string( "Error, user already logged out"), nonce );
+
         }
 
         if( *adv_nonce < *myNonce ){
+
             verbose<<"--> [MainServer][gameHandler] Error, invalid nonce"<<'\n';
-            this->sendDisconnectMessage(adversary);
-            this->userRegister.setLogged(adversary, this->userRegister.getSessionKey(adversary));
-            this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
-            response = this->makeError( string( "Security error, Missing nonce"), nonce );
+            delete adv_nonce;
+            delete myNonce;
+            delete advSocket;
+            return this->makeError( string( "Security error, Invalid nonce"), nonce );
+
         }
 
+
         base<<"------> [MainServer][gameHandler] Request has passed nonce verification"<<'\n';
-        this->clientRegister.updateClientReceiveNonce(*advSocket, *myNonce );
+
+        this->clientRegister.updateClientReceiveNonce( *advSocket, *adv_nonce+1 );
+        delete adv_nonce;
+        delete myNonce;
 
         if( !this->cipherServer.fromSecureForm( message , adversary , this->userRegister.getSessionKey(username) ) ){
 
             verbose << "--> [MainServer][gameHandler] Error, Verification failure" << '\n';
             this->sendDisconnectMessage(adversary);
-            response = this->makeError(string( "Security error. Invalid message'signature" ), nonce );
             this->userRegister.setLogged(adversary, this->userRegister.getSessionKey(adversary));
             this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
-            delete adv_nonce;
-
-            return response;
+            delete advSocket;
+            return this->makeError(string( "Security error. Invalid message'signature" ), nonce );
 
         }
         base<<"------> [MainServer][gameHandler] Request has passed signature verification"<<'\n';
@@ -2057,15 +2077,14 @@ namespace server {
 
             verbose<<"--> [MainServer][gameHandler] Error invalid message column field"<<'\n';
             this->sendDisconnectMessage(adversary);
-            response = this->makeError( string( "Invalid request. Invalid column field" ), nonce );
             this->userRegister.setLogged(adversary, this->userRegister.getSessionKey(adversary));
             this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
             verbose<<"--> [MainServer][gameHandler] Applying penalization to the fucking cheater "<<username<<'\n';
             SQLConnector::incrementUserGame( adversary , WIN );
             SQLConnector::incrementUserGame( username, LOOSE );
             this->matchRegister.removeMatch( matchID );
-            delete adv_nonce;
-            return response;
+            delete advSocket;
+            return this->makeError( string( "Invalid request. Invalid column field" ), nonce );
 
         }
 
@@ -2076,7 +2095,7 @@ namespace server {
         else
             status = this->matchRegister.addChallengerMove( matchID, col );
 
-        cout<<"Mossa effettuata, status: "<<status<<endl;
+        cout<<"Status: "<<status<<endl;
 
         switch( status ){
 
@@ -2113,6 +2132,7 @@ namespace server {
         }
 
         this->clientRegister.updateClientNonce( *advSocket );
+        delete advSocket;
         return nullptr;
     }
 
