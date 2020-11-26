@@ -38,11 +38,13 @@ namespace server {
         private:
             string challenger;                          //  PLAYER WHICH HAS SENT THE INITIAL REQUEST
             string challenged;                          //  PLAYER WHICH HAS TO ACCEPT THE REQUEST
-            int gameBoard[NUMBER_COLUMN][NUMBER_ROW];   //  GAMEBOARD TO REPLICATE THE MATCH TREND
+            int gameBoard[NUMBER_ROW][NUMBER_COLUMN];   //  GAMEBOARD TO REPLICATE THE MATCH TREND
             int nMoves;                                 //  TO EASILY IDENTIFY THE END OF A MATCH FOR A FULLY TABLE(TIE)
             bool control;                               //  VARIABLE TO KNOW THE PLAYER WHICH IS IN CHARGE OF MAKING THE NEXT MOVE
             MatchStatus status;                         //  STATUS OF A MATCH TO IDENTIFY THE CORRECT BEHAVIOR FOR CLOSE IT
             int controlAlignment( int row, int column, bool myMove );  //  FUNCTION TO IDENTIFY A POSSIBLE WINNER
+            int verifyGame( int row, int column, string username );  //  VERIFY THE STATUS OF A MATCH(1 WIN 0 TIE -1 NO CONCLUSION)
+            bool hasControl( string username );             //  VERIFY IF THE USER IS IN CHARGE FOR THE NEXT MOVE
 
         public:
             MatchInformation( string challenger, string challenged );
@@ -59,8 +61,7 @@ namespace server {
             bool hasUser( string username );                //   VERIFY THE PRESENCE OF A USER INTO THE MATCH AS A CHALLENGER OR CHALLENGED
             bool isChallenger( string username );           //  VERIFY IF THE USER IS THE CHALLENGER FOR THE MATCH
             int getTotalMoves();                            //  GIVES THE TOTAL MOVES MADE INTO THE MATCH
-            bool hasControl( string username );             //  VERIFY IF THE USER IS IN CHARGE FOR THE NEXT MOVE
-            int verifyGame( int row, int column, string username );  //  VERIFY THE STATUS OF A MATCH(1 WIN 0 TIE -1 NO CONCLUSION)
+
 
     };
 

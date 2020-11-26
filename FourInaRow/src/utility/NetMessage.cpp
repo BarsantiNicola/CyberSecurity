@@ -30,7 +30,7 @@ namespace utility {
 
             vverbose << "--> [NetMessage][Costructor] Message correctly generated: [\t";
             for( int a = 0; a<len; a++ )
-                vverbose<<this->message[a];
+                vverbose<<(int)this->message[a];
             vverbose<<"\t]\n";
 
 

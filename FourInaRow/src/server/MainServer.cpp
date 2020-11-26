@@ -383,6 +383,15 @@ namespace server {
 
             this->userRegister.setLogged( challenged, this->userRegister.getSessionKey( challenged ));
             this->userRegister.setLogged( challenger, this->userRegister.getSessionKey( challenger ));
+            if( this->matchRegister.getTotalMoves(matchID)>5 ){
+
+                SQLConnector::incrementUserGame( username, LOOSE );
+                if( !username.compare(challenged))
+                    SQLConnector::incrementUserGame( challenger , WIN );
+                else
+                    SQLConnector::incrementUserGame( challenged , WIN );
+
+            }
 
         }
 
@@ -2024,6 +2033,7 @@ namespace server {
             response = this->makeError( string( "Security error, Missing nonce"), nonce );
         }
 
+        base<<"------> [MainServer][gameHandler] Request has passed nonce verification"<<'\n';
         this->clientRegister.updateClientReceiveNonce(*advSocket, *myNonce );
 
         if( !this->cipherServer.fromSecureForm( message , adversary , this->userRegister.getSessionKey(username) ) ){
@@ -2038,8 +2048,10 @@ namespace server {
             return response;
 
         }
+        base<<"------> [MainServer][gameHandler] Request has passed signature verification"<<'\n';
 
         int col = atoi( (const char*)message->getChosenColumn());
+        cout<<"COL: "<<col<<endl;
 
         if( col<0 || col>= NUMBER_COLUMN ){
 
@@ -2048,89 +2060,49 @@ namespace server {
             response = this->makeError( string( "Invalid request. Invalid column field" ), nonce );
             this->userRegister.setLogged(adversary, this->userRegister.getSessionKey(adversary));
             this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
+            verbose<<"--> [MainServer][gameHandler] Applying penalization to the fucking cheater "<<username<<'\n';
+            SQLConnector::incrementUserGame( adversary , WIN );
+            SQLConnector::incrementUserGame( username, LOOSE );
+            this->matchRegister.removeMatch( matchID );
             delete adv_nonce;
             return response;
 
         }
-        /*
+
         int status;
+
         if( !this->matchRegister.getChallenger(matchID).compare(username))
             status = this->matchRegister.addChallengedMove( matchID, col);
         else
             status = this->matchRegister.addChallengerMove( matchID, col );
 
+        cout<<"Mossa effettuata, status: "<<status<<endl;
 
         switch( status ){
 
-            case -2:case -1:
-                sock = this->userRegister.getSocket(username);
-                response = this->makeError( string("Invalid message. Bad Column."), nonce );
+            case -3:
+                return this->makeError( string( "Error, match already closed" ), nonce );
 
-                delete sock;
+            case -2:
+                return this->makeError( string( "Invalid move, It's not your turn" ), nonce );
 
-                return response;
+            case -1:
+                return this->makeError( string("Invalid message. Bad Column."), nonce );
 
             case 1:
-
-                SQLConnector::incrementUserGame(adversary , WIN);
-                SQLConnector::incrementUserGame(username, LOOSE);
-                if( !this->sendDisconnectMessage(adversary)) {
-
-                    verbose << "--> [MainServer][gameHandler] Error, unable to contact the user: " << adversary << '\n';
-                    int *sock = this->userRegister.getSocket(adversary);
-                    if( sock ) {
-                        this->logoutClient(*sock);
-                        delete sock;
-                    }
-                    return nullptr;
-
-                }
-
-                if( !this->sendDisconnectMessage( username)){
-
-                    verbose << "--> [MainServer][gameHandler] Error, unable to contact the user: " << username << '\n';
-                    sock = this->userRegister.getSocket(username);
-                    if( sock ) {
-                        this->logoutClient(*sock);
-                        delete sock;
-                    }
-                    return nullptr;
-
-                }
-
-                this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
+                base<<"------> [MainServer][gameHandler] User "<<adversary<<" has won the game"<<'\n';
+                SQLConnector::incrementUserGame( adversary , WIN );
+                SQLConnector::incrementUserGame( username, LOOSE );
+                this->matchRegister.removeMatch( matchID );
+                this->userRegister.setLogged( username, this->userRegister.getSessionKey(username));
                 this->userRegister.setLogged( adversary, this->userRegister.getSessionKey(adversary));
-                this->matchRegister.removeMatch(matchID);
                 break;
 
             case 2:
 
+                base<<"------> [MainServer][gameHandler] Gameboard full, match is concluded with a tie"<<'\n';
                 SQLConnector::incrementUserGame(adversary , TIE );
                 SQLConnector::incrementUserGame(username, TIE );
-
-                if( !this->sendDisconnectMessage(adversary)) {
-
-                    verbose << "--> [MainServer][gameHandler] Error, unable to contact the user: " << adversary << '\n';
-                    int *sock = this->userRegister.getSocket(adversary);
-                    if( sock ) {
-                        this->logoutClient(*sock);
-                        delete sock;
-                    }
-                    return nullptr;
-
-                }
-
-                if( !this->sendDisconnectMessage( username)){
-
-                    verbose << "--> [MainServer][gameHandler] Error, unable to contact the user: " << username << '\n';
-                    int *sock = this->userRegister.getSocket(username);
-                    if( sock ) {
-                        this->logoutClient(*sock);
-                        delete sock;
-                    }
-                    return nullptr;
-
-                }
 
                 this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
                 this->userRegister.setLogged( adversary, this->userRegister.getSessionKey(adversary));
@@ -2138,8 +2110,9 @@ namespace server {
                 break;
 
             default: break;
-        }*/
-        this->clientRegister.updateClientNonce(*advSocket);
+        }
+
+        this->clientRegister.updateClientNonce( *advSocket );
         return nullptr;
     }
 

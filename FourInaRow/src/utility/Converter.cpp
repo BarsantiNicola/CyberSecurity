@@ -798,7 +798,7 @@ namespace utility{
 
             case GAME:
 
-                verbose<<"--> [Converter][verifyMessage] Check GAME"<<'\n';
+                vverbose<<"--> [Converter][verifyMessage] Check GAME"<<'\n';
 
                 nonce = message.getCurrent_Token();
                 if( !nonce ){
@@ -1664,7 +1664,7 @@ namespace utility{
 
             case GAME:
 
-                verbose<<"--> [Converter][verifyCompact] Check GAME"<<'\n';
+                vverbose<<"--> [Converter][verifyCompact] Check GAME"<<'\n';
 
                 nonce = message.getCurrent_Token();
                 if( !nonce ){

@@ -228,7 +228,7 @@ namespace server{
             return this->matchRegister[matchID].addChallengerMove(chosen_col);
 
         verbose<<"--> [MatchRegister][addChallengerMove] Error, match not found"<<'\n';
-        return -2;
+        return -3;
 
     }
 
@@ -239,7 +239,7 @@ namespace server{
             return this->matchRegister[matchID].addChallengedMove(chosen_col);
 
         verbose<<"--> [MatchRegister][addChallengedMove] Error, match not found"<<'\n';
-        return -2;
+        return -3;
 
     }
 

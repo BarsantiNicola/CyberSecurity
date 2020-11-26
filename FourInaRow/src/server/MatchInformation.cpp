@@ -11,6 +11,10 @@ namespace server{
         this->control = false;
         this->nMoves = 42;
 
+        for( int a = 0; a<NUMBER_ROW; a++ )
+            for( int b= 0;b<NUMBER_COLUMN; b++)
+                this->gameBoard[a][b] = 0;
+
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -136,7 +140,7 @@ namespace server{
 
         }
 
-        this->gameBoard[chosen_col][row] = 2;
+        this->gameBoard[row][chosen_col] = 2;
 
         return this->verifyGame( row, chosen_col,this->challenged );
 
@@ -170,15 +174,16 @@ namespace server{
     }
 
     //  the function verify if the user has won or tied the match with the last inserted token
-    int MatchInformation::verifyGame(int row, int column, string username) {
+    int MatchInformation::verifyGame( int row, int column, string username ){
 
         if( !this->hasControl(username))
             return -2;
 
         int userTraduction = this->isChallenger(username)?1:2;
 
-        int result = this->controlAlignment( row, column, userTraduction );
-        if( result != -1 ) this->nMoves-= 1;
+        cout<<"ROW: "<<row<<" COL: "<<column<<endl;
+        int result = this->controlAlignment( column, row, userTraduction );
+        if( result != -1 ) this->nMoves -= 1;
         this->control = !this->control;
         switch( result ){
 
