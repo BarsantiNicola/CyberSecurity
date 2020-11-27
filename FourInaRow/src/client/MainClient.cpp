@@ -773,7 +773,7 @@ namespace client
     
     cout<<"\n \n";
     //printWhiteSpace();
-     textualMessageToUser="the user " + challenged_username + " reject your request " + '\n';
+     textualMessageToUser="the user " + challenged_username + " reject your request ";
     //cout<<"the user "<<challenged_username <<" reject your request "<<'\n';
     //printWhiteSpace();
     //std::cout<<"\t# Insert a command:";
@@ -1145,7 +1145,7 @@ namespace client
      adv_username_1 = "";
      //devo eliminare dal challenge_register
      challenge_register->removeData(message->getUsername());
-     textualMessageToUser=message->getUsername()+" had delete the challenge \n";
+     textualMessageToUser=message->getUsername()+" had delete the challenge.";
      sendImplicitUserListReq();
      return true;
 
@@ -1974,7 +1974,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     std:cout<<errorMessage<<'\n';
     if(errorMessage.compare("Invalid request. User doesn't exists")==0)
     {
-      textualMessageToUser="Invalid request. User doesn't exist. \n";
+      textualMessageToUser="Invalid request. User doesn't exist.";
       if(clientPhase!=ClientPhase::USER_LIST_PHASE)
       {
            sendImplicitUserListReq();
@@ -1984,7 +1984,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     }
     else if(errorMessage.compare("Invalid Request. You have to send a valid username")==0)
     {
-      textualMessageToUser="Invalid Request. You have to send a valid username. \n";
+      textualMessageToUser="Invalid Request. You have to send a valid username.";
       if(clientPhase!=ClientPhase::USER_LIST_PHASE)
       {
            sendImplicitUserListReq();

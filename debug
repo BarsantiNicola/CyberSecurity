@@ -2,7 +2,7 @@
 
 /////////////CLIENT BUGS
 
-- inserire un comando non valido genera un messaggio di errore scorretto
+- inserire un comando non valido genera un messaggio di errore scorretto//fatto
 
 - errori di reject/accept/withdraw non utilizzato printMessage e non aggiornano interfaccia
 
