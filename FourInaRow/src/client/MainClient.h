@@ -23,6 +23,11 @@
 #define NUMBER_SEPARATOR 4
 #define MAX_LENGTH_CHAT 200
 using namespace utility;
+/*
+extern std::mutex mtx_time_expired;
+extern std::mutex mtx_comand_to_timer;
+extern ComandToTimer comandTimer = ComandToTimer::STOP;
+extern bool time_expired=false;*/
 namespace client
 {
   enum MessageGameType{
@@ -32,7 +37,12 @@ namespace client
     };
 
 
-
+  enum ComandToTimer
+  {
+    STOP,
+    START,
+    RESUME
+  };
   enum ClientPhase
   {
     MAIN_INTERFACE_PHASE,
@@ -52,13 +62,14 @@ namespace client
   class MainClient
   {
     private:
+      ComandToTimer comandTimer = ComandToTimer::STOP;
       bool partialKeyCreated=false;
       NetMessage* partialKey;
-      long timer=15;
+      //long timer=15;
       int nonceAdv=0;
       vector<string> chatWait;
       Message* messageChatToACK=nullptr;
-      bool time_expired=false;
+     // bool time_expired=false;
       bool startingMatch=false;
       bool firstMove=false;
       bool notConnected=true;
@@ -95,8 +106,11 @@ namespace client
       ConnectionManager* connection_manager;//da inizializzare nel main
       TextualInterfaceManager* textual_interface_manager=nullptr;
       cipher::CipherClient* cipher_client;
-      std::mutex mtx_time;
-      std::unique_lock<std::mutex>* lck_time;//(mtx_time,std::defer_lock);//da inizializzare nel main
+      //mutex object start
+      //std::mutex mtx_time_expired;
+     // std::mutex mtx_comand_to_timer;
+      //std::unique_lock<std::mutex>* lck_time_expired;//(mtx_time,std::defer_lock);//da inizializzare nel main
+      //endmutex
       bool loginProtocol(std::string username,bool *socketIsClosed);//ok
       //bool signUpProtocol(Message message);
       string printableString(unsigned char* toConvert,int len);//ok
@@ -128,7 +142,7 @@ namespace client
       bool receiveGameParamProtocol(Message* message);
       //bool gameProtocol(Message message);
       int generateRandomNonce();
-      void timerHandler(long secs);
+      //void timerHandler();
       void clearGameParam();
       bool comand(std::string comand_line);
       bool startConnectionServer(const char* myIP,int myPort);
@@ -141,6 +155,7 @@ namespace client
        void printWhiteSpace();
       // void signalHandler(int signum);
     public:
+      //TextualInterfaceManager* getTextualInterfaceManager();
       MainClient(const char* ipAddr , int port ); 
       ~MainClient();
       void client();//ok

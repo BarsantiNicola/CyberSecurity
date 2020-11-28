@@ -1,27 +1,38 @@
 #include"MainClient.h"
-namespace client
-{
-  void MainClient::timerHandler(long secs)
+std::mutex mtx_time_expired;
+std::mutex mtx_comand_to_timer;
+bool time_expired=false;
+client::ComandToTimer comandTimer = client::ComandToTimer::STOP;
+void timerHandler()
   {
+   /* int time=15;
+    
+    client::ComandToTimer comandCopy;
     while(true)
     {
-      lck_time->lock();
-      if(timer!=0)
+      mtx_time
+
+      continue;
+      mtx_comand_to_timer.lock();
+      mtx_comand_to_timer.unlock();
+      if(time!=0)
       {
-        lck_time->unlock();
-        sleep(SLEEP_TIME);
-        lck_time->lock();
-        --timer;
-        lck_time->unlock();
+        
+        sleep(1);
+        --time;
       }
       else
       {
+        mtx_time_expired.lock();
         time_expired=true;
-        lck_time->unlock();
+        mtx_time_expired.unlock();
       }
-    }
+    }*/
    
   }
+namespace client
+{
+  
 /*
 --------------certificateProtocol function-----------------------------
 */
@@ -271,7 +282,7 @@ namespace client
         if(!implicitUserListReq)
         {
           //printWhiteSpace();
-          this->textual_interface_manager->printUserList( (char*)app.c_str(), app.length());
+          textual_interface_manager->printUserList( (char*)app.c_str(), app.length());
           //std::cout<<app<<endl;
         }
         implicitUserListReq=false;
@@ -439,7 +450,7 @@ namespace client
 
         //printWhiteSpace();
         //std::cout<<app<<'\n';
-        this->textual_interface_manager->printRankList( (char*)app.c_str(), app.length(), true);
+        textual_interface_manager->printRankList( (char*)app.c_str(), app.length(), true);
         printWhiteSpace();
         std::cout<<"\t# Insert a command:";
         cout.flush();
@@ -2024,11 +2035,18 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       {
         if(logged)
         {
-          printWhiteSpace();
-          std::cout<<"you can't exit the application when you are logged \n";
-          printWhiteSpace();
+           if(!sendImplicitUserListReq())
+           {
+             implicitUserListReq=false;
+           }
+           else
+           {
+             textualMessageToUser="you can't exit the application when you are logged ";
+           }
+
+          /*printWhiteSpace();
           std::cout<<"\t# Insert a command:";
-          std::cout.flush();
+          std::cout.flush();*/
           return true;
         }
         vverbose<<"-->[MainClient][comand] start deleting"<<'\n';
@@ -2197,40 +2215,70 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       	 string app=comand_line.substr(10);
          if(app.empty())
          {
-             printWhiteSpace();
-             std::cout<<"failed to send challenge "<<'\n';
-             printWhiteSpace();
-             std::cout<<"\t# Insert a command:";
-             cout.flush();
+           if(!sendImplicitUserListReq())
+           {
+             implicitUserListReq=false;
+           }
+           else
+           {
+             textualMessageToUser="failed to send challenge ";
+           }
+
+            // printWhiteSpace();
+           //  std::cout<<"\t# Insert a command:";
+           //  cout.flush();
              return true;
          }
          if(app.compare(username)==0)
          {
-           printWhiteSpace();
-           std::cout<<"self challenge not permited "<<endl;
-           printWhiteSpace();
-           std::cout<<"\t# Insert a command:";
-           cout.flush();
+           
+           if(!sendImplicitUserListReq())
+           {
+             implicitUserListReq=false;
+           }
+           else
+           {
+             textualMessageToUser="self challenge not permited ";
+           }
+           
+           
+           //printWhiteSpace();
+           //std::cout<<"\t# Insert a command:";
+           //cout.flush();
            return true;
          }
          if(startChallenge)
-         {
-             printWhiteSpace();
-             std::cout<<"already send a pending challenge "<<'\n';
-             printWhiteSpace();
-             std::cout<<"\t# Insert a command:";
-             cout.flush();
+         {           
+           if(!sendImplicitUserListReq())
+           {
+             implicitUserListReq=false;
+           }
+           else
+           {
+             textualMessageToUser="already send a pending challenge ";
+           }
+
+             //printWhiteSpace();
+             //std::cout<<"\t# Insert a command:";
+             //cout.flush();
              return true;
          }
          bool res=sendChallengeProtocol(app.c_str(),comand_line.size());
          if(!res)
          {
-             printWhiteSpace();
-             std::cout<<"failed to send challenge "<<'\n';
-             printWhiteSpace();
-             std::cout<<"\t# Insert a command:";
-             cout.flush();
-             return true;
+           if(!sendImplicitUserListReq())
+           {
+             implicitUserListReq=false;
+           }
+           else
+           {
+             textualMessageToUser="failed to send challenge ";
+           }
+
+            // printWhiteSpace();
+             //std::cout<<"\t# Insert a command:";
+            // cout.flush();
+            return true;
          }
          sendImplicitUserListReq();
       }
@@ -2247,14 +2295,16 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
            bool res = MakeAndSendGameMove(column);
            if(!res)
            {
-              vverbose<<"-->[MainClient][comand]error to send the message"<<'\n';
+              vverbose<<"-->[MainClient][comand]error to send the message move"<<'\n';
               return false;
            }
         } 
         else
         {
-             printWhiteSpace();
-             std::cout<<"error you can't insert a coin in an empty column "<<'\n';
+             //printWhiteSpace();
+             textual_interface_manager->printGameInterface(startingMatch, std::to_string(15)," ",game->printGameBoard());
+             string textualMessage ="error you can't insert a coin in an empty column ";
+             textual_interface_manager->printMessage( textualMessage );
              printWhiteSpace();
              std::cout<<"\t# Insert a command:";
              cout.flush(); 
@@ -2266,8 +2316,10 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         std::string app = comand_line.substr(5);
         if(app.length()>MAX_LENGTH_CHAT)
         {
-          printWhiteSpace();
-          std::cout<<"message too long retry "<<'\n';
+          textual_interface_manager->printGameInterface(startingMatch, std::to_string(15)," ",game->printGameBoard());
+          
+          string textualMessage ="message too long retry ";
+          textual_interface_manager->printMessage( textualMessage );
           printWhiteSpace();
           std::cout<<"\t# Insert a command:";
           cout.flush();
@@ -2275,8 +2327,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         }
         if(app.empty())
         {
-          printWhiteSpace();
-          std::cout<<"failed to send chat "<<'\n';
+          textual_interface_manager->printGameInterface(startingMatch, std::to_string(15)," ",game->printGameBoard());
+          textual_interface_manager->printMessage( string("failed to send chat "));
+          
           printWhiteSpace();
           std::cout<<"\t# Insert a command:";
           cout.flush();
@@ -2295,8 +2348,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         //delete buffer;
         if(!res)
         {
-          printWhiteSpace();
-          std::cout<<"failed to send chat "<<'\n';
+          textual_interface_manager->printGameInterface(startingMatch, std::to_string(15)," ",game->printGameBoard());
+          textual_interface_manager->printMessage( string("failed to send chat "));
           printWhiteSpace();
           std::cout<<"\t# Insert a command:";
           cout.flush();
@@ -2344,6 +2397,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
          bool res=sendRejectProtocol(app.c_str(),comand_line.size());
          if(!res)
          {
+             
+             textual_interface_manager->printMainInterface(this->username,std::to_string(nUser),"online","none",std::to_string(challenge_register->getDimension()));
+             textual_interface_manager->printMessage(string("failed to send reject"));
              printWhiteSpace();
              std::cout<<"failed to send reject "<<'\n';
              printWhiteSpace();
@@ -2359,8 +2415,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         bool ret=sendDisconnectProtocol();
         if(!ret)
         {
-          printWhiteSpace();
-          std::cout<<"quit failed retry"<<'\n';
+          textual_interface_manager->printMainInterface(this->username,std::to_string(nUser),"online","none",std::to_string(challenge_register->getDimension()));
+          textual_interface_manager->printMessage(string("quit failed retry"));
           printWhiteSpace();
           std::cout<<"\t# Insert a command:";
           cout.flush();
@@ -2374,8 +2430,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         bool ret=sendLogoutProtocol();
         if(!ret)
         {
-          printWhiteSpace();
-          std::cout<<"logout failed retry"<<'\n';
+          textual_interface_manager->printMainInterface(this->username,std::to_string(nUser),"online","none",std::to_string(challenge_register->getDimension()));
+          textual_interface_manager->printMessage(string("logout failed retry"));
+          
           printWhiteSpace();
           std::cout<<"\t# Insert a command:";
           cout.flush();
@@ -2388,8 +2445,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         bool ret=sendWithDrawProtocol();
         if(!ret)
         {
-          printWhiteSpace();
-          std::cout<<"withdraw failed retry"<<endl;
+          textual_interface_manager->printMainInterface(this->username,std::to_string(nUser),"online","none",std::to_string(challenge_register->getDimension()));
+          textual_interface_manager->printMessage(string("withdraw failed retry"));
+          
           printWhiteSpace();
           std::cout<<"\t# Insert a command:";
           cout.flush();
@@ -2406,7 +2464,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         }
         else if(clientPhase == ClientPhase::INGAME_PHASE)
         {
-          textual_interface_manager->printGameInterface(startingMatch, std::to_string(timer)," ",game->printGameBoard());
+          textual_interface_manager->printGameInterface(startingMatch, std::to_string(15)," ",game->printGameBoard());
           string app="comand:" + comand_line + "not valid";
           textual_interface_manager->printMessage( app );
         }
@@ -2454,7 +2512,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
      std::vector<int> sock_id_list;
      int newconnection_id=0;
      string newconnection_ip="";
-     lck_time=new std::unique_lock<std::mutex>(mtx_time,std::defer_lock);
+     //lck_time_expired=new std::unique_lock<std::mutex>(mtx_time_expired,std::defer_lock);
      cipher_client=new cipher::CipherClient();//create new CipherClient object
 
      textual_interface_manager=new TextualInterfaceManager();
@@ -2700,7 +2758,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                    }
                    startingMatch=false;
                    startChallenge=false;
-                   textual_interface_manager->printGameInterface(startingMatch, std::to_string(timer)," ",game->printGameBoard());
+                   textual_interface_manager->printGameInterface(startingMatch, std::to_string(15)," ",game->printGameBoard());
                  }
                  //vverbose<<"-->[MainClient][client] finish KEY_EXCHANGE"<<'\n';
                  break;
@@ -2871,11 +2929,14 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     if(argc==1)
     {
       main_client=new client::MainClient("127.0.0.1",12000);
+      //std::thread(timerHandler);
       main_client->client();
+      
     }
     else
     {
       main_client=new client::MainClient("127.0.0.1",atoi(argv[1]));
+      //std:thread(timerHandler);
       main_client->client();
     }
     return 0;
