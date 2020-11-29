@@ -157,11 +157,11 @@ namespace client{
 	}
 
     //  used into the game_page to print the timer without have to refresh the page
-    void TextualInterfaceManager::showTimer( int time ){
+    void TextualInterfaceManager::showTimer( int time,int adj_x,int adj_y ){
 
 	    if( time > 15 || time < 0 ) return;
 
-        resetTimer();
+        resetTimer(adj_x,adj_y);
         printf( "\033[s" );
         printf( "\033[%d;%dH", 10+adj_y, 89+adj_x );
 
@@ -180,7 +180,7 @@ namespace client{
     }
 
     //  used into the game_page to delete the timer without have to refresh the page
-    void TextualInterfaceManager::resetTimer(){
+    void TextualInterfaceManager::resetTimer(int adj_x,int adj_y ){
 
         printf( "\033[s" );
         printf( "\033[%d;%dH", 10+adj_y, 89+adj_x );

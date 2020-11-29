@@ -110,8 +110,8 @@ namespace client{
 		    void resetChat();
 		    void printGameline( int line );
 		    void resetGameboard();
-		    void showTimer( int time );
-		    void resetTimer();
+		    static void showTimer( int time,int adj_x,int adj_y );
+		    static void resetTimer(int adj_x,int adj_y);
 		    bool setter();
 
 
