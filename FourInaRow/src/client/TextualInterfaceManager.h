@@ -103,6 +103,7 @@ namespace client{
             void printSetterPage();
 		    bool setGame(int** game);
             int getXTranslation();
+            int getYTranslation();
 		    void setUsername(string username);
 		    void printRankOrUserList(string message);
 		    void printLine(int line);
@@ -110,8 +111,8 @@ namespace client{
 		    void resetChat();
 		    void printGameline( int line );
 		    void resetGameboard();
-		    static void showTimer( int time,int adj_x,int adj_y );
-		    static void resetTimer(int adj_x,int adj_y);
+		    static void showTimer( int time,int x, int y );
+		    static void resetTimer(int x, int y );
 		    bool setter();
 
 

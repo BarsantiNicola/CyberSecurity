@@ -108,11 +108,17 @@ namespace client{
 
     }
 
-    int TextualInterfaceManager::getXTranslation() {
+    int TextualInterfaceManager::getXTranslation(){
 
 	    return adj_x;
 
 	}
+
+    int TextualInterfaceManager::getYTranslation(){
+
+        return adj_y;
+
+    }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
     //                                                                                           //
@@ -157,13 +163,13 @@ namespace client{
 	}
 
     //  used into the game_page to print the timer without have to refresh the page
-    void TextualInterfaceManager::showTimer( int time,int adj_x,int adj_y ){
+    void TextualInterfaceManager::showTimer( int time, int x, int y ){
 
 	    if( time > 15 || time < 0 ) return;
 
-        resetTimer(adj_x,adj_y);
+        resetTimer( x, y );
         printf( "\033[s" );
-        printf( "\033[%d;%dH", 10+adj_y, 89+adj_x );
+        printf( "\033[%d;%dH", 10 + y, 89 + x );
 
         if( time > 10 )
             base<<time;
@@ -180,10 +186,10 @@ namespace client{
     }
 
     //  used into the game_page to delete the timer without have to refresh the page
-    void TextualInterfaceManager::resetTimer(int adj_x,int adj_y ){
+    void TextualInterfaceManager::resetTimer( int x, int y ){
 
         printf( "\033[s" );
-        printf( "\033[%d;%dH", 10+adj_y, 89+adj_x );
+        printf( "\033[%d;%dH", 10 + y, 89 + x );
         base<<"   ";
         printf( "\033[u" );
 
