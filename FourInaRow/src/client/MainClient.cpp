@@ -2381,7 +2381,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
          }
       }
 
-      else if(comand_line.compare(0,6,"reject")==0)
+      else if(comand_line.compare(0,6,"reject")==0 && clientPhase!=INGAME_PHASE && logged)
       {
       	 string app=comand_line.substr(7);
          vverbose<<"-->[MainClient][comand]"<<app<<'\n';
@@ -2410,7 +2410,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
          res=sendImplicitUserListReq();
       }
       
-      else if(comand_line.compare(0,4,"quit")==0)
+      else if(comand_line.compare(0,4,"quit")==0 && clientPhase==INGAME_PHASE)
       {
         bool ret=sendDisconnectProtocol();
         if(!ret)
@@ -2424,7 +2424,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         }
       }
      
-      else if(comand_line.compare(0,6,"logout")==0&&logged==true)
+      else if(comand_line.compare(0,6,"logout")==0&&logged==true&& clientPhase!=INGAME_PHASE)
       {
         //ESEGUO LOGOUT
         bool ret=sendLogoutProtocol();
