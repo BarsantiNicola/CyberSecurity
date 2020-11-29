@@ -2088,7 +2088,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         cout<<"bye bye!!"<<endl;
         exit(0);
       }
-      if(comand_line.compare(0,5,"login")==0)
+      if(comand_line.compare(0,5,"login")==0 && clientPhase!=INGAME_PHASE && !logged )
       {
         if(logged)
         {
@@ -2165,7 +2165,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
          }
          return true;
        }
-       else if(comand_line.compare(0,4,"show")==0)
+       else if(comand_line.compare(0,4,"show")==0 && clientPhase!=INGAME_PHASE && logged)
        {
          if(comand_line.compare(5,5,"users")==0)
          {
@@ -2175,7 +2175,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
              std::cout<<"show user online failed retry \n \t# Insert a command:";
            }
          }
-         else if(comand_line.compare(5,4,"rank")==0)
+         else if(comand_line.compare(5,4,"rank")==0 && clientPhase!=INGAME_PHASE && logged)
          {
            if(!sendRankProtocol())
            {
@@ -2186,7 +2186,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
              cout.flush();
            }
          }
-         else if(comand_line.compare(5,7,"pending")==0)
+         else if(comand_line.compare(5,7,"pending")==0 && clientPhase!=INGAME_PHASE && logged)
          {
             
             string toPrint=challenge_register->printChallengeList();
@@ -2210,7 +2210,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
          }
       }
       
-      else if(comand_line.compare(0,9,"challenge")==0)
+      else if(comand_line.compare(0,9,"challenge")==0 && clientPhase!=INGAME_PHASE && logged)
       {
       	 string app=comand_line.substr(10);
          if(app.empty())
@@ -2356,7 +2356,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           return false;         
         }
       }
-      else if(comand_line.compare(0,6,"accept")==0)
+      else if(comand_line.compare(0,6,"accept")==0 && clientPhase!=INGAME_PHASE && logged)
       {
       	 std::string app=comand_line.substr(7);
          if(app.empty())
