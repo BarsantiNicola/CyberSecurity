@@ -282,9 +282,15 @@ send a message and return true in case of success and false in case of failure
   //funzione che restituisce un vector di id di socket pronti in caso non ci siano descrittori pronti restituisce un vector vuoto
   vector<int> ConnectionManager::waitForMessage(int* idsock,std::string* ip)
   {
+    struct timeval* tv=nullptr;
     vector<int> descr;
+    if(!isServer)
+    {
+       tv=new timeval();
+       tv->tv_sec=0;
+    }
     fdRead=master;
-    select(fdmax+1,&fdRead,nullptr,nullptr,nullptr);
+    select(fdmax+1,&fdRead,nullptr,nullptr,tv);
     for(int i=0;i<=fdmax;i++)
     {
       if(FD_ISSET(i,&fdRead))
@@ -335,7 +341,8 @@ send a message and return true in case of success and false in case of failure
           descr.push_back(i);
       }
     }
-    vverbose<<"-->[ConnectionManager][waitForMessage] fuction finished"<<'\n';
+    
+    delete tv;
     return descr;
   }
 

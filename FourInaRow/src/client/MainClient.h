@@ -41,7 +41,8 @@ namespace client
   {
     STOP,
     START,
-    RESUME
+    RESUME,
+    TERMINATE
   };
   enum ClientPhase
   {
@@ -62,14 +63,15 @@ namespace client
   class MainClient
   {
     private:
-      ComandToTimer comandTimer = ComandToTimer::STOP;
+      std::thread timerThread;
+      //static ComandToTimer comandTimer ;
       bool partialKeyCreated=false;
       NetMessage* partialKey;
       //long timer=15;
       int nonceAdv=0;
       vector<string> chatWait;
       Message* messageChatToACK=nullptr;
-     // bool time_expired=false;
+      //static bool time_expired;
       bool startingMatch=false;
       bool firstMove=false;
       bool notConnected=true;
@@ -107,8 +109,8 @@ namespace client
       TextualInterfaceManager* textual_interface_manager=nullptr;
       cipher::CipherClient* cipher_client;
       //mutex object start
-      //std::mutex mtx_time_expired;
-     // std::mutex mtx_comand_to_timer;
+      //static std::mutex mtx_time_expired;
+      //static std::mutex mtx_comand_to_timer;
       //std::unique_lock<std::mutex>* lck_time_expired;//(mtx_time,std::defer_lock);//da inizializzare nel main
       //endmutex
       bool loginProtocol(std::string username,bool *socketIsClosed);//ok
@@ -142,8 +144,12 @@ namespace client
       bool receiveGameParamProtocol(Message* message);
       //bool gameProtocol(Message message);
       int generateRandomNonce();
-      //void timerHandler();
+      //static void timerHandler(int adj_x,int adj_y);
       void clearGameParam();
+      bool timeIsExpired();
+      void resetTimeExpired();
+      void setcomandTimer(ComandToTimer comand );
+      ComandToTimer getcomandTimer();
       bool comand(std::string comand_line);
       bool startConnectionServer(const char* myIP,int myPort);
       int countOccurences(string source,string searchFor);

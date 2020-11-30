@@ -3,35 +3,56 @@ std::mutex mtx_time_expired;
 std::mutex mtx_comand_to_timer;
 bool time_expired=false;
 client::ComandToTimer comandTimer = client::ComandToTimer::STOP;
-void timerHandler()
+  void timerHandler(int adj_x,int adj_y)
   {
-   /* int time=15;
-    
-    client::ComandToTimer comandCopy;
+    int time=15;
+    int x=adj_x;
+    int y=adj_y;
+    comandTimer== client::ComandToTimer::STOP;
+    mtx_time_expired.lock();
+    time_expired=false;
+    mtx_time_expired.unlock();
     while(true)
     {
-      mtx_time
-
-      continue;
+      sleep(1);
       mtx_comand_to_timer.lock();
-      mtx_comand_to_timer.unlock();
-      if(time!=0)
+      switch(comandTimer)
       {
+     
         
-        sleep(1);
-        --time;
+        case client::ComandToTimer::START:
+          time=15;
+          client::TextualInterfaceManager::resetTimer( x,y );
+          client::TextualInterfaceManager::showTimer(time,x,y);
+          comandTimer=client::ComandToTimer::RESUME;
+          break;
+
+        case client::ComandToTimer::RESUME:
+          --time;
+          client::TextualInterfaceManager::showTimer(time,x,y);
+          if(time==0)
+          {
+            mtx_time_expired.lock();
+            time_expired=true;
+            mtx_time_expired.unlock();
+            comandTimer=client::ComandToTimer::STOP;
+          }         
+        case client::ComandToTimer::STOP:
+          break;
+        case client::ComandToTimer::TERMINATE:
+          exit(0);
+         break;
       }
-      else
-      {
-        mtx_time_expired.lock();
-        time_expired=true;
-        mtx_time_expired.unlock();
-      }
-    }*/
+
+      
+      mtx_comand_to_timer.unlock();
+
+    }
    
   }
 namespace client
 {
+
   
 /*
 --------------certificateProtocol function-----------------------------
@@ -1557,6 +1578,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 */
   bool MainClient::MakeAndSendGameMove(int column)
   {
+    
     bool res=false;
     time_t start;
     bool waitForAck=false;
@@ -1601,6 +1623,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         break;
       case MOVE_OK:
        case GAME_FINISH://verify if ok
+        setcomandTimer(ComandToTimer::STOP );
         vverbose<<"-->[MainClient][MakeAndSendGameMove] start game move with column: "<<column<<'\n';
         currTokenIninzialized=false;
         std::string app=std::to_string(column);
@@ -1944,7 +1967,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       clientPhase = ClientPhase::NO_PHASE;
       clearGameParam();
       sendImplicitUserListReq();
-    }         
+    }  
+    setcomandTimer(ComandToTimer::START );       
     delete c_nonce; 
   }
 
@@ -2510,12 +2534,16 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
      //char* buffer;
      Message* message;
      std::vector<int> sock_id_list;
+
      int newconnection_id=0;
      string newconnection_ip="";
      //lck_time_expired=new std::unique_lock<std::mutex>(mtx_time_expired,std::defer_lock);
      cipher_client=new cipher::CipherClient();//create new CipherClient object
 
      textual_interface_manager=new TextualInterfaceManager();
+     int xApp=textual_interface_manager->getXTranslation();
+     int yApp=textual_interface_manager->getYTranslation();
+     timerThread=thread(timerHandler,xApp,yApp);
      numberToTraslate=textual_interface_manager->getXTranslation();
      bool res;
     while(true)
@@ -2750,6 +2778,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                    }
                    else
                    {
+                     setcomandTimer(ComandToTimer::START ); 
                      this->currentToken++;
                    }
                    if(!chatWait.empty())
@@ -2786,7 +2815,16 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           
         }
       }
-     }
+      if(timeIsExpired() && clientPhase==ClientPhase::INGAME_PHASE)
+      {
+        vector<int> freeCol=game->availableColumns();
+        if(!freeCol.empty())
+        {
+          MakeAndSendGameMove(freeCol.front());
+        }
+        resetTimeExpired();
+      }
+    }
      catch(exception& e )
      {
        time_expired=false;
@@ -2859,6 +2897,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 
   void MainClient::clearGameParam()
   {
+    setcomandTimer(ComandToTimer::STOP );
     adv_username_1.clear();
     challenged_username.clear();
     startChallenge=false;
@@ -2905,6 +2944,36 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       connection_manager->closeConnection(connection_manager->getserverSocket());
       delete connection_manager;
     }
+    setcomandTimer(ComandToTimer::TERMINATE );
+    timerThread.join();
+  }
+  bool MainClient::timeIsExpired()
+  {
+    bool res;
+    mtx_time_expired.lock();
+    res=time_expired;
+    mtx_time_expired.unlock();
+    return res;
+  }
+  void MainClient::resetTimeExpired()
+  {
+    mtx_time_expired.lock();
+    time_expired=false;
+    mtx_time_expired.unlock();    
+  }
+  void MainClient::setcomandTimer(ComandToTimer comand )
+  {
+    mtx_comand_to_timer.lock();
+    comandTimer=comand;
+    mtx_comand_to_timer.unlock();
+  }
+  ComandToTimer MainClient::getcomandTimer()
+  {
+    ComandToTimer res;
+    mtx_comand_to_timer.lock();
+    res=comandTimer;
+    mtx_comand_to_timer.unlock();
+    return res;
   }
 }
 /*
@@ -2929,14 +2998,14 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     if(argc==1)
     {
       main_client=new client::MainClient("127.0.0.1",12000);
-      //std::thread(timerHandler);
+      
       main_client->client();
       
     }
     else
     {
       main_client=new client::MainClient("127.0.0.1",atoi(argv[1]));
-      //std:thread(timerHandler);
+      
       main_client->client();
     }
     return 0;
