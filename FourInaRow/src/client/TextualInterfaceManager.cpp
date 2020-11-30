@@ -182,6 +182,7 @@ namespace client{
 
         }
         printf( "\033[u" );
+        base.flush();
 
     }
 
@@ -192,7 +193,7 @@ namespace client{
         printf( "\033[%d;%dH", 10 + y, 89 + x );
         base<<"   ";
         printf( "\033[u" );
-
+        base.flush();
     }
 
     //  used into the game_page to format the passed message and put it into its container
