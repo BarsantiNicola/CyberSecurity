@@ -7,7 +7,7 @@ TEST WITH NO_VERBOSE
 LOGIN_PAGE
 - effettuare un login scorretto e poi uno corretto bugga interfaccia
 
-- inserire uno spazio aggiuntivo tra l'inserimento del comando "login" e la richiesta della username(sono appiccicati)
+- inserire una newline aggiuntiva tra l'inserimento del comando "login" e la richiesta della username(sono appiccicati)
 
 - inserire messaggio "User already logged" nel caso si effettui login con utente già connesso
 
