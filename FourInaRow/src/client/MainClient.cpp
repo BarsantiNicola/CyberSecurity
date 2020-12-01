@@ -2365,7 +2365,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         char buffer[80];
         time(&resTime);
         timeinfo=std::localtime(&resTime);
-        std::strftime(buffer,80,"%I:%M%p ",timeinfo);
+        std::strftime(buffer,80,"%I:%M%p",timeinfo);
         std::string stringTime(buffer);
         
         std::string chatApp = "[" + username + "]" + "[" + stringTime + "]" + app;
@@ -2900,6 +2900,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 
   void MainClient::clearGameParam()
   {
+    textual_interface_manager->resetChat();
     setcomandTimer(ComandToTimer::STOP );
     adv_username_1.clear();
     challenged_username.clear();
