@@ -479,6 +479,7 @@ namespace client{
 	//  applies colors to the login interface and prints it
 	void TextualInterfaceManager::printLoginInterface(){
 
+        cin.clear();
         execCommand( CLEAR );
 
 	    for( int a = 0; a<adj_y; a++ )
@@ -518,6 +519,7 @@ namespace client{
 	//  prints the main interface and colors it
 	void TextualInterfaceManager::printMainInterface(string username,string activeUser,string serverStatus,string matchStatus,string pendingStatus){
 
+	    cin.clear();
 		string value;
         execCommand( CLEAR );
 		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::USERNAME , username , main_page );
@@ -579,6 +581,7 @@ namespace client{
 
 	void TextualInterfaceManager::printGameInterface(bool myMove, string timer,string chat,string gameboard){
 
+        cin.clear();
         execCommand( CLEAR );
 
         int col = 0;
@@ -770,6 +773,7 @@ namespace client{
 
 	void TextualInterfaceManager::printSetterPage(){
 
+        cin.clear();
         execCommand(CLEAR);
 
 	    for( int a = 0; a<adj_y; a++ )
