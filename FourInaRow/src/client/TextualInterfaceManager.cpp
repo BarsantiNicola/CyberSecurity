@@ -136,7 +136,7 @@ namespace client{
 
         switch( command ){
             case CLEAR:
-                args[0] = (char*)"/bin/clear";
+                args[0] = (char*)"/usr/bin/clear";
                 break;
             case RAW:
                 args[0] = (char*)"/bin/stty";
