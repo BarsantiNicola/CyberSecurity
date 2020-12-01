@@ -1985,7 +1985,7 @@ namespace server {
 
     Message* MainServer::gameHandler( Message* message, string username, int* nonce ){
 
-        if( !message || username.empty() ){
+        if( !message || username.empty() || !nonce ){
 
             verbose<<"--> [MainServer][gameHandler] Error invalid parameters. Operation Aborted"<<'\n';
             return nullptr;
@@ -2110,18 +2110,18 @@ namespace server {
                 SQLConnector::incrementUserGame( adversary , WIN );
                 SQLConnector::incrementUserGame( username, LOOSE );
                 this->matchRegister.removeMatch( matchID );
-                this->userRegister.setLogged( username, this->userRegister.getSessionKey(username));
-                this->userRegister.setLogged( adversary, this->userRegister.getSessionKey(adversary));
+                this->userRegister.setLogged( username, this->userRegister.getSessionKey( username ));
+                this->userRegister.setLogged( adversary, this->userRegister.getSessionKey( adversary ));
                 break;
 
             case 2:
 
                 base<<"------> [MainServer][gameHandler] Gameboard full, match is concluded with a tie"<<'\n';
-                SQLConnector::incrementUserGame(adversary , TIE );
-                SQLConnector::incrementUserGame(username, TIE );
+                SQLConnector::incrementUserGame( adversary , TIE );
+                SQLConnector::incrementUserGame( username, TIE );
 
-                this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
-                this->userRegister.setLogged( adversary, this->userRegister.getSessionKey(adversary));
+                this->userRegister.setLogged(username, this->userRegister.getSessionKey( username ));
+                this->userRegister.setLogged( adversary, this->userRegister.getSessionKey( adversary ));
                 this->matchRegister.removeMatch(matchID);
                 break;
 

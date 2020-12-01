@@ -2,18 +2,34 @@
 
 /////////////CLIENT BUGS
 
-- inserire un comando non valido genera un messaggio di errore scorretto//fatto
 
-- errori di reject/accept/withdraw non utilizzato printMessage e non aggiornano interfaccia//fatto
+TEST WITH NO_VERBOSE
+LOGIN_PAGE
+- effettuare un login scorretto e poi uno corretto bugga interfaccia
 
-- dare un comando scorretto manda in stallo il programma che sembra perdere un carattere(ad esempio show u)
+- inserire uno spazio aggiuntivo tra l'inserimento del comando "login" e la richiesta della username(sono appiccicati)
 
-- reject presenta un \n al termine//fatto
+- inserire messaggio "User already logged" nel caso si effettui login con utente già connesso
 
+MAIN_PAGE
+- inserire un comando valido ma con un parametro non riconosciuto blocca l'interfaccia fino alla pressione di un nuovo invio(show u, show user, show r, show p...)
 
+- manca uno spazio nel messaggio di errore tra il comando non valido e la scritta "not valid" e "command" non "comand"
+(esempio #insert command: chal -> comand:chalnot valid  ---> command "chal" not valid
 
+- effettuare accept/reject genera errore printato direttamente invece che con printMessage
 
+- le richieste invalide non vengono printate tramite printMessage(ad esempio logout dopo aver effettuato una challenge)
 
+- visualizzare pending bugga interfaccia
+
+- mostrare una pending vuota non viene gestita tramite showPending
+
+- effettuare un withdraw genera un bug nell'interfaccia del ricevente(non si decrementa la pending size e si mostra ancora l'utente nella pending list --> si può effettuare accept/reject ma accade roba strana nella firma --> si può rieffettuare una nuova challenge ottenendo lo stesso utente apparire più volte nella pending list
+
+GAME_PAGE
+- presente uno spazio di troppo dopo il timestamp[nome][ora ] 
+  inviare una chat fa crashare il match dell'altro utente
 
 
  

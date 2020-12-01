@@ -2991,8 +2991,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 */  
   int main(int argc, char** argv)
   {
-    //Logger::setThreshold(  NO_VERBOSE );
-    Logger::setThreshold(  VERY_VERBOSE );
+    Logger::setThreshold(  NO_VERBOSE );
+    //Logger::setThreshold(  VERY_VERBOSE );
     client::MainClient* main_client;
     signal(SIGTSTP,signalHandler);
     if(argc==1)
