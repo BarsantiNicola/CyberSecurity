@@ -39,6 +39,8 @@ al suo scadere rimane sullo 0
 
 - se uno invia un messaggio con send e scade il timer il messaggio viene cancellato(e fin qua ok) successivamente se si invia put token questo genera un messaggio dentro la chat che comprende il vecchio messaggio+put token MOSSA
 
+- se si effettua un secondo game si ritrova la chat del game precedente
+
 
 
  
