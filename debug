@@ -29,7 +29,10 @@ MAIN_PAGE
 
 GAME_PAGE
 - presente uno spazio di troppo dopo il timestamp[nome][ora ] 
-  inviare una chat fa crashare il match dell'altro utente
+
+- inviare una chat fa tornare l'altro utente alla main_page
+
+
 
 
  
