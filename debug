@@ -17,6 +17,8 @@ MAIN_PAGE
 - manca uno spazio nel messaggio di errore tra il comando non valido e la scritta "not valid" e "command" non "comand"
 (esempio #insert command: chal -> comand:chalnot valid  ---> command "chal" not valid
 
+- dare solo "show" come comando genera un eccezione
+
 - effettuare accept/reject genera errore printato direttamente invece che con printMessage
 
 - le richieste invalide non vengono printate tramite printMessage(ad esempio logout dopo aver effettuato una challenge)
@@ -30,7 +32,16 @@ MAIN_PAGE
 GAME_PAGE
 - presente uno spazio di troppo dopo il timestamp[nome][ora ] 
 
-- inviare una chat fa tornare l'altro utente alla main_page
+- in caso di timer scaduto non avviene una mossa randomica ma prende sempre la colonna 0(poi 1 etc..) usa rand()*1000%7 
+
+- a fine partita è presente un timer nella main_page dell'utente che avrebbe dovuto fare la mossa e
+al suo scadere rimane sullo 0
+
+- se uno invia un messaggio con send e scade il timer il messaggio viene cancellato(e fin qua ok) successivamente se si invia put token questo genera un messaggio dentro la chat che comprende il vecchio messaggio+put token MOSSA
+
+
+
+ 
 
 
 
