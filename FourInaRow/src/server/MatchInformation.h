@@ -42,7 +42,7 @@ namespace server {
             int nMoves;                                 //  TO EASILY IDENTIFY THE END OF A MATCH FOR A FULLY TABLE(TIE)
             bool control;                               //  VARIABLE TO KNOW THE PLAYER WHICH IS IN CHARGE OF MAKING THE NEXT MOVE
             MatchStatus status;                         //  STATUS OF A MATCH TO IDENTIFY THE CORRECT BEHAVIOR FOR CLOSE IT
-            int controlAlignment( int row, int column, bool myMove );  //  FUNCTION TO IDENTIFY A POSSIBLE WINNER
+            int controlAlignment( int row, int column, int numberToControl );  //  FUNCTION TO IDENTIFY A POSSIBLE WINNER
             int verifyGame( int row, int column, string username );  //  VERIFY THE STATUS OF A MATCH(1 WIN 0 TIE -1 NO CONCLUSION)
             bool hasControl( string username );             //  VERIFY IF THE USER IS IN CHARGE FOR THE NEXT MOVE
 

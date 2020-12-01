@@ -197,18 +197,13 @@ namespace server{
 
     }
 
-    int MatchInformation::controlAlignment( int row,int column,bool myMove){
+    int MatchInformation::controlAlignment( int row, int column, int numberToControl ){
 
-        int numberToControl=0;
         int column_index;
         int row_index;
-        if(row>=NUMBER_ROW||row<0||column>=NUMBER_COLUMN||column<0)
-            return -1;
 
-        if(myMove==true)
-            numberToControl=1;
-        else
-            numberToControl=2;
+        if( row>=NUMBER_ROW || row<0 || column>=NUMBER_COLUMN || column<0 || ( numberToControl != 1 && numberToControl != 2))
+            return -1;
 
         int numberAligned=1;
         //ciclo for di controllo alineamento a destra
