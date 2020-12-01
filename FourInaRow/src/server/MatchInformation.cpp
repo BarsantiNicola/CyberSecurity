@@ -85,7 +85,7 @@ namespace server{
         }
 
         int row = -1;
-        for( int a = NUMBER_ROW-1; a>0; a-- )
+        for( int a = NUMBER_ROW-1; a>=0; a-- )
             if( !this->gameBoard[a][chosen_col] ){
 
                 row = a;
@@ -124,7 +124,7 @@ namespace server{
         }
 
         int row = -1;
-        for( int a = NUMBER_ROW-1; a>0; a-- )
+        for( int a = NUMBER_ROW-1; a>=0; a-- )
             if( !this->gameBoard[a][chosen_col] ){
 
                 row = a;
