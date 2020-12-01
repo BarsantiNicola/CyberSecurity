@@ -610,7 +610,12 @@ namespace cipher
 
   void CipherClient::newRSAParameter(string username,string password)
   {
-    delete this->rsa;
+    if(this->rsa!=nullptr && RSA_is_start)
+    {
+      verbose<<"-->[CipherClient][newRSAParameter] deleting rsa "<<'\n';
+      delete this->rsa;
+      rsa=nullptr;
+   }
     bool res=true;
     try
     {
