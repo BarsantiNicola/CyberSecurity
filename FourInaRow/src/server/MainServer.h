@@ -62,7 +62,7 @@ namespace server {
             //  ASYNC MESSAGE SENDERS
             bool sendAcceptMessage( string challenger, string challenged, int* socket );  //  SENDS AN ACCEPT MESSAGE
             bool sendRejectMessage( string challenger, string challenged, int* socket );  //  SENDS A REJECT MESSAGE
-            bool sendWithdrawMessage( string username, int* socket );   //  SENDS A WITHDRAW_REQ MESSAGE
+            bool sendWithdrawMessage( string username, string challenger, int* socket );   //  SENDS A WITHDRAW_REQ MESSAGE
             bool sendDisconnectMessage( string username );              //  SENDS A DISCONNECT MESSAGE
             bool sendGameParam( string username , string source );      //  MANAGES MESSAGE GAME_PARAM
 

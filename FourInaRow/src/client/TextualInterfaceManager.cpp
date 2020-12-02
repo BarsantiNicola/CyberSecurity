@@ -165,7 +165,7 @@ namespace client{
     //  used into the game_page to print the timer without have to refresh the page
     void TextualInterfaceManager::showTimer( int time, int x, int y ){
 
-	    if( time > 15 || time < 0 ) return;
+	    if( time > 30 || time < 0 ) return;
 
         resetTimer( x, y );
         printf( "\033[s" );

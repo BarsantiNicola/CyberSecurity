@@ -406,7 +406,7 @@ namespace server {
             }else{
 
                 base << "------> [MainServer][closeMatch] Restoring behavior: sending withdraw to " << challenger << '\n';
-                this->sendWithdrawMessage( challenged,  this->userRegister.getSocket(challenged));
+                this->sendWithdrawMessage( challenged, challenger,  this->userRegister.getSocket(challenged));
 
             }
 
@@ -643,7 +643,7 @@ namespace server {
     }
 
     // sends directly a WITHDRAW_REQ message to the challenged client
-    bool MainServer::sendWithdrawMessage( string username, int* socket ){
+    bool MainServer::sendWithdrawMessage( string username, string challenger, int* socket ){
 
         if( username.empty() ||  !socket ){
 
@@ -667,7 +667,7 @@ namespace server {
 
             message = new Message();
             message->setMessageType( WITHDRAW_REQ );
-            message->setUsername( username );
+            message->setUsername( challenger );
             message->setNonce( *nonce );
 
         }catch( bad_alloc e ){
@@ -1887,7 +1887,7 @@ namespace server {
         string selUsername = this->matchRegister.getChallenged( matchID );
         if( !selUsername.empty() ) {
 
-            if (!this->sendWithdrawMessage( selUsername, this->userRegister.getSocket( selUsername ))) {
+            if (!this->sendWithdrawMessage( selUsername, username, this->userRegister.getSocket( selUsername ))) {
 
                 int *socket = this->userRegister.getSocket( selUsername );
                 if( socket ){
