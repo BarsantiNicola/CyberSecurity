@@ -2048,6 +2048,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
   {
     if(comand_line.empty())
     {
+      
       vverbose<<"--> [MainClient][comand] error comand_line is empty"<<'\n';
       printWhiteSpace();
       std::cout<<"\t comand line is empty \n";
@@ -2059,6 +2060,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     }
     try
     {
+      std::string commandApp=TextualInterfaceManager::extractCommand( comand_line );
+      comand_line=commandApp;
       if(comand_line.compare(0,4,"exit")==0)
       {
         if(logged)
@@ -3028,8 +3031,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 */  
   int main(int argc, char** argv)
   {
-    Logger::setThreshold(  NO_VERBOSE );
-    //Logger::setThreshold(  VERY_VERBOSE );
+   // Logger::setThreshold(  NO_VERBOSE );
+    Logger::setThreshold(  VERY_VERBOSE );
     client::MainClient* main_client;
     signal(SIGTSTP,signalHandler);
     if(argc==1)

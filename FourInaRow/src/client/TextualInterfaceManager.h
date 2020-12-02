@@ -113,7 +113,7 @@ namespace client{
 		    static void showTimer( int time,int x, int y );  //  SETS DINAMICALLY(WITHOUT REFRESH) THE TIMER INTO THE GAME_PAGE
 		    static void resetTimer(int x, int y );  //  RESETS THE TIMER DINAMICALLY(WITHOUT REFRESH) INTO THE GAME_PAGE
 		    bool setter();                        //  PAGE TO SET THE X,Y ADJUST PARAMETERS
-            string extractCommand( string input );     // EXTRACTS A COMMAND FROM A STRING
+            static string extractCommand( string input );     // EXTRACTS A COMMAND FROM A STRING
 
 	private:
 		string insertElement( InterfacePage page , InputType input , string value , string base);   //  INSERTS AN ELEMENT INTO THE PAGE
