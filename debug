@@ -7,9 +7,9 @@
 
 TEST WITH NO_VERBOSE
 LOGIN_PAGE
-- effettuare un login scorretto e poi uno corretto bugga interfaccia
+- effettuare un login scorretto e poi uno corretto bugga interfaccia//penso corretto da verificare
 
-- inserire messaggio "User already logged" nel caso si effettui login con utente già connesso
+
 
 MAIN_PAGE
 
@@ -20,7 +20,7 @@ MAIN_PAGE
 
 GAME_PAGE 
 
-- se uno invia un messaggio con send e scade il timer il messaggio viene cancellato(e fin qua ok) successivamente se si invia put token questo genera un messaggio dentro la chat che comprende il vecchio messaggio+put token MOSSA
+- se uno invia un messaggio con send e scade il timer il messaggio viene cancellato(e fin qua ok) successivamente se si invia put token questo genera un messaggio dentro la chat che comprende il vecchio messaggio+put token MOSSA//da controllare se corretto
 
 
 

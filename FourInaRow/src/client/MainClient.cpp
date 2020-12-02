@@ -2048,7 +2048,6 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
   {
     if(comand_line.empty())
     {
-      
       vverbose<<"--> [MainClient][comand] error comand_line is empty"<<'\n';
       printWhiteSpace();
       std::cout<<"\t comand line is empty \n";
@@ -2060,8 +2059,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     }
     try
     {
-      std::string commandApp=TextualInterfaceManager::extractCommand( comand_line );
-      comand_line=commandApp;
+      comand_line=TextualInterfaceManager::extractCommand(comand_line);
       if(comand_line.compare(0,4,"exit")==0)
       {
         if(logged)
@@ -2147,13 +2145,14 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         newt.c_lflag &= ~ECHO;
         tcsetattr(STDIN_FILENO, TCSANOW, &newt);//hide input
         std::cin>>password;
+        std::cin.ignore(10000,'\n');
         tcsetattr(STDIN_FILENO, TCSANOW, &oldt);//show input
         cout<<'\n';
         if(username.empty()||password.empty())
         {
           textual_interface_manager->printLoginInterface();
-          printWhiteSpace();
-          std::cout<<"username or password not valid \n";
+          string app="username or password not valid";
+          textual_interface_manager->printMessage( app );
           printWhiteSpace();
           base<<"\t# Insert a command:";
           std::cout.flush();
@@ -2162,7 +2161,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         if(!cipher_client->getRSA_is_start())
         {
           textual_interface_manager->printLoginInterface();
-          string app="login failed retry";
+          string app="login failed password or username are wrong retry";
           textual_interface_manager->printMessage( app );
           //printWhiteSpace();
           //std::cout<<"login failed retry \n";
@@ -2186,7 +2185,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           else
           {
              textual_interface_manager->printLoginInterface();
-             string app="login failed retry";
+             string app="User already logged";
              textual_interface_manager->printMessage( app );
              //printWhiteSpace();
              //std::cout<<"login failed retry"<<'\n';
@@ -3031,7 +3030,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 */  
   int main(int argc, char** argv)
   {
-   // Logger::setThreshold(  NO_VERBOSE );
+    //Logger::setThreshold(  NO_VERBOSE );
     Logger::setThreshold(  VERY_VERBOSE );
     client::MainClient* main_client;
     signal(SIGTSTP,signalHandler);
