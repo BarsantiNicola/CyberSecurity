@@ -119,6 +119,7 @@ namespace client{
 	private:
 		string insertElement( InterfacePage page , InputType input , string value , string base);
         void execCommand( Command command );
+        string extractCommand( string input );
 	};
 
 }

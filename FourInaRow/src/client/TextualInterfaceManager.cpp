@@ -162,6 +162,27 @@ namespace client{
 
 	}
 
+	string TextualInterfaceManager::extractCommand( string input ){
+
+	    int sendIndex = input.rfind( "send");
+	    int putIndex = input.rfind( "put token" );
+	    int quitIndex = input.rfind( "quit" );
+
+	    if( sendIndex == std::string::npos) sendIndex = -1;
+        if( putIndex == std::string::npos) putIndex = -1;
+        if( quitIndex == std::string::npos) quitIndex = -1;
+        int cutPos;
+
+        if( sendIndex > putIndex )
+            cutPos = sendIndex>quitIndex?sendIndex:quitIndex;
+        else
+            cutPos = putIndex>quitIndex?putIndex:quitIndex;
+
+        if( cutPos < 0 )
+            return input;
+        else
+            return input.substr( cutPos, input.length());
+	}
     //  used into the game_page to print the timer without have to refresh the page
     void TextualInterfaceManager::showTimer( int time, int x, int y ){
 
@@ -478,8 +499,7 @@ namespace client{
 
 	//  applies colors to the login interface and prints it
 	void TextualInterfaceManager::printLoginInterface(){
-
-        cin.clear();
+	    
         execCommand( CLEAR );
 
 	    for( int a = 0; a<adj_y; a++ )
@@ -519,7 +539,6 @@ namespace client{
 	//  prints the main interface and colors it
 	void TextualInterfaceManager::printMainInterface(string username,string activeUser,string serverStatus,string matchStatus,string pendingStatus){
 
-	    cin.clear();
 		string value;
         execCommand( CLEAR );
 		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::USERNAME , username , main_page );
@@ -581,9 +600,10 @@ namespace client{
 
 	void TextualInterfaceManager::printGameInterface(bool myMove, string timer,string chat,string gameboard){
 
-        cin.clear();
-        execCommand( CLEAR );
-
+	    execCommand(RAW);
+	    cout<<"SIZE: "<<cin.rdbuf()->in_avail()<<endl;
+        //execCommand( CLEAR );
+        execCommand(COOKED);
         int col = 0;
         for( int a = 0; a<adj_y; a++ )
             base<<'\n';
