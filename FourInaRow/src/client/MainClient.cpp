@@ -21,7 +21,7 @@ client::ComandToTimer comandTimer = client::ComandToTimer::STOP;
      
         
         case client::ComandToTimer::START:
-          time=15;
+          time=30;
           client::TextualInterfaceManager::resetTimer( x,y );
           client::TextualInterfaceManager::showTimer(time,x,y);
           comandTimer=client::ComandToTimer::RESUME;
@@ -2192,7 +2192,17 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
        }
        else if(comand_line.compare(0,4,"show")==0 && clientPhase!=INGAME_PHASE && logged)
        {
-         if(comand_line.compare(5,5,"users")==0)
+         string app=comand_line.substr(4);
+         if(app.empty())
+         {
+          textual_interface_manager->printMainInterface(this->username,std::to_string(nUser),"online","none",std::to_string(challenge_register->getDimension()));
+          string txtMess="type of command show not valid";
+          textual_interface_manager->printMessage(txtMess);
+          printWhiteSpace();
+          base<<"\t# Insert a command:";
+          cout.flush();
+         }
+         else if(comand_line.compare(5,5,"users")==0)
          {
            if(!sendReqUserListProtocol())
            {
@@ -2214,30 +2224,32 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
          else if(comand_line.compare(5,7,"pending")==0 && clientPhase!=INGAME_PHASE && logged)
          {
             
-            string toPrint=challenge_register->printChallengeList();
-            if(toPrint.empty())
-            {
-              printWhiteSpace();
-              std::cout<<"no active request game"<<endl;
-            }
-            else
-            {
-              textual_interface_manager->printUserPending( challenge_register->getUserlistString() );
+            textual_interface_manager->printMainInterface(this->username,std::to_string(nUser),"online","none",std::to_string(challenge_register->getDimension()));
+            textual_interface_manager->printUserPending( challenge_register->getUserlistString() );
               
               //printWhiteSpace();
               //std::cout<<"challenger list:"<<endl;
               //printWhiteSpace();
               //std::cout<<toPrint<<endl;
-            }
+            
             printWhiteSpace();
             base<<"\t# Insert a command:";
             cout.flush();
          }
+        else
+        {
+          textual_interface_manager->printMainInterface(this->username,std::to_string(nUser),"online","none",std::to_string(challenge_register->getDimension()));
+          string txtMess="type of command show not valid";
+          textual_interface_manager->printMessage(txtMess);
+          printWhiteSpace();
+          base<<"\t# Insert a command:";
+          cout.flush();
+        }
       }
       
       else if(comand_line.compare(0,9,"challenge")==0 && clientPhase!=INGAME_PHASE && logged)
       {
-      	 string app=comand_line.substr(10);
+      	 string app=comand_line.substr(9);
          if(app.empty())
          {
            if(!sendImplicitUserListReq())
@@ -2254,6 +2266,23 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
            //  cout.flush();
              return true;
          }
+      	 app=comand_line.substr(10);
+         if(app.empty())
+         {
+           if(!sendImplicitUserListReq())
+           {
+             implicitUserListReq=false;
+           }
+           else
+           {
+             textualMessageToUser="failed to send challenge ";
+           }
+
+            // printWhiteSpace();
+           //  std::cout<<"\t# Insert a command:";
+           //  cout.flush();
+             return true;
+         }         
          if(app.compare(username)==0)
          {
            
@@ -2484,24 +2513,24 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         if(!logged)
         {
           textual_interface_manager->printLoginInterface();
-          string app="comand: " + comand_line + " not valid";
+          string app="command: " + comand_line + " not valid";
           textual_interface_manager->printMessage( app );
         }
         else if(clientPhase == ClientPhase::INGAME_PHASE)
         {
           textual_interface_manager->printGameInterface(startingMatch, std::to_string(15)," ",game->printGameBoard());
-          string app="comand:" + comand_line + "not valid";
+          string app="command: " + comand_line + " not valid";
           textual_interface_manager->printMessage( app );
         }
         else if(logged)
         {
           if(!sendImplicitUserListReq())
             implicitUserListReq=false;
-          string app="comand:" + comand_line + "not valid";
+          string app="command: " + comand_line + " not valid";
           textualMessageToUser=app;
         }
        // printWhiteSpace();
-        //std::cout<<"\t  comand: "<<comand_line<<" not valid"<<endl;
+        //std::cout<<"\t  command: "<<comand_line<<" not valid"<<endl;
         printWhiteSpace();
         base<<"\t# Insert a command:";
         cout.flush();

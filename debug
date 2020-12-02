@@ -7,32 +7,19 @@ TEST WITH NO_VERBOSE
 LOGIN_PAGE
 - effettuare un login scorretto e poi uno corretto bugga interfaccia
 
-- inserire una newline aggiuntiva tra l'inserimento del comando "login" e la richiesta della username(sono appiccicati)
-
 - inserire messaggio "User already logged" nel caso si effettui login con utente già connesso
 
 MAIN_PAGE
-- inserire un comando valido ma con un parametro non riconosciuto blocca l'interfaccia fino alla pressione di un nuovo invio(show u, show user, show r, show p...)
-
-- manca uno spazio nel messaggio di errore tra il comando non valido e la scritta "not valid" e "command" non "comand"
-(esempio #insert command: chal -> comand:chalnot valid  ---> command "chal" not valid
-
-- dare solo "show" come comando genera un eccezione
 
 - effettuare accept/reject genera errore printato direttamente invece che con printMessage
 
 - le richieste invalide non vengono printate tramite printMessage(ad esempio logout dopo aver effettuato una challenge)
 
-- visualizzare pending bugga interfaccia
-
-- mostrare una pending vuota non viene gestita tramite showPending
+- visualizzare pending bugga interfaccia//da verificare penso risolto
 
 - effettuare un withdraw genera un bug nell'interfaccia del ricevente(non si decrementa la pending size e si mostra ancora l'utente nella pending list --> si può effettuare accept/reject ma accade roba strana nella firma --> si può rieffettuare una nuova challenge ottenendo lo stesso utente apparire più volte nella pending list
 
-GAME_PAGE
-- presente uno spazio di troppo dopo il timestamp[nome][ora ] 
-
-- in caso di timer scaduto non avviene una mossa randomica ma prende sempre la colonna 0(poi 1 etc..) usa rand()*1000%7 
+GAME_PAGE 
 
 - a fine partita è presente un timer nella main_page dell'utente che avrebbe dovuto fare la mossa e
 al suo scadere rimane sullo 0
