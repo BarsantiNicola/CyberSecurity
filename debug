@@ -17,16 +17,16 @@ MAIN_PAGE
 
 - visualizzare pending bugga interfaccia//da verificare penso risolto
 
-- effettuare un withdraw genera un bug nell'interfaccia del ricevente(non si decrementa la pending size e si mostra ancora l'utente nella pending list --> si può effettuare accept/reject ma accade roba strana nella firma --> si può rieffettuare una nuova challenge ottenendo lo stesso utente apparire più volte nella pending list
+- effettuare un withdraw genera un bug nell'interfaccia del ricevente(non si decrementa la pending size e si mostra ancora l'utente nella pending list --> si può effettuare accept/reject ma accade roba strana nella firma --> si può rieffettuare una nuova challenge ottenendo lo stesso utente apparire più volte nella pending list //possibile errore server
 
 GAME_PAGE 
 
 - a fine partita è presente un timer nella main_page dell'utente che avrebbe dovuto fare la mossa e
-al suo scadere rimane sullo 0
+al suo scadere rimane sullo 0 //forse risolto da effettuare ulteriori test
 
 - se uno invia un messaggio con send e scade il timer il messaggio viene cancellato(e fin qua ok) successivamente se si invia put token questo genera un messaggio dentro la chat che comprende il vecchio messaggio+put token MOSSA
 
-- se si effettua un secondo game si ritrova la chat del game precedente
+- se si effettua un secondo game si ritrova la chat del game precedente//da testare se risolto
 
 
 

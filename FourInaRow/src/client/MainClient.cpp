@@ -1940,7 +1940,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
      delete c_nonce;
      return;
    }
-
+ 
    if(statGame==GAME_FINISH)
    {
      currTokenIninzialized=false;
@@ -1968,9 +1968,13 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       clearGameParam();
       sendImplicitUserListReq();
     }  
-    setcomandTimer(ComandToTimer::START );       
+    else
+    {
+      setcomandTimer(ComandToTimer::START );
+    }     
     delete c_nonce; 
   }
+
 
 /*
 ------------------------------function errorHandler----------------------------
