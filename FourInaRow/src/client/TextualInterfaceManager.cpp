@@ -401,7 +401,7 @@ namespace client{
         }
 
         if( users.size() == 0 )
-            base<<formatter<< "\033[0;34m"<<"//"<< "\033[0m"<<"     NO PENDANT USERS      "<< "\033[0;34m"<<"//"<< "\033[0m"<<'\n';
+            base<<formatter<< "\033[0;34m"<<"//"<< "\033[0m"<<"     NO PENDANT USERS     "<< "\033[0;34m"<<"//"<< "\033[0m"<<'\n';
         else
             users.clear();
 

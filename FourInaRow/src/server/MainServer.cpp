@@ -2074,7 +2074,7 @@ namespace server {
 
         if( col<0 || col>= NUMBER_COLUMN ){
 
-            verbose<<"--> [MainServer][gameHandler] Error invalid message column field"<<'\n';
+            verbose<<"--> [MainServer][gameHandler] Error invalid message column field: "<<col<<'\n';
             this->sendDisconnectMessage(adversary);
             this->userRegister.setLogged(adversary, this->userRegister.getSessionKey(adversary));
             this->userRegister.setLogged(username, this->userRegister.getSessionKey(username));
