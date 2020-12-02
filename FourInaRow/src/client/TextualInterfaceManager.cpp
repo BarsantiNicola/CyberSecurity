@@ -162,6 +162,8 @@ namespace client{
 
 	}
 
+	//  used to overcome a problem dependent of the page refreshing(refresh a page can leave a partial past command into the stdin buffer)
+	//  It search and extract the last occurence of a command.
 	string TextualInterfaceManager::extractCommand( string input ){
 
 	    int sendIndex = input.rfind( "send");
@@ -183,6 +185,7 @@ namespace client{
         else
             return input.substr( cutPos, input.length());
 	}
+
     //  used into the game_page to print the timer without have to refresh the page
     void TextualInterfaceManager::showTimer( int time, int x, int y ){
 
@@ -499,7 +502,7 @@ namespace client{
 
 	//  applies colors to the login interface and prints it
 	void TextualInterfaceManager::printLoginInterface(){
-	    
+
         execCommand( CLEAR );
 
 	    for( int a = 0; a<adj_y; a++ )

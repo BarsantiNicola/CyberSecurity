@@ -92,34 +92,33 @@ namespace client{
 
 	    public:
 		    TextualInterfaceManager();
-		    string* getUsername();
-		    void printUserList( char* userList, int len );
-		    void printRankList( char* rankList, int len, bool print=true );
-		    void printUserPending( vector<string> username );
-		    void printLoginInterface();
-		    void printMessage( string message );
-		    void printMainInterface(string username,string activeUser,string serverStatus,string matchStatus,string pendingStatus);
-		    void printGameInterface(bool myMove, string timer,string chat,string gameBoard);
-            void printSetterPage();
-		    bool setGame(int** game);
-            int getXTranslation();
-            int getYTranslation();
-		    void setUsername(string username);
-		    void printRankOrUserList(string message);
-		    void printLine(int line);
-		    bool setChat( string username, char message[], int len );
-		    void resetChat();
-		    void printGameline( int line );
-		    void resetGameboard();
-		    static void showTimer( int time,int x, int y );
-		    static void resetTimer(int x, int y );
-		    bool setter();
-
+		    string* getUsername();                          //  GIVES THE USERNAME SETTED INTO THE MAIN PAGE
+		    void printUserList( char* userList, int len );                    //  PRINTS THE USER LIST
+		    void printRankList( char* rankList, int len, bool print=true );   //  PRINTS THE RANK LIST
+		    void printUserPending( vector<string> username );    //  PRINTS THE USER LIST
+		    void printLoginInterface();                      //  SHOWS THE LOGIN PAGE
+		    void printMessage( string message );             //  PRINTS MESSAGES(ERRORS, ADVICE) INTO THE INTERFACE
+		    void printMainInterface(string username,string activeUser,string serverStatus,string matchStatus,string pendingStatus);  //  SHOWS THE MAIN PAGE
+		    void printGameInterface(bool myMove, string timer,string chat,string gameBoard);   //  SHOWS THE GAME PAGE
+            void printSetterPage();                          //  SHOWS THE SETTER PAGE
+		    bool setGame(int** game);                        //  SETS THE GAMEBOARD
+            int getXTranslation();                           //  GIVES THE Y PARAMETER USED TO ADJUST THE PAGES
+            int getYTranslation();                           //  GIVES THE X PARAMETER USED TO ADJUST THE PAGES
+		    void setUsername(string username);               //  SETS THE USERNAME USED INTO THE MAIN_PAGE
+		    void printLine(int line);                        //  PRINTS A LINE OF THE GAMEBOARD(USED INTO PRINT GAME_PAGE)
+		    bool setChat( string username, char message[], int len );   //  SETS A CHAT MESSAGE INTO THE GAME_PAGE CONTAINER
+		    void resetChat();                                //  RESETS THE CHAT CONTAINER INTO THE GAME_PAGE
+		    void printGameline( int line );                  //  PRINTS A GAMEBOARD LINE(USED INTO PRINT GAMEPAGE)
+		    void resetGameboard();                           //  RESETS THE GAMEBOARD
+		    static void showTimer( int time,int x, int y );  //  SETS DINAMICALLY(WITHOUT REFRESH) THE TIMER INTO THE GAME_PAGE
+		    static void resetTimer(int x, int y );  //  RESETS THE TIMER DINAMICALLY(WITHOUT REFRESH) INTO THE GAME_PAGE
+		    bool setter();                        //  PAGE TO SET THE X,Y ADJUST PARAMETERS
+            string extractCommand( string input );     // EXTRACTS A COMMAND FROM A STRING
 
 	private:
-		string insertElement( InterfacePage page , InputType input , string value , string base);
-        void execCommand( Command command );
-        string extractCommand( string input );
+		string insertElement( InterfacePage page , InputType input , string value , string base);   //  INSERTS AN ELEMENT INTO THE PAGE
+        void execCommand( Command command );       // EXECUTES A COMMAND INTO THE TERMINAL IN SECURE MODE
+
 	};
 
 }
