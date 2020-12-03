@@ -2070,7 +2070,7 @@ namespace server {
         }
         base<<"------> [MainServer][gameHandler] Request has passed signature verification"<<'\n';
 
-        int col = atoi( (const char*)message->getChosenColumn());
+        int col = atoi( string((const char*)message->getChosenColumn(),message->getChosenColumnLength()).c_str());
 
         if( col<0 || col>= NUMBER_COLUMN ){
 

@@ -1,14 +1,11 @@
 //////////////SERVER BUGS
 
-- a volte rileva una colonna invalida e blocca la partita --> inserito print della colonna dopo messaggio "invalid column field" per indagare 
-
 /////////////CLIENT BUGS
 
 
 TEST WITH NO_VERBOSE
 LOGIN_PAGE
 - effettuare un login scorretto e poi uno corretto bugga interfaccia//penso corretto da verificare
-
 
 
 MAIN_PAGE
@@ -18,9 +15,6 @@ MAIN_PAGE
 - le richieste invalide non vengono printate tramite printMessage(ad esempio logout dopo aver effettuato una challenge)
 
 
-GAME_PAGE 
-
-- se uno invia un messaggio con send e scade il timer il messaggio viene cancellato(e fin qua ok) successivamente se si invia put token questo genera un messaggio dentro la chat che comprende il vecchio messaggio+put token MOSSA//da controllare se corretto
 
 
 
