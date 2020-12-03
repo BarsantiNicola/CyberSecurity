@@ -317,6 +317,11 @@ return false in case of non autorizate move
       return StatGame::MOVE_OK;
     
   }
+
+  int Game::getNUMBER_COLUMN()
+  {
+    return NUMBER_COLUMN;
+  }
   string Game::getChat()
   {
     return chat;
