@@ -603,10 +603,8 @@ namespace client{
 
 	void TextualInterfaceManager::printGameInterface(bool myMove, string timer,string chat,string gameboard){
 
-	    execCommand(RAW);
-	    cout<<"SIZE: "<<cin.rdbuf()->in_avail()<<endl;
-        //execCommand( CLEAR );
-        execCommand(COOKED);
+        execCommand( CLEAR );
+
         int col = 0;
         for( int a = 0; a<adj_y; a++ )
             base<<'\n';
