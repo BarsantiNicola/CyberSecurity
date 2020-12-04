@@ -18,6 +18,7 @@
 #include<vector>
 #include<sstream>
 #include<csignal>
+#include<regex>
 #define SLEEP_TIME 2
 #define TOKEN_GAP 45
 #define NUMBER_SEPARATOR 4
@@ -57,21 +58,18 @@ namespace client
     MATCH_PHASE,
     NO_PHASE,
     START_GAME_PHASE
-
   };  
 
   class MainClient
   {
     private:
+
       std::thread timerThread;
-      //static ComandToTimer comandTimer ;
       bool partialKeyCreated=false;
       NetMessage* partialKey;
-      //long timer=15;
       int nonceAdv=0;
       vector<string> chatWait;
       Message* messageChatToACK=nullptr;
-      //static bool time_expired;
       bool startingMatch=false;
       bool firstMove=false;
       bool notConnected=true;
@@ -108,13 +106,7 @@ namespace client
       ConnectionManager* connection_manager;//da inizializzare nel main
       TextualInterfaceManager* textual_interface_manager=nullptr;
       cipher::CipherClient* cipher_client;
-      //mutex object start
-      //static std::mutex mtx_time_expired;
-      //static std::mutex mtx_comand_to_timer;
-      //std::unique_lock<std::mutex>* lck_time_expired;//(mtx_time,std::defer_lock);//da inizializzare nel main
-      //endmutex
       bool loginProtocol(std::string username,bool *socketIsClosed);//ok
-      //bool signUpProtocol(Message message);
       string printableString(unsigned char* toConvert,int len);//ok
       bool sendChallengeProtocol(const char* adversaryUsername,int size);//ok
       bool receiveChallengeProtocol(Message* message);//ok
@@ -142,9 +134,7 @@ namespace client
       bool sendLogoutProtocol();//ok
       bool receiveLogoutProtocol(Message* message);//ok
       bool receiveGameParamProtocol(Message* message);
-      //bool gameProtocol(Message message);
       int generateRandomNonce();
-      //static void timerHandler(int adj_x,int adj_y);
       void clearGameParam();
       bool timeIsExpired();
       void resetTimeExpired();
@@ -159,14 +149,9 @@ namespace client
       bool deconcatenateTwoField(unsigned char* originalField,unsigned int originalFieldSize,unsigned char* firsField,unsigned int* firstFieldSize,unsigned char* secondField,unsigned int* secondFieldSize,unsigned char separator,unsigned int numberSeparator);//ok
       bool getDeconcatenateLength(unsigned char* originalField,unsigned int originalFieldSize,unsigned int* firstFieldSize,unsigned int* secondFieldSize,unsigned char separator,unsigned int numberSeparator);
        void printWhiteSpace();
-      // void signalHandler(int signum);
     public:
-      //TextualInterfaceManager* getTextualInterfaceManager();
       MainClient(const char* ipAddr , int port ); 
       ~MainClient();
       void client();//ok
-
   };
-
-
 }

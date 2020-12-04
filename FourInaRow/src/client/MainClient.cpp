@@ -1701,26 +1701,22 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                     currTokenIninzialized=false;
                     if(iWon)
                     {
-                      printWhiteSpace();
-                      cout<<"\t you won"<<endl;
-                      cout.flush();
+                      textual_interface_manager->printWinGame(); 
+
                     }
                     else if(adversaryWon)
                     {
-                      printWhiteSpace();
-                      cout<<"\t you lose"<<endl;
-                      cout.flush();                
+                      textual_interface_manager->printLoseGame();              
                     }
                     else if(tie)
                     {
-                      printWhiteSpace();
-                      cout<<"\t it's a tie"<<endl;
-                      cout.flush(); 
+                      textual_interface_manager->printTieGame();
                     }
                   
                     sleep(5);
                     adv_username_1 = "";
                     clientPhase= ClientPhase::NO_PHASE;
+                    clearGameParam();
                     sendImplicitUserListReq();
                   }
                   break;
@@ -2053,6 +2049,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 */
   bool MainClient::comand(std::string comand_line)
   {
+    std::regex controlNumber("[[:digit:]]+");
+    std::regex control("[[:alnum:]|[:space:]|\\:\\;\\,\\!\\?\\(\\)\\%\\=\\<\\>]+");
+    std::regex controlPassword("[[:alnum:]|\\:\\;\\,\\!\\?\\(\\)\\%\\=\\<\\>]+");
     if(comand_line.empty())
     {
       vverbose<<"--> [MainClient][comand] error comand_line is empty"<<'\n';
@@ -2067,7 +2066,33 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     try
     {
       comand_line=TextualInterfaceManager::extractCommand(comand_line);
-      if(comand_line.compare(0,4,"exit")==0)
+      if(!regex_match(comand_line,control))
+      {
+        if(!logged)
+        {
+          textual_interface_manager->printLoginInterface();
+          string app="command: " + comand_line + " not valid";
+          textual_interface_manager->printMessage( app );
+        }
+        else if(clientPhase == ClientPhase::INGAME_PHASE)
+        {
+          textual_interface_manager->printGameInterface(startingMatch, std::to_string(15)," ",game->printGameBoard());
+          string app="command: " + comand_line + " not valid";
+          textual_interface_manager->printMessage( app );
+        }
+        else if(logged)
+        {
+          if(!sendImplicitUserListReq())
+            implicitUserListReq=false;
+          string app="command: " + comand_line + " not valid";
+          textualMessageToUser=app;
+        }
+        printWhiteSpace();
+        base<<"\t# Insert a command:";
+        cout.flush();
+        return true;
+      }
+      if(comand_line.compare("exit")==0)
       {
         if(logged)
         {
@@ -2079,23 +2104,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
            {
              textualMessageToUser="you can't exit the application when you are logged ";
            }
-
-          /*printWhiteSpace();
-          std::cout<<"\t# Insert a command:";
-          std::cout.flush();*/
           return true;
         }
         vverbose<<"-->[MainClient][comand] start deleting"<<'\n';
-        /*if(serverIP!=nullptr)
-        {
-          delete[] serverIP;
-          vverbose<<"-->[MainClient][comand] server IP deleted"<<'\n';
-        }*/
-        /*if(myIP!=nullptr)
-        {
-          delete[]myIP;
-           vverbose<<"-->[MainClient][comand] myIP deleted"<<'\n';
-        }*/
         if(game!=nullptr)
         {
           delete game;
@@ -2124,7 +2135,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         cout<<"bye bye!!"<<endl;
         exit(0);
       }
-      if(comand_line.compare(0,5,"login")==0 && clientPhase!=INGAME_PHASE && !logged )
+      if(comand_line.compare("login")==0 && clientPhase!=INGAME_PHASE && !logged )
       {
         if(logged)
         {
@@ -2141,6 +2152,17 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         printWhiteSpace();
         base<<"username:";
         cin>>username;
+        if(!regex_match(username,controlPassword))
+        {
+          textual_interface_manager->printLoginInterface();
+          string app="username format is invalid";
+          textual_interface_manager->printMessage( app );
+          printWhiteSpace();
+          base<<"\t# Insert a command:";
+          cout.flush();
+          std::cin.ignore(10000,'\n');
+          return true;
+        }
         base<<'\n';
       
         printWhiteSpace();
@@ -2152,9 +2174,20 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         newt.c_lflag &= ~ECHO;
         tcsetattr(STDIN_FILENO, TCSANOW, &newt);//hide input
         std::cin>>password;
+
         std::cin.ignore(10000,'\n');
         tcsetattr(STDIN_FILENO, TCSANOW, &oldt);//show input
         cout<<'\n';
+        if(!regex_match(password,controlPassword))
+        {
+          textual_interface_manager->printLoginInterface();
+          string app="password format is invalid";
+          textual_interface_manager->printMessage( app );
+          printWhiteSpace();
+          base<<"\t# Insert a command:";
+          cout.flush();
+          return true;
+        }
         if(username.empty()||password.empty())
         {
           textual_interface_manager->printLoginInterface();
@@ -2354,7 +2387,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         
         int column;
         std::string app=comand_line.substr(10);
-        if(!app.empty())
+        if(!app.empty()||regex_match(app,controlNumber))
         {
            vverbose<<"-->[MainClient][comand]start make move"<<'\n';
            column=std::stoi(app,nullptr,10);
@@ -2623,6 +2656,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
             //cin>>comand_line=*buffer;
             std::cin.clear();
             std::getline(std::cin,comand_line);
+            
             comand(comand_line);
             //delete[] buffer;
           }
