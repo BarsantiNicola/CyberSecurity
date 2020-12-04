@@ -82,6 +82,9 @@ namespace client{
 		    string main_page;       //  FORMATTED MAIN_PAGE
 		    string game_page;       //  FORMATTED GAME_PAGE
 		    string setter_page;     //  FORMATTED SETTER_PAGE
+		    string win_page;        //  FORMATTED WIN_PAGE
+		    string lose_page;       //  FORMATTED LOSE_PAGE
+		    string tie_page;        //  FORMATTED TIE_PAGE
             string username;        //  USERNAME USED INTO THE CLIENT
             char chatLines[10][50]; //  FORMATTED LINES FOR CHAT
 		    int** gameBoard;        //  SHARED GAMEBOARD DATA
@@ -101,6 +104,9 @@ namespace client{
 		    void printMainInterface(string username,string activeUser,string serverStatus,string matchStatus,string pendingStatus);  //  SHOWS THE MAIN PAGE
 		    void printGameInterface(bool myMove, string timer,string chat,string gameBoard);   //  SHOWS THE GAME PAGE
             void printSetterPage();                          //  SHOWS THE SETTER PAGE
+            void printWinGame();                             //  SHOWS MESSAGE WIN
+            void printLoseGame();                            //  SHOWS MESSAGE LOSE
+            void printTieGame();                             //  SHOWS MESSAGE TIE
 		    bool setGame(int** game);                        //  SETS THE GAMEBOARD
             int getXTranslation();                           //  GIVES THE Y PARAMETER USED TO ADJUST THE PAGES
             int getYTranslation();                           //  GIVES THE X PARAMETER USED TO ADJUST THE PAGES

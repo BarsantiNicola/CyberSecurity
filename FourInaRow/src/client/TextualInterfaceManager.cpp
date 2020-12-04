@@ -31,6 +31,10 @@ namespace client{
 		adj_y=-1;
 		login_page = "";
 		main_page = "";
+		game_page = "";
+		win_page = "";
+		lose_page = "";
+		tie_page = "";
 
 		myfile.open( "src/client/data/login-art.txt", ios::in );
 		if( myfile.is_open() )
@@ -54,6 +58,24 @@ namespace client{
         if( myfile.is_open() )
             while( getline( myfile, line ))
                 setter_page= setter_page+line+"\n";
+        myfile.close();
+
+        myfile.open( "src/client/data/win_art.txt", ios::in );
+        if( myfile.is_open() )
+            while( getline( myfile, line ))
+                win_page= win_page+line+"\n";
+        myfile.close();
+
+        myfile.open( "src/client/data/lose_art.txt", ios::in );
+        if( myfile.is_open() )
+            while( getline( myfile, line ))
+                lose_page= lose_page+line+"\n";
+        myfile.close();
+
+        myfile.open( "src/client/data/tie_art.txt", ios::in );
+        if( myfile.is_open() )
+            while( getline( myfile, line ))
+                tie_page= tie_page+line+"\n";
         myfile.close();
 
         myfile.open ("data/screen_size.conf", ios::in );
@@ -794,7 +816,6 @@ namespace client{
 
 	void TextualInterfaceManager::printSetterPage(){
 
-        cin.clear();
         execCommand(CLEAR);
 
 	    for( int a = 0; a<adj_y; a++ )
@@ -820,6 +841,75 @@ namespace client{
         }
 
 	}
+
+    //  prints a page to show a win message for a game
+    void TextualInterfaceManager::printWinGame(){
+
+        execCommand(CLEAR);
+
+        for( int a = 0; a<adj_y; a++ )
+            base<<'\n';
+
+        for( int a = 0; a<34; a++ ) {
+            for (int b = 0; b < adj_x; b++)
+                base << ' ';
+
+            if( a>8 && a<23 )
+                base << "\033[0;34m" << win_page.substr(a * 121, 2) << "\033[0m"
+                         << win_page.substr(a * 121 + 2, 55) << "\033[0;33m"<<win_page.substr(a*121+57,61)<<"\033[0;34m" << win_page.substr(a * 121 + 118, 3)
+                         << "\033[0m";
+            else
+                base << "\033[0;34m" << win_page.substr(a * 121, 121) << "\033[0m";
+
+
+        }
+
+    }
+
+    //  prints a page to show a lose message for a game
+    void TextualInterfaceManager::printLoseGame(){
+
+        execCommand(CLEAR);
+
+        for( int a = 0; a<adj_y; a++ )
+            base<<'\n';
+
+        for( int a = 0; a<34; a++ ) {
+            for (int b = 0; b < adj_x; b++)
+                base << ' ';
+
+            if( a>8 && a<23 )
+                base << "\033[0;34m" << lose_page.substr(a * 121, 2) << "\033[0m"
+                     << lose_page.substr(a * 121 + 2, 53) << "\033[0;31m"<<lose_page.substr(a*121+55,63)<<"\033[0;34m" << lose_page.substr(a * 121 + 118, 3)
+                     << "\033[0m";
+            else
+                base << "\033[0;34m" << lose_page.substr(a * 121, 121) << "\033[0m";
+        }
+
+    }
+
+    //  prints a page to show a tie message for a game
+    void TextualInterfaceManager::printTieGame(){
+
+        execCommand(CLEAR);
+
+        for( int a = 0; a<adj_y; a++ )
+            base<<'\n';
+
+        for( int a = 0; a<34; a++ ) {
+            for (int b = 0; b < adj_x; b++)
+                base << ' ';
+
+            if( a>12 && a<18 )
+                base << "\033[0;34m" << tie_page.substr(a * 121, 2) << "\033[0m"
+                     << tie_page.substr(a * 121 + 2, 116) <<"\033[0;34m" << win_page.substr(a * 121 + 118, 3)
+                     << "\033[0m";
+            else
+                base << "\033[0;34m" << tie_page.substr(a * 121, 121) << "\033[0m";
+        }
+
+    }
+
 	//  prints an interface to permits the the user to center the layout of the application
     bool TextualInterfaceManager::setter(){
 
