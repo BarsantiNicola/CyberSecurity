@@ -38,6 +38,7 @@ namespace client
       //int(*getGameBoard())[NUMBER_COLUMN] ;
       int** getGameBoard();
       string printGameBoard();
+      static int getNUMBER_COLUMN();
       ~Game();
    private:
       bool controlAlignment(int row,int column,bool myMove);

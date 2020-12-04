@@ -1900,6 +1900,13 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
      delete c_nonce;
      return;
    }
+   if(collMove<0 || collMove >= Game::getNUMBER_COLUMN() )
+   {
+     verbose<<"-->[MainClient][ReceiveGameMove] the twoColl are out of bound: "<<collMove<<'\n';
+     verbose<<"-->[MainClient][ReceiveGameMove] the nonce server receved from adversary is minor of nonce adv: "<<*appG.getCurrent_Token()<<" < "<<nonceAdv<<'\n';
+     delete c_nonce;
+     return;
+   }
    nonceAdv=*appG.getCurrent_Token(); 
    messageACK=createMessage(ACK,nullptr,nullptr,0,aesKeyClient,this->currentToken,false);
    connection_manager->sendMessage(*messageACK,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
@@ -2790,6 +2797,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                  if(keyExchangeReciveProtocol(message,false))
                  {
                    vverbose<<"-->[MainClient][client] keyExchangeReciveProtocol finished correctly"<<'\n';
+                   textual_interface_manager->resetChat();
                    clientPhase=INGAME_PHASE;
                    if(game!=nullptr)
                    {
@@ -2935,6 +2943,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 
   void MainClient::clearGameParam()
   {
+    vverbose<<"-->[MainClient][clearGameParam] chat reseted"<<'\n';
     textual_interface_manager->resetChat();
     setcomandTimer(ComandToTimer::STOP );
     adv_username_1.clear();
@@ -3030,8 +3039,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 */  
   int main(int argc, char** argv)
   {
-    Logger::setThreshold(  NO_VERBOSE );
-    //Logger::setThreshold(  VERY_VERBOSE );
+    //Logger::setThreshold(  NO_VERBOSE );
+    Logger::setThreshold(  VERY_VERBOSE );
     client::MainClient* main_client;
     signal(SIGTSTP,signalHandler);
     if(argc==1)
