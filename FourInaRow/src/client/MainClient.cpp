@@ -2797,6 +2797,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                  if(keyExchangeReciveProtocol(message,false))
                  {
                    vverbose<<"-->[MainClient][client] keyExchangeReciveProtocol finished correctly"<<'\n';
+                   textual_interface_manager->resetChat();
                    clientPhase=INGAME_PHASE;
                    if(game!=nullptr)
                    {
