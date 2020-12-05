@@ -1,10 +1,20 @@
 #include"ConnectionManager.h"
 namespace utility
 {
+/*
+---------------------ConnectionManager-----------------------------------
+The costructor inizializes the socket tcp and udp with the information passed as parameter and inizialize the structure for the select() function
+Parameters:
+isServer:indicate if the object will operate for a Server instance or for a Client instance.
+myIP:indicate the IP of the computer. this information is used for the biding operation on the tcp socket(server) or the udp socket(client)
+myPort:is the port that is used for the biding operation on the tcp/udp sockets.
+*/
   ConnectionManager::ConnectionManager(bool isServer,const char* myIP,int myPort)
   { 
     
     if(myIP==nullptr)
+      exit(-1);
+    if(myPort<0)
       exit(-1);
     int ret;
     bool ris;
@@ -63,7 +73,9 @@ namespace utility
   }
 
 /*
------------function createListenerTcp------------------
+----------------function createListenerTcp--------------------
+This function create a listener Tcp socket if the variable isServer is setted as true value
+the function return true if isServer is equal to true and the bind operation is carried out
 */
 
   bool ConnectionManager::createListenerTcp()
@@ -91,11 +103,24 @@ namespace utility
     
   }
 
+/*
+--------------function createConnectionWithServerTCP-------------------
 
+*/
 
   bool ConnectionManager::createConnectionWithServerTCP(const char* IP,int port)
   {
      int ret;
+     if(port<0)
+     {
+       verbose<<"-->[ConnectionManager][createConnectionWithServer] the port is negative"<<'\n';
+       return false;
+     }
+     if(IP==nullptr)
+     {
+       verbose<<"-->[ConnectionManager][createConnectionWithServer] IP is nullptr"<<'\n';
+       return false;
+     }
      if(isServer)
      {
        verbose<<"-->[ConnectionManager][createConnectionWithServer] Error can't create a connection between two servers, return false"<<'\n';
@@ -263,11 +288,17 @@ send a message and return true in case of success and false in case of failure
     return false;
   }
  
- /* This function close  a connection and return true in case of success false in case of failure
+ /* 
+-------------------------------closeConnection------------------------------------
+This function close  a connection and return true in case of success false in case of failure
 */
 
   bool ConnectionManager::closeConnection(int socket)
   {
+    if(socket<0)
+    {
+      return false;
+    }
     int ret= close(socket);
     if(ret==0)
     {
@@ -279,7 +310,10 @@ send a message and return true in case of success and false in case of failure
     }
     return false;
   }
-  //funzione che restituisce un vector di id di socket pronti in caso non ci siano descrittori pronti restituisce un vector vuoto
+  /*
+--------------------------ConnectionManager-------------------
+funzione che restituisce un vector di id di socket pronti in caso non ci siano descrittori pronti restituisce un vector vuoto
+*/
   vector<int> ConnectionManager::waitForMessage(int* idsock,std::string* ip)
   {
     struct timeval* tv=nullptr;
@@ -354,7 +388,7 @@ send a message and return true in case of success and false in case of failure
   {
     struct sockaddr_in sender_addr; 
     int addrlen =sizeof(sender_addr);
-    if((!isServer&&serverSocket==socket&&serverSocket==-2))
+    if((!isServer&&serverSocket==socket&&serverSocket==-2)||socket<0)
     {  
       verbose<<"-->[ConnectionManager][getMessage] bad socket "<<'\n';
       return nullptr;
@@ -529,7 +563,9 @@ send a message and return true in case of success and false in case of failure
     } 
     return -1;
   }
-  /*------------------------------------------------------------------------------------------------------*/
+  /*-----------------------function getsocketUDP----------------------------------------
+  return the socketUDP
+*/
   int ConnectionManager::getsocketUDP()
   {
     return socketUDP;
