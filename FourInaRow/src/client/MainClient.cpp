@@ -1949,21 +1949,15 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
      currTokenIninzialized=false;
      if(iWon)
      {
-       printWhiteSpace();
-       cout<<"\t you won"<<endl;
-       cout.flush();
+       textual_interface_manager->printWinGame();
      }
      else if(adversaryWon)
      {
-       printWhiteSpace();
-       cout<<"\t you lose"<<endl;
-       cout.flush();                
+       textual_interface_manager->printLoseGame();              
      }
      else if(tie)
      {
-       printWhiteSpace();
-       cout<<"\t it's a tie"<<endl;
-       cout.flush(); 
+       textual_interface_manager->printTieGame(); 
      }
        
       sleep(5);
