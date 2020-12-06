@@ -30,7 +30,7 @@ namespace cipher
   //this function create an HASH of an message with a key return nullptr in case of failure
   unsigned char* CipherHASH::hashFunction(unsigned char* message,int message_length,unsigned char* key_hmac,int key_length)
   {
-    if(key_length<=0 ||message_length<=0||message==nullptr)
+    if(key_length<=0 ||message_length<=0||message==nullptr||key_hmac==nullptr)
       return nullptr;
     unsigned char* hash_buf;
     ENGINE_load_builtin_engines();
