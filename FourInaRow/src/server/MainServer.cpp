@@ -1979,7 +1979,7 @@ namespace server {
             SQLConnector::incrementUserGame(username, LOOSE);
 
         }
-
+        this->matchRegister.removeMatch( matchID );
         return nullptr;
     }
 
