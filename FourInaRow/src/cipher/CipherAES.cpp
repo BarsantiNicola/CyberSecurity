@@ -13,47 +13,110 @@ namespace cipher
       verbose<<"-->[CipherAES][Costruct] error to create the object"<<'\n';
       exit(1);
     }
-    if(session_key->iv==nullptr)
+    if(session_key->iv==nullptr||session_key->ivLen<=0)
     {
       verbose<<"-->[CipherAES][Costruct] error to create the object iv is null"<<'\n';
       exit(1);
     }
-    if(session_key->sessionKey==nullptr)
+    if(session_key->sessionKey==nullptr||session_key->sessionKeyLen<=0)
     {
       verbose<<"-->[CipherAES][Costruct] error to create the object sessionkey is null"<<'\n';
       exit(1);
     }
-    this->iv=session_key->iv;
+    try
+    {
+      this->iv=new unsigned char[session_key->ivLen];
+    }
+    catch(std::bad_alloc& e)
+    {
+      verbose<<"-->[CipherAES][modifyParam] error bad alloc tag"<<'\n';
+      exit(1);
+    }
+    for(int i=0;i<session_key->ivLen;++i)
+    {
+       this->iv[i]=session_key->iv[i];
+    }
     this->ivLength=session_key->ivLen;
-    this->key=session_key->sessionKey;
+    try
+    {
+      this->key=new unsigned char[session_key->sessionKeyLen];
+    }
+    catch(std::bad_alloc& e)
+    {
+      
+      verbose<<"-->[CipherAES][modifyParam] error bad alloc tag"<<'\n';
+      exit(1);
+    }
+    for(int i=0;i<session_key->sessionKeyLen;++i)
+    {
+      this->key[i]=session_key->sessionKey[i];
+    }
     this->keyLen=session_key->sessionKeyLen;
   }
-
+/*
+----------------------function modifyParam--------------------------
+This function permit to modify the param tha will be used to cipher the message with aes 
+*/
   bool CipherAES::modifyParam(struct SessionKey* session_key)
   {
     if(session_key==nullptr)
     {
       return false;
     }
-    if(session_key->iv==nullptr)
+    if(session_key->iv==nullptr||session_key->ivLen<=0)
     {
       verbose<<"-->[CipherAES][Costruct] error to create the object iv is null"<<'\n';
       return false;
     }
-    if(session_key->sessionKey==nullptr)
+    if(session_key->sessionKey==nullptr||session_key->sessionKeyLen<=0)
     {
       verbose<<"-->[CipherAES][Costruct] error to create the object sessionkey is null"<<'\n';
       return false;
     }
-    this->iv=session_key->iv;
+    if(this->iv!=nullptr)
+    {
+      delete []this->iv;
+      this->iv=nullptr;
+    }
+    try
+    {
+      this->iv=new unsigned char[session_key->ivLen];
+    }
+    catch(std::bad_alloc& e)
+    {
+      verbose<<"-->[CipherAES][modifyParam] error bad alloc tag"<<'\n';
+      return false;
+    }
+    for(int i=0;i<session_key->ivLen;++i)
+    {
+       this->iv[i]=session_key->iv[i];
+    }
     this->ivLength=session_key->ivLen;
-    this->key=session_key->sessionKey;
+    if(this->key!=nullptr)
+    {
+      delete []this->key;
+      this->key=nullptr;
+    }
+    try
+    {
+      this->key=new unsigned char[session_key->sessionKeyLen];
+    }
+    catch(std::bad_alloc& e)
+    {
+      
+      verbose<<"-->[CipherAES][modifyParam] error bad alloc tag"<<'\n';
+      return false;
+    }
+    for(int i=0;i<session_key->sessionKeyLen;++i)
+    {
+      this->key[i]=session_key->sessionKey[i];
+    }
     this->keyLen=session_key->sessionKeyLen;
     return true;
   }
 /*
 --------------------------function gcmEncrypt------------------------------
-This functio is used for Encrypt a message and return the lengrh of ciphertext if there is an
+This function is used for Encrypt a message and return the lengrh of ciphertext if there is an
 error return -1 value
 */
   int CipherAES::gcmEncrypt(unsigned char*plaintext,int plaintextLen,unsigned char*aad,int aadLen,unsigned char*ciphertext,unsigned char*tag)
@@ -63,12 +126,21 @@ error return -1 value
       verbose<<"-->[CipherAES][gcmEncrypt] plaintext is null pointer"<<'\n';
       return -1;
     }
+    if(plaintextLen<0)
+    {
+      verbose<<"-->[CipherAES][gcmEncrypt] plaintextLen is negative "<<'\n';
+      return -1;      
+    }
     if(aad==nullptr)
     {
       verbose<<"-->[CipherAES][gcmEncrypt] aad is null pointer"<<'\n';
       return -1;
     }
-
+    if(aadLen<0)
+    {
+      verbose<<"-->[CipherAES][gcmEncrypt] plaintextLen is negative "<<'\n';
+      return -1;      
+    }
     if(tag==nullptr)
     {
       verbose<<"-->[CipherAES][gcmEncrypt] tag is null pointer"<<'\n';
@@ -144,12 +216,21 @@ verify the tag if there is an error return -1 value and -2 if the verify fails
       verbose<<"-->[CipherAES][gcmDecrypt] ciphertext is null pointer"<<'\n';
       return -1;
     }
+    if(ciphertextLen<0)
+    {
+      verbose<<"-->[CipherAES][gcmDecrypt] ciphertextLen is negative"<<'\n';
+      return -1;
+    }
     if(tag==nullptr)
     {
       verbose<<"-->[CipherAES][gcmDecrypt] tag is null pointer"<<'\n';
       return -1;
     }
-
+    if(aadLen<0)
+    {
+      verbose<<"-->[CipherAES][gcmDecrypt] aadLen is negative"<<'\n';
+      return -1;   
+    }
     EVP_CIPHER_CTX* ctx;
     int len;
     int plaintextLen;
@@ -632,11 +713,16 @@ This function encryptMessage with AES_256 gcm
    }
    return result;
  }
+/*
+-----------------destructor--------------
+*/
  CipherAES::~CipherAES()
  {
    vverbose<<"-->[CipherAES][Destructor]destruct the object"<<'\n';
-   /*delete[] iv;
-   delete[] key;*/
+   if(iv!=nullptr)
+     delete[] iv;
+   if(key!=nullptr)
+     delete[] key;
  }
 /*
   ------------------------------deconcatenateTwoField function----------------------------------
@@ -727,5 +813,6 @@ This function encryptMessage with AES_256 gcm
     *secondFieldSize=secondDimension;
     return true;
   }
+
 }
  
