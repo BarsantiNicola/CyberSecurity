@@ -854,6 +854,9 @@ namespace client
        game->addMessageToChat(chat);
        textual_interface_manager->printGameInterface(true, string("15"),game->getChat(),game->printGameBoard());
        textual_interface_manager->setChat( this->username, (char*)chat.c_str(), chat.size() );
+       printWhiteSpace();
+       base<<"\t# Insert a command:";
+       cout.flush();
        return true;
      }
   }
@@ -906,6 +909,9 @@ namespace client
     
     textual_interface_manager->setChat( adv_username_1, (char*)message->getMessage(), message->getMessageLength() );
     textual_interface_manager->printGameInterface(true, string("15"),game->getChat(),game->printGameBoard());
+    printWhiteSpace();
+    base<<"\t# Insert a command:";
+    cout.flush();
     this->currTokenChatAdv+=2;
     return true;
   }
@@ -950,6 +956,9 @@ namespace client
     }
     vverbose<<"--> [MainClient][reciveACKChatProtocol] function finished return true"<<'\n';
     textual_interface_manager->printGameInterface(true, string("15"),game->getChat(),game->printGameBoard());
+    printWhiteSpace();
+    base<<"\t# Insert a command:";
+    cout.flush();
     return true;
   }
 /*
@@ -1597,13 +1606,15 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     Message* retMess;
     NetMessage* netMess;
     StatGame statGame;
+    string apptext;
     verbose<<"-->[MainClient][MakeAndSendGameMove] start function"<<'\n';
     statGame=game->makeMove(column,&iWon,&adversaryWon,&tie,true);
     switch(statGame)
     {
       case BAD_MOVE:
-        printWhiteSpace();
-        std::cout<<"The collumn selected is full. \n";
+        textual_interface_manager->printGameInterface(startingMatch, std::to_string(15)," ",game->printGameBoard());
+        apptext="The collumn selected is full.";
+        textual_interface_manager->printMessage( apptext );
         printWhiteSpace();
         base<<"\t# Insert a command:";
         cout.flush();
@@ -1612,15 +1623,17 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         verbose<<"-->[MainClient][MakeAndSendGameMove] nullptr as parameter"<<'\n';
         break;
       case OUT_OF_BOUND:
-        printWhiteSpace();
-        std::cout<<"The collumn selected doesn't exist. \n";
+        textual_interface_manager->printGameInterface(startingMatch, std::to_string(15)," ",game->printGameBoard());
+        apptext="The collumn selected doesn't exist.";        
+        textual_interface_manager->printMessage( apptext );
         printWhiteSpace();
         base<<"\t# Insert a command:";
         cout.flush();
         break;
       case BAD_TURN:
-        printWhiteSpace();
-        std::cout<<"It's not your turn wait. \n";
+        textual_interface_manager->printGameInterface(startingMatch, std::to_string(15)," ",game->printGameBoard());
+        apptext="It's not your turn wait.";        
+        textual_interface_manager->printMessage( apptext );
         printWhiteSpace();
         base<<"\t# Insert a command:";
         cout.flush();
@@ -1697,6 +1710,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                      continue;
                   waitForAck=false;
                   textual_interface_manager->printGameInterface(true, string("15"),game->getChat(),game->printGameBoard());
+                  printWhiteSpace();
+                  base<<"\t# Insert a command:";
+                  cout.flush();
                   this->currentToken++;
                   vverbose<<'\n'<<"-->[MainClient][MakeAndSendGameMove] current token incremented"<<'\n';
                   if(statGame==GAME_FINISH)
@@ -1926,7 +1942,6 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
    else
    {
      verbose<<"-->[MainClient][ReceiveGameMove]  the signatureAES length is "<<messG->getSignatureAESLen()<<'\n';
-     //verbose<<"-->[MainClient][ReceiveGameMove]  the signatureAES is  "<<*messG->getSignatureAES()<<'\n';
    }
 
    vverbose<<"-->[MainClient][ReceiveGameMove]  GAME message secured"<<'\n';
@@ -1941,6 +1956,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
    connection_manager->sendMessage(*messG,connection_manager->getserverSocket(),&socketIsClosed,nullptr,0);
    this->currentToken++;
    textual_interface_manager->printGameInterface(true, string("15"),game->getChat(),game->printGameBoard());
+   printWhiteSpace();
+   base<<"\t# Insert a command:";
+   cout.flush();
    if(socketIsClosed)
    {
      vverbose<<"-->[MainClient][ReceiveGameMove] error to handle"<<'\n';
@@ -2933,6 +2951,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                    startingMatch=false;
                    startChallenge=false;
                    textual_interface_manager->printGameInterface(startingMatch, std::to_string(15)," ",game->printGameBoard());
+                   printWhiteSpace();
+                   base<<"\t# Insert a command:";
+                   cout.flush();
                  }
                  //vverbose<<"-->[MainClient][client] finish KEY_EXCHANGE"<<'\n';
                  break;

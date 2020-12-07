@@ -809,7 +809,7 @@ namespace client{
         }
         base<<'\n';
 
-        base<<"\t# Insert a command:";
+       // base<<"\t# Insert a command:";
         base.flush();
 
 	}
