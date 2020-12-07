@@ -63,8 +63,8 @@ namespace utility {
             string adv_username_1 = "";
             string adv_username_2 = "";
 
-            int* nonce = nullptr;
-            int* current_token = nullptr;
+            unsigned int* nonce = nullptr;
+            unsigned int* current_token = nullptr;
             int* port = nullptr;
 
             unsigned char* user_list = nullptr;
@@ -113,8 +113,8 @@ namespace utility {
             void setAdversary_1( string username );
             void setAdversary_2( string username );
 
-            bool setNonce( int nonce );
-            bool setCurrent_Token( int current_token );
+            bool setNonce( unsigned int nonce );
+            bool setCurrent_Token( unsigned int current_token );
             bool setPort( int port );
 
             bool setUserList( unsigned char* user_list, unsigned int len );
@@ -134,8 +134,8 @@ namespace utility {
             string getAdversary_1();
             string getAdversary_2();
 
-            int* getNonce();
-            int* getCurrent_Token();
+            unsigned int* getNonce();
+            unsigned int* getCurrent_Token();
             int* getPort();
 
             unsigned char* getUserList();

@@ -22,20 +22,8 @@ namespace server{
 
     }
 
-    //  it gives the global nonce assigned to the client(used for certificate message)
-    int* ClientRegister::getNonce( int socket ){
-
-        for( int a = 0; a<this->clientRegister.size(); a++ )
-            if( this->clientRegister[a].getSocket() == socket )
-                return this->clientRegister[a].getNonce();
-
-        vverbose<<"--> [ClientRegister][getClientNetInformation] Client not present into the register"<<'\n';
-        return nullptr;
-
-    }
-
     //  it gives the nonce used by the server to send messages to the client
-    int* ClientRegister::getClientNonce( int socket ){
+    unsigned int* ClientRegister::getClientNonce( int socket ){
 
         for( int a = 0; a<this->clientRegister.size(); a++ )
             if( this->clientRegister[a].getSocket() == socket )
@@ -47,7 +35,7 @@ namespace server{
     }
 
     //  it gives the nonce used by the server to receive messages from the client
-    int* ClientRegister::getClientReceiveNonce( int socket ){
+    unsigned int* ClientRegister::getClientReceiveNonce( int socket ){
 
         for( int a = 0; a<this->clientRegister.size(); a++ )
             if( this->clientRegister[a].getSocket() == socket )
@@ -64,12 +52,26 @@ namespace server{
     //                                                                                           //
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
-    //  it set the global nonce of the client and from that derives the nonce used to send and receive messages
-    bool ClientRegister::setNonce( int socket , int nonce ){
+    //  it sets the nonce used to send messages to the clients
+    bool ClientRegister::setClientSendNonce( int socket , unsigned int nonce ){
 
         for( int a = 0; a<this->clientRegister.size(); a++ )
             if( this->clientRegister[a].getSocket() == socket ) {
-                this->clientRegister[a].setNonce(nonce);
+                this->clientRegister[a].setSendNonce(nonce);
+                return true;
+            }
+
+        vverbose<<"--> [ClientRegister][getClientNetInformation] Client not present into the register"<<'\n';
+        return false;
+
+    }
+
+    //  it sets the nonce used to receive messages from clients
+    bool ClientRegister::setClientReceiveNonce( int socket , unsigned int nonce ){
+
+        for( int a = 0; a<this->clientRegister.size(); a++ )
+            if( this->clientRegister[a].getSocket() == socket ) {
+                this->clientRegister[a].setReceiveNonce(nonce);
                 return true;
             }
 

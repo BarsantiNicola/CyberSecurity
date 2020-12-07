@@ -164,7 +164,7 @@ namespace server {
 
             //  NONCE VERIFICATION
 
-            int *nonce = message->getNonce();
+            unsigned int *nonce = message->getNonce();
             if ( !nonce ) {
 
                 vverbose << "--> [MainServer][manageMessage] Error, invalid message. Missing Nonce" << '\n';
@@ -172,7 +172,7 @@ namespace server {
 
             }
 
-            int* userNonce = this->clientRegister.getClientReceiveNonce( socket );
+            unsigned int* userNonce = this->clientRegister.getClientReceiveNonce( socket );
             if ( !userNonce ){
 
                 verbose << "--> [MainServer][manageMessage]] Error, user nonce not present" << '\n';
@@ -195,7 +195,9 @@ namespace server {
 
             }
 
-            this->clientRegister.updateClientReceiveNonce( socket, *nonce+1 );
+            if( message->getMessageType() != CERTIFICATE_REQ && message->getMessageType() != LOGIN_REQ && message->getMessageType() != KEY_EXCHANGE )
+                this->clientRegister.updateClientReceiveNonce( socket, *nonce+1 );
+
             delete userNonce;
             delete nonce;
 
@@ -205,7 +207,7 @@ namespace server {
 
         response = this->userManager( message, username, socket );
 
-        if( response )
+        if( response && message->getMessageType() != CERTIFICATE_REQ && message->getMessageType() != LOGIN_REQ && message->getMessageType() != KEY_EXCHANGE )
             this->clientRegister.updateClientNonce( socket );
 
         return response;
@@ -223,7 +225,7 @@ namespace server {
 
         }
 
-        int* nonce = this->clientRegister.getClientNonce( socket );
+        unsigned int* nonce = this->clientRegister.getClientNonce( socket );
         Message* ret;
 
         switch( message->getMessageType() ){
@@ -272,7 +274,7 @@ namespace server {
     }
 
     //  the function manages the messages which involve two clients which interact exchanging messages using the server acting as a relay
-    Message* MainServer::matchManager(Message* message, string username, int* nonce ){
+    Message* MainServer::matchManager(Message* message, string username, unsigned int* nonce ){
 
         if( !message || username.empty() ){
 
@@ -476,7 +478,7 @@ namespace server {
     }
 
     //  generates an error message to be sent to the client who has made the request
-    Message* MainServer::makeError( string errorMessage, int* nonce ){
+    Message* MainServer::makeError( string errorMessage, unsigned int* nonce ){
 
         if( errorMessage.empty() ){
 
@@ -558,7 +560,7 @@ namespace server {
 
         base<<"-------> [MainServer][sendAcceptMessage] Sending an accept message to "<<challenger<<'\n';
 
-        int* nonce = this->clientRegister.getClientNonce( *socket );
+        unsigned int* nonce = this->clientRegister.getClientNonce( *socket );
         if( !nonce ){
 
             verbose<<"--> [MainServer][sendAcceptMessage] Error unable to found user nonce. Operation aborted"<<'\n';
@@ -606,7 +608,7 @@ namespace server {
 
         base<<"-------> [MainServer][sendRejectMessage] Sending a reject message to "<<challenger<<'\n';
 
-        int* nonce = this->clientRegister.getClientNonce( *socket );
+        unsigned int* nonce = this->clientRegister.getClientNonce( *socket );
         if( !nonce ){
 
             verbose<<"--> [MainServer][sendRejectMessage] Error unable to found user nonce. Operation aborted"<<'\n';
@@ -654,7 +656,7 @@ namespace server {
 
         base<<"-------> [MainServer][sendWithdrawMessage] Sending a withdraw_req message to "<<username<<'\n';
 
-        int* nonce = this->clientRegister.getClientNonce( *socket );
+        unsigned int* nonce = this->clientRegister.getClientNonce( *socket );
         if( !nonce ){
 
             verbose<<"--> [MainServer][sendWithdrawMessage] Error unable to found user nonce. Operation aborted"<<'\n';
@@ -709,7 +711,7 @@ namespace server {
 
         }
 
-        int* nonce = this->clientRegister.getClientNonce( *socket );
+        unsigned int* nonce = this->clientRegister.getClientNonce( *socket );
         if( !nonce ){
 
             verbose<<"--> [MainServer][sendDisconnectMessage] Error unable to find user nonce. Abort operation"<<'\n';
@@ -770,7 +772,7 @@ namespace server {
 
         }
 
-        int* nonce = this->clientRegister.getClientNonce(*socket);
+        unsigned int* nonce = this->clientRegister.getClientNonce(*socket);
         if( !nonce ){
 
             verbose<<"--> [MainServer][sendGameParam] Error unable to find user nonce. Abort operation"<<'\n';
@@ -848,20 +850,19 @@ namespace server {
         Message* result = nullptr;
 
         //  the client could already have a nonce registered from a previous certificate request and he need just to refresh it
-        int *nonce = this->clientRegister.getNonce( socket );
-        if( !nonce ) {
+        unsigned int *nonce = (unsigned int*)message->getNonce();
+        try {
 
-            try {
-                nonce = new int( this->generateRandomNonce() );
-                this->clientRegister.setNonce( socket, *nonce );
-                base<<"------> [MainServer][certificateHandler] Generation of random nonce completed: "<<*nonce<<'\n';
+            this->clientRegister.setClientSendNonce( socket, *nonce );
+            delete nonce;
+            nonce = new unsigned int( this->generateRandomNonce() );
+            this->clientRegister.setClientReceiveNonce( socket, *nonce);
+            base<<"------> [MainServer][certificateHandler] Generation of random nonce completed: "<<*nonce<<'\n';
 
-            }catch( bad_alloc e ){
+        }catch( bad_alloc e ){
 
-                verbose<<"--> [MainServer][certificateHandler] Error during memory allocation. Operation aborted"<<'\n';
-                return nullptr;
-
-            }
+            verbose<<"--> [MainServer][certificateHandler] Error during memory allocation. Operation aborted"<<'\n';
+            return nullptr;
 
         }
 
@@ -891,6 +892,7 @@ namespace server {
 
             result = new Message();
             result->setNonce( *nonce );
+            result->setCurrent_Token( *message->getNonce());
             result->setMessageType(CERTIFICATE );
             result->setServer_Certificate( param->getMessage(), param->length() );
 
@@ -922,7 +924,7 @@ namespace server {
     }
 
     //  the handler manages the LOGIN_REQ requests verifying if the user is already registered and its signature is valid
-    Message* MainServer::loginHandler( Message* message, int socket, int* nonce ){
+    Message* MainServer::loginHandler( Message* message, int socket, unsigned int* nonce ){
 
         if( !message || socket<0 || !nonce ){
 
@@ -1025,7 +1027,7 @@ namespace server {
     //  the handler manages the KEY_EXCHANGE requests. After has verified the user is correctly registered and the used nonce is the
     //  same of the user login, the service sends a diffie-hellman parameter to the client and combining it with
     //  the received param generates the values necessary to create a secure net-channel
-    Message* MainServer::keyExchangeHandler( Message* message, string username, int* nonce ){
+    Message* MainServer::keyExchangeHandler( Message* message, string username, unsigned int* nonce ){
 
         if( !message || username.empty() || !nonce ){
 
@@ -1068,6 +1070,7 @@ namespace server {
         if( !param ){
 
             verbose<<"--> [MainServer][keyExchangeHandler] Error unable to generate diffie-hellman parameter"<<'\n';
+
             return nullptr;
 
         }
@@ -1084,6 +1087,7 @@ namespace server {
 
             verbose<<"--> [MainServer][keyExchangeHandler] Error during memory allocation. Operation aborted"<<'\n';
             delete param;
+
             if( response ) delete response;
             this->userRegister.removeUser( username );
             return this->makeError( string( "Server internal error. Try again" ) , nonce );
@@ -1092,6 +1096,11 @@ namespace server {
         delete param;
 
         this->userRegister.setLogged( username , this->cipherServer.getSessionKey( message->getDHkey() , message->getDHkeyLength() ));
+
+        int* socket = this->userRegister.getSocket( username );
+        this->clientRegister.setClientReceiveNonce( *socket, 0 );
+        this->clientRegister.setClientSendNonce( *socket, UINT32_MAX/2 );
+        delete socket;
 
         if( !this->cipherServer.toSecureForm( response, nullptr )){
 
@@ -1109,7 +1118,7 @@ namespace server {
 
     //  the handler manages the USER_LIST_REQ requests. After it has verified the message consistency it generates
     //  a message containing a formatted list of all the match-available users connected to the server
-    Message* MainServer::userListHandler( Message* message  , string username, int* nonce ) {
+    Message* MainServer::userListHandler( Message* message  , string username, unsigned int* nonce ) {
 
         if( !message || username.empty() || !nonce ){
 
@@ -1182,7 +1191,7 @@ namespace server {
 
     //  the handler manages the RANK_LIST_REQ requests. After it has verified the message consistency it generates
     //  a message containing a formatted list of all the users game statistics mantained in a remote MySQL server
-    Message* MainServer::rankListHandler( Message* message  , string username, int* nonce ){
+    Message* MainServer::rankListHandler( Message* message  , string username, unsigned int* nonce ){
 
         if( !message || username.empty() || !nonce ){
 
@@ -1254,7 +1263,7 @@ namespace server {
     }
 
     //  the handler manages LOGOUT_REQ requests. It closes any pending match then it securely delete the user from the service
-    Message* MainServer::logoutHandler( Message* message , string username, int socket, int* nonce ){
+    Message* MainServer::logoutHandler( Message* message , string username, int socket, unsigned int* nonce ){
 
         if( !message || username.empty() || socket<0 || !nonce ){
 
@@ -1316,7 +1325,7 @@ namespace server {
     }
 
     //  manages the MATCH requests. It verifies the users are in the correct states and have the correct information to start a match
-    Message* MainServer::matchHandler( Message* message, string username, int* nonce ){
+    Message* MainServer::matchHandler( Message* message, string username, unsigned int* nonce ){
 
         if( !message || username.empty() || !nonce ){
 
@@ -1419,7 +1428,7 @@ namespace server {
         base<<"------> [MainServer][matchHandler] Users verification passed"<<'\n';
 
         int* adv_socket = this->userRegister.getSocket( message->getUsername() );
-        int* adv_nonce = nullptr;
+        unsigned int* adv_nonce = nullptr;
         if( adv_socket )
             adv_nonce = this->clientRegister.getClientNonce(*adv_socket);
 
@@ -1585,7 +1594,7 @@ namespace server {
     }
 
     //  manages the ACCEPT requests. It verifies that a match is present and in the correct state then if forwards the accept request
-    Message* MainServer::acceptHandler( Message* message, string username, int* nonce ){
+    Message* MainServer::acceptHandler( Message* message, string username, unsigned int* nonce ){
 
         if( !message || username.empty() || !nonce ){
 
@@ -1792,7 +1801,7 @@ namespace server {
     }
 
     //  manages the REJECT requests. It verifies that a match is present and in the correct state then it forwards the reject message
-    Message* MainServer::rejectHandler( Message* message, string username, int* nonce ){
+    Message* MainServer::rejectHandler( Message* message, string username, unsigned int* nonce ){
 
         if( !message || username.empty() || !nonce ){
 
@@ -1846,7 +1855,7 @@ namespace server {
     }
 
     //  manages the WITHDRAW_REQ requests. It verifies that a match is present and forwards the message
-    Message* MainServer::withdrawHandler( Message* message , string username, int* nonce ){
+    Message* MainServer::withdrawHandler( Message* message , string username, unsigned int* nonce ){
 
         if( !message || username.empty() || !nonce ){
 
@@ -1931,7 +1940,7 @@ namespace server {
     }
 
     //  manages the DISCONNECT requests. It verifies that a match is present and in the correct state then it forwards the message
-    Message* MainServer::disconnectHandler( Message* message, string username, int* nonce ){
+    Message* MainServer::disconnectHandler( Message* message, string username, unsigned int* nonce ){
 
         if( !message || username.empty() || !nonce ){
 
@@ -1983,7 +1992,7 @@ namespace server {
         return nullptr;
     }
 
-    Message* MainServer::gameHandler( Message* message, string username, int* nonce ){
+    Message* MainServer::gameHandler( Message* message, string username, unsigned int* nonce ){
 
         if( !message || username.empty() || !nonce ){
 
@@ -2017,7 +2026,7 @@ namespace server {
 
         }
 
-        int *adv_nonce = message->getCurrent_Token();
+        unsigned int *adv_nonce = message->getCurrent_Token();
 
         if( !adv_nonce ){
 
@@ -2027,7 +2036,7 @@ namespace server {
 
         }
 
-        int *myNonce = this->clientRegister.getClientReceiveNonce(*advSocket);
+        unsigned int *myNonce = this->clientRegister.getClientReceiveNonce(*advSocket);
 
         if( !myNonce ){
 
