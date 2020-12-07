@@ -1,11 +1,18 @@
 #include"CipherAES.h"
 namespace cipher
 {
+/*
+----------------default costructor-----------------
+*/
   CipherAES::CipherAES()
   {
     vverbose<<"-->[CipherAES][Costruct] object create succesfully"<<'\n';
 
   }
+/*
+---------------Costructor--------------------------
+this costructor inizialize the iv and key parameter of the class if this costructo fail it will terminate the program
+*/
   CipherAES::CipherAES(struct SessionKey* session_key)
   {
     if(session_key==nullptr)
@@ -612,7 +619,7 @@ This function encryptMessage with AES_256 gcm
     }
  }
 /*
----------------------------------function CipherAES()-------------------------------
+---------------------------------function CopyToFrom-------------------------------
 */
   bool CipherAES::copyToFrom(int start,int end,unsigned char* originalArray,unsigned char* copyArray)
   {
@@ -627,7 +634,9 @@ This function encryptMessage with AES_256 gcm
     return true;
   } 
  
-
+/*
+-------------------------function insertField--------------------------------------
+*/
  bool CipherAES::insertField(MessageType type,Message* message,unsigned char* valueField,int valueFieldLength,bool decrypt)
  {
    bool result=false;
@@ -779,6 +788,7 @@ This function encryptMessage with AES_256 gcm
   }
 /*
   ------------------------------getdeconcatenateLength function----------------------------------
+this function permit to obtain the length of two substring concatenate in one string
 */
   bool CipherAES::getDeconcatenateLength(unsigned char* originalField,unsigned int originalFieldSize,unsigned int* firstFieldSize,unsigned int* secondFieldSize,unsigned char separator,unsigned int numberSeparator)
   {

@@ -65,6 +65,7 @@ namespace client
     private:
 
       std::thread timerThread;
+      string reqStatus="none";
       bool partialKeyCreated=false;
       NetMessage* partialKey;
       int nonceAdv=0;

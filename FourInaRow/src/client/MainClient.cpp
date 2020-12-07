@@ -298,7 +298,7 @@ namespace client
         stringstream ssreq;
         int nreq=challenge_register->getDimension();
         ssreq<<nreq;
-        textual_interface_manager->printMainInterface(this->username,sstr.str(),"online","none",ssreq.str());
+        textual_interface_manager->printMainInterface(this->username,sstr.str(),"online",reqStatus,ssreq.str());
        // std::cout<<"\t# Insert a command:";
         if(!implicitUserListReq)
         {
@@ -467,7 +467,7 @@ namespace client
         stringstream ssreq;
         int nreq=challenge_register->getDimension();
         ssreq<<nreq;
-        textual_interface_manager->printMainInterface(this->username,sstr.str(),"online","none",ssreq.str());        
+        textual_interface_manager->printMainInterface(this->username,sstr.str(),"online",reqStatus,ssreq.str());        
 
         //printWhiteSpace();
         //std::cout<<app<<'\n';
@@ -666,6 +666,7 @@ namespace client
     {
       vverbose<<"-->[MainClient][sendChallengeProtocol]start a challenge";
       startChallenge=true;
+      reqStatus="waiting";
       challenged_username=string(adversaryUsername);
     }
     return res;
@@ -812,6 +813,7 @@ namespace client
     //cout.flush();
     challenged_username.clear();
     startChallenge=false;
+    reqStatus="rejected";
     sendImplicitUserListReq();
     return res;
   }
@@ -1138,9 +1140,11 @@ namespace client
      if(socketIsClosed)
      {
        verbose<<"-->[MainClient][sendWithDrawProtocol] error server is offline reconnecting"<<'\n';
+       
        notConnected=true;
        return false;
      }
+     reqStatus="deleted";
      return true;
   }
 /*
@@ -2003,7 +2007,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     {
       clearGameParam();
     }
-    textual_interface_manager->printMainInterface(this->username,sstr.str(),"online","none",ssreq.str());
+    textual_interface_manager->printMainInterface(this->username,sstr.str(),"online",reqStatus,ssreq.str());
     if(clientPhase!=ClientPhase::USER_LIST_PHASE)
       clientPhase=ClientPhase::NO_PHASE;
     printWhiteSpace();
@@ -2048,15 +2052,33 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     std::regex controlPassword("[[:alnum:]|\\:\\;\\,\\!\\?\\(\\)\\%\\=\\<\\>]+");
     if(comand_line.empty())
     {
-      vverbose<<"--> [MainClient][comand] error comand_line is empty"<<'\n';
-      printWhiteSpace();
-      std::cout<<"\t comand line is empty \n";
-      printWhiteSpace();
-      base<<"\t# Insert a command:";
-      std::cout.flush();
-     
-      return false;
+
+        if(!logged)
+        {
+          textual_interface_manager->printLoginInterface();
+          string app="command line is empty";
+          textual_interface_manager->printMessage( app );
+        }
+        else if(clientPhase == ClientPhase::INGAME_PHASE)
+        {
+          textual_interface_manager->printGameInterface(startingMatch, std::to_string(15)," ",game->printGameBoard());
+          string app="comand line is empty";
+          textual_interface_manager->printMessage( app );
+        }
+        else if(logged)
+        {
+          if(!sendImplicitUserListReq())
+            implicitUserListReq=false;
+          string app="command line is empty";
+          textualMessageToUser=app;
+        }
+
+        printWhiteSpace();
+        base<<"\t# Insert a command:";
+        cout.flush();
+        return true;
     }
+
     try
     {
       comand_line=TextualInterfaceManager::extractCommand(comand_line);
@@ -2126,18 +2148,26 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           delete connection_manager;
         }
         printWhiteSpace();
-        cout<<"bye bye!!"<<endl;
+        base<<"bye bye!!"<<'\n';
         exit(0);
       }
       if(comand_line.compare("login")==0 && clientPhase!=INGAME_PHASE && !logged )
       {
         if(logged)
         {
-          printWhiteSpace();
-          std::cout<<"already logged \n"<<endl;
-          printWhiteSpace();
-          base<<"\t# Insert a command:";
-          std::cout.flush();
+          if(sendImplicitUserListReq())
+          {
+            textualMessageToUser="already logged";
+          }
+          else
+          {
+            implicitUserListReq=false;
+            printWhiteSpace();
+            std::cout<<"already logged \n"<<endl;
+            printWhiteSpace();
+            base<<"\t# Insert a command:";
+            std::cout.flush();
+          }
           return true;
         }
         string password;
@@ -2235,7 +2265,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
          string app=comand_line.substr(4);
          if(app.empty())
          {
-          textual_interface_manager->printMainInterface(this->username,std::to_string(nUser),"online","none",std::to_string(challenge_register->getDimension()));
+          textual_interface_manager->printMainInterface(this->username,std::to_string(nUser),"online",reqStatus,std::to_string(challenge_register->getDimension()));
           string txtMess="type of command show not valid";
           textual_interface_manager->printMessage(txtMess);
           printWhiteSpace();
@@ -2264,7 +2294,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
          else if(comand_line.compare(5,7,"pending")==0 && clientPhase!=INGAME_PHASE && logged)
          {
             
-            textual_interface_manager->printMainInterface(this->username,std::to_string(nUser),"online","none",std::to_string(challenge_register->getDimension()));
+            textual_interface_manager->printMainInterface(this->username,std::to_string(nUser),"online",reqStatus,std::to_string(challenge_register->getDimension()));
             textual_interface_manager->printUserPending( challenge_register->getUserlistString() );
               
               //printWhiteSpace();
@@ -2278,7 +2308,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
          }
         else
         {
-          textual_interface_manager->printMainInterface(this->username,std::to_string(nUser),"online","none",std::to_string(challenge_register->getDimension()));
+          textual_interface_manager->printMainInterface(this->username,std::to_string(nUser),"online",reqStatus,std::to_string(challenge_register->getDimension()));
           string txtMess="type of command show not valid";
           textual_interface_manager->printMessage(txtMess);
           printWhiteSpace();
@@ -2289,6 +2319,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       
       else if(comand_line.compare(0,9,"challenge")==0 && clientPhase!=INGAME_PHASE && logged)
       {
+         string appSec=comand_line.substr(9);
       	 string app=comand_line.substr(9);
          if(app.empty())
          {
@@ -2381,7 +2412,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         
         int column;
         std::string app=comand_line.substr(10);
-        if(!app.empty()||regex_match(app,controlNumber))
+        if(!app.empty() && regex_match(app,controlNumber))
         {
            vverbose<<"-->[MainClient][comand]start make move"<<'\n';
            column=std::stoi(app,nullptr,10);
@@ -2407,7 +2438,18 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       }
       else if(comand_line.compare(0,4,"send")==0 && clientPhase == ClientPhase::INGAME_PHASE)
       {
+        std::string appSec = comand_line.substr(4);
         std::string app = comand_line.substr(5);
+        if(appSec.empty()||app.empty())
+        {
+          textual_interface_manager->printGameInterface(startingMatch, std::to_string(15)," ",game->printGameBoard());
+          textual_interface_manager->printMessage( string("failed to send chat "));
+          
+          printWhiteSpace();
+          base<<"\t# Insert a command:";
+          cout.flush();
+          return true;
+        } 
         if(app.length()>MAX_LENGTH_CHAT)
         {
           textual_interface_manager->printGameInterface(startingMatch, std::to_string(15)," ",game->printGameBoard());
@@ -2419,16 +2461,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           cout.flush();
           return true;         
         }
-        if(app.empty())
-        {
-          textual_interface_manager->printGameInterface(startingMatch, std::to_string(15)," ",game->printGameBoard());
-          textual_interface_manager->printMessage( string("failed to send chat "));
-          
-          printWhiteSpace();
-          base<<"\t# Insert a command:";
-          cout.flush();
-          return true;
-        } 
+
         std::time_t resTime;
         struct tm* timeinfo;
         char buffer[80];
@@ -2452,22 +2485,36 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       }
       else if(comand_line.compare(0,6,"accept")==0 && clientPhase!=INGAME_PHASE && logged)
       {
-      	 std::string app=comand_line.substr(7);
+         
+      	 std::string app=comand_line.substr(6);
          if(app.empty())
-         {
-             printWhiteSpace();
-             std::cout<<"failed to send challenge "<<'\n';
+         {             
+             if(sendImplicitUserListReq())
+             {
+              textualMessageToUser="failed to send accept, no user is selected";
+              return true;
+             }
+             implicitUserListReq=false;
+             textual_interface_manager->printMainInterface(this->username,std::to_string(nUser),"online",reqStatus,std::to_string(challenge_register->getDimension()));
+             textual_interface_manager->printMessage(string("failed to send accept, no user is selected"));
              printWhiteSpace();
              base<<"\t# Insert a command:";
              cout.flush();
              return true;
          }
+         app=comand_line.substr(7);
          vverbose<<"--> [MainClient][comand] start send challenge"<<'\n';
          bool res=sendAcceptProtocol(app.c_str(),comand_line.size());
          if(!res)
          {
-             printWhiteSpace();
-             std::cout<<"failed to send challenge "<<'\n';
+             if(sendImplicitUserListReq())
+             {
+              textualMessageToUser="the user didn't challenge you";
+              return false;
+             }
+             implicitUserListReq=false;
+             textual_interface_manager->printMainInterface(this->username,std::to_string(nUser),"online",reqStatus,std::to_string(challenge_register->getDimension()));
+             textual_interface_manager->printMessage(string("the user didn't challenge you"));
              printWhiteSpace();
              base<<"\t# Insert a command:";
              cout.flush();
@@ -2477,25 +2524,33 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 
       else if(comand_line.compare(0,6,"reject")==0 && clientPhase!=INGAME_PHASE && logged)
       {
-      	 string app=comand_line.substr(7);
+        
+      	 string app=comand_line.substr(6);
          vverbose<<"-->[MainClient][comand]"<<app<<'\n';
          if(app.empty())
          {
-             printWhiteSpace();
-             std::cout<<"failed to send challenge "<<'\n';
+             if(sendImplicitUserListReq())
+             {
+              textualMessageToUser="failed to send the reject no user is selected";
+              return false;
+             }   
+             implicitUserListReq=false;          
+             textual_interface_manager->printMainInterface(this->username,std::to_string(nUser),"online",reqStatus,std::to_string(challenge_register->getDimension()));
+             textual_interface_manager->printMessage(string("failed to send reject no user is selected"));
              printWhiteSpace();
              base<<"\t# Insert a command:";
              cout.flush();
              return true;
          }
+         app=comand_line.substr(7);
          bool res=sendRejectProtocol(app.c_str(),comand_line.size());
          if(!res)
          {
-             
-             textual_interface_manager->printMainInterface(this->username,std::to_string(nUser),"online","none",std::to_string(challenge_register->getDimension()));
+          
+             textual_interface_manager->printMainInterface(this->username,std::to_string(nUser),"online",reqStatus,std::to_string(challenge_register->getDimension()));
              textual_interface_manager->printMessage(string("failed to send reject"));
-             printWhiteSpace();
-             std::cout<<"failed to send reject "<<'\n';
+             //printWhiteSpace();
+             //std::cout<<"failed to send reject "<<'\n';
              printWhiteSpace();
              base<<"\t# Insert a command:";
              cout.flush();
@@ -2509,7 +2564,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         bool ret=sendDisconnectProtocol();
         if(!ret)
         {
-          textual_interface_manager->printMainInterface(this->username,std::to_string(nUser),"online","none",std::to_string(challenge_register->getDimension()));
+          textual_interface_manager->printMainInterface(this->username,std::to_string(nUser),"online",reqStatus,std::to_string(challenge_register->getDimension()));
           textual_interface_manager->printMessage(string("quit failed retry"));
           printWhiteSpace();
           base<<"\t# Insert a command:";
@@ -2524,7 +2579,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         bool ret=sendLogoutProtocol();
         if(!ret)
         {
-          textual_interface_manager->printMainInterface(this->username,std::to_string(nUser),"online","none",std::to_string(challenge_register->getDimension()));
+          textual_interface_manager->printMainInterface(this->username,std::to_string(nUser),"online",reqStatus,std::to_string(challenge_register->getDimension()));
           textual_interface_manager->printMessage(string("logout failed retry"));
           
           printWhiteSpace();
