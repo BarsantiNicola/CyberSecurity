@@ -813,7 +813,7 @@ namespace client
     //cout.flush();
     challenged_username.clear();
     startChallenge=false;
-    reqStatus="rejected";
+    reqStatus="none";
     sendImplicitUserListReq();
     return res;
   }
@@ -1144,7 +1144,7 @@ namespace client
        notConnected=true;
        return false;
      }
-     reqStatus="deleted";
+     reqStatus="none";
      return true;
   }
 /*
@@ -2319,8 +2319,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       
       else if(comand_line.compare(0,9,"challenge")==0 && clientPhase!=INGAME_PHASE && logged)
       {
-         string appSec=comand_line.substr(9);
-      	 string app=comand_line.substr(9);
+         
+      	 string app=comand_line.substr(10);
          if(app.empty())
          {
            if(!sendImplicitUserListReq())
@@ -2337,7 +2337,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
            //  cout.flush();
              return true;
          }
-      	 app=comand_line.substr(10);
+      	 
          if(app.empty())
          {
            if(!sendImplicitUserListReq())
@@ -2486,7 +2486,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       else if(comand_line.compare(0,6,"accept")==0 && clientPhase!=INGAME_PHASE && logged)
       {
          
-      	 std::string app=comand_line.substr(6);
+      	 std::string app=comand_line.substr(7);
          if(app.empty())
          {             
              if(sendImplicitUserListReq())
@@ -2502,7 +2502,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
              cout.flush();
              return true;
          }
-         app=comand_line.substr(7);
+         
          vverbose<<"--> [MainClient][comand] start send challenge"<<'\n';
          bool res=sendAcceptProtocol(app.c_str(),comand_line.size());
          if(!res)
@@ -2525,7 +2525,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
       else if(comand_line.compare(0,6,"reject")==0 && clientPhase!=INGAME_PHASE && logged)
       {
         
-      	 string app=comand_line.substr(6);
+      	 string app=comand_line.substr(7);
          vverbose<<"-->[MainClient][comand]"<<app<<'\n';
          if(app.empty())
          {
@@ -2542,7 +2542,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
              cout.flush();
              return true;
          }
-         app=comand_line.substr(7);
+         
          bool res=sendRejectProtocol(app.c_str(),comand_line.size());
          if(!res)
          {
@@ -2635,13 +2635,31 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     }
       catch(exception e)
       {
-          std::cerr<<e.what()<<'\n';
-
-          printWhiteSpace();
-          std::cout<<"comand not valid"<<endl;
-          printWhiteSpace();
-          base<<"\t# Insert a command:";
-          cout.flush();
+        if(!logged)
+        {
+          textual_interface_manager->printLoginInterface();
+          string app="command: " + comand_line + " not valid";
+          textual_interface_manager->printMessage( app );
+        }
+        else if(clientPhase == ClientPhase::INGAME_PHASE)
+        {
+          textual_interface_manager->printGameInterface(startingMatch, std::to_string(15)," ",game->printGameBoard());
+          string app="command: " + comand_line + " not valid";
+          textual_interface_manager->printMessage( app );
+        }
+        else if(logged)
+        {
+          if(!sendImplicitUserListReq())
+            implicitUserListReq=false;
+          string app="command: " + comand_line + " not valid";
+          textualMessageToUser=app;
+        }
+       // printWhiteSpace();
+        //std::cout<<"\t  command: "<<comand_line<<" not valid"<<endl;
+        printWhiteSpace();
+        base<<"\t# Insert a command:";
+        cout.flush();
+        return true;
       }
     return true;
   }
