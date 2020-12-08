@@ -31,7 +31,7 @@ namespace utility {
             vverbose << "--> [NetMessage][Costructor] Message correctly generated: [\t";
             for( int a = 0; a<len; a++ )
                 vverbose<<(int)this->message[a];
-            vverbose<<"\t]\n";
+            vverbose<<"UINT32_MAX\t]\n";
 
 
         }catch( bad_alloc e ){

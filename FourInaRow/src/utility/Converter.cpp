@@ -2834,8 +2834,8 @@ namespace utility{
             case 'n':
                 vverbose<<"--> [Converter][setField] Identified variable: Nonce"<<'\n';
                 cout<<"Stringed nonce extracted: "<<string(reinterpret_cast<char*>(fieldValue), len)<<endl;
-                cout<<"Nonce extracted: "<<(unsigned int)stoi(string(reinterpret_cast<char*>(fieldValue), len))<<endl;
-                msg->setNonce((unsigned int)stoi(string(reinterpret_cast<char*>(fieldValue), len)));
+                cout<<"Nonce extracted: "<<(unsigned int)stoul(string(reinterpret_cast<char*>(fieldValue), len))<<endl;
+                msg->setNonce((unsigned int)stoul(string(reinterpret_cast<char*>(fieldValue), len)));
                 break;
 
             case 'r':
@@ -2850,7 +2850,7 @@ namespace utility{
 
             case 't':
                 vverbose<<"--> [Converter][setField] Identified variable: CurrentToken"<<'\n';
-                msg->setCurrent_Token((unsigned int)stoi(string(reinterpret_cast<char*>(fieldValue), len)));
+                msg->setCurrent_Token((unsigned int)stoul(string(reinterpret_cast<char*>(fieldValue), len)));
                 break;
 
             case 'v':
