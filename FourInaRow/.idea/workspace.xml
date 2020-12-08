@@ -29,16 +29,6 @@
   <component name="ChangeListManager">
     <list default="true" id="4cbb8ddf-e807-44fa-ae33-bda27674b47b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/program" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ClientProva.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/PowerClient.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/PowerClient.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Prova.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ProvaHASH.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ServerProva.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/client.exe" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/prova.exe" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server.exe" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/utility/Converter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/utility/Converter.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -239,7 +229,7 @@
       <workItem from="1607253325222" duration="668000" />
       <workItem from="1607358034424" duration="1180000" />
       <workItem from="1607364958696" duration="5989000" />
-      <workItem from="1607418438927" duration="2237000" />
+      <workItem from="1607418438927" duration="2534000" />
     </task>
     <servers />
   </component>
