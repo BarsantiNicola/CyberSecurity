@@ -2798,12 +2798,12 @@ namespace utility{
 
             case 'a':
                 vverbose<<"--> [Converter][setField] Identified variable: Adversary_1"<<'\n';
-                msg->setAdversary_1(string(reinterpret_cast<char*>(fieldValue)));
+                msg->setAdversary_1(string(reinterpret_cast<char*>(fieldValue), len));
                 break;
 
             case 'b':
                 vverbose<<"--> [Converter][setField] Identified variable: Adversary_2"<<'\n';
-                msg->setAdversary_2(string(reinterpret_cast<char*>(fieldValue)));
+                msg->setAdversary_2(string(reinterpret_cast<char*>(fieldValue), len));
                 break;
 
             case 'c':
@@ -2833,7 +2833,7 @@ namespace utility{
 
             case 'n':
                 vverbose<<"--> [Converter][setField] Identified variable: Nonce"<<'\n';
-                msg->setNonce((unsigned int)stoi(string(reinterpret_cast<char*>(fieldValue))));
+                msg->setNonce((unsigned int)stoi(string(reinterpret_cast<char*>(fieldValue), len)));
                 break;
 
             case 'r':
@@ -2848,7 +2848,7 @@ namespace utility{
 
             case 't':
                 vverbose<<"--> [Converter][setField] Identified variable: CurrentToken"<<'\n';
-                msg->setCurrent_Token((unsigned int)stoi(string(reinterpret_cast<char*>(fieldValue))));
+                msg->setCurrent_Token((unsigned int)stoi(string(reinterpret_cast<char*>(fieldValue), len)));
                 break;
 
             case 'v':
@@ -2858,7 +2858,7 @@ namespace utility{
 
             case 'u':
                 vverbose<<"--> [Converter][setField] Identified variable: Username"<<'\n';
-                msg->setUsername(string(reinterpret_cast<char*>(fieldValue)));
+                msg->setUsername(string(reinterpret_cast<char*>(fieldValue), len));
                 break;
 
             case 'h':
@@ -2868,7 +2868,7 @@ namespace utility{
 
             case 'y':
                 vverbose<<"--> [Converter][setField] Identified variable: MessageType"<<'\n';
-                msg->setMessageType((MessageType)stoi(string(reinterpret_cast<char*>(fieldValue))));
+                msg->setMessageType((MessageType)stoi(string(reinterpret_cast<char*>(fieldValue), len)));
                 break;
 
             case 'w':
@@ -2878,7 +2878,7 @@ namespace utility{
 
             case 'j':
                 vverbose<<"--> [Converter][setField] Identified variable: UDP Port"<<'\n';
-                msg->setPort( stoi(string(reinterpret_cast<char*>(fieldValue))) );
+                msg->setPort( stoi(string(reinterpret_cast<char*>(fieldValue), len)) );
                 break;
 
             default:

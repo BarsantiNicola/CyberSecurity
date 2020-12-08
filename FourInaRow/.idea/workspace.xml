@@ -23,21 +23,23 @@
   </component>
   <component name="CMakeSettings">
     <configurations>
-      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
+      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" ENABLED="true" />
     </configurations>
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4cbb8ddf-e807-44fa-ae33-bda27674b47b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/ClientInformation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/ClientInformation.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/ClientInformation.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/ClientInformation.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/ClientRegister.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/ClientRegister.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/ClientRegister.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/ClientRegister.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/MainServer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MainServer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server/MainServer.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MainServer.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/program" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ClientProva.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/PowerClient.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/PowerClient.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Prova.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ProvaHASH.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ServerProva.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/client.exe" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/prova.exe" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server.exe" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/utility/Converter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/utility/Converter.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utility/Message.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/utility/Message.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utility/Message.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/utility/Message.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -78,6 +80,13 @@
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/client/data" />
     </key>
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -230,6 +239,7 @@
       <workItem from="1607253325222" duration="668000" />
       <workItem from="1607358034424" duration="1180000" />
       <workItem from="1607364958696" duration="5989000" />
+      <workItem from="1607418438927" duration="2237000" />
     </task>
     <servers />
   </component>
