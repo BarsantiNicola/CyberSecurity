@@ -587,7 +587,7 @@ namespace client
       }
       nonce_s=message->getNonce();
       verbose<<"-->[MainClient][keyExchangeReciveProtocol] the recived nonce is:"<<*nonce_s<<'\n';
-      if((*nonce_s!=(this->myNonceVerify) && exchangeWithServer) || ( exchangeWithServer && currTokenIninzialized && *nonce_s!=(this->currentToken) ))
+      if((*nonce_s!=(this->myNonceVerify) && exchangeWithServer) || ( !exchangeWithServer && currTokenIninzialized && *nonce_s!=(this->nonceVerifyAdversary) ))
       {
         verbose<<"--> [MainClient][keyExchangeProtocol] nonce not valid"<<'\n';
         delete nonce_s;
@@ -1154,6 +1154,8 @@ namespace client
     {
       delete advPort;
     }
+    currTokenIninzialized=true;
+    nonceVerifyAdversary=*message->getCurrent_Token();
     vverbose<<"--> [MainClient][reciveGameProtocol] the port is:"<<appstr<<'\n';
     advPort=new int(std::stoi(appstr));
     delete ipApp;
@@ -1321,7 +1323,7 @@ namespace client
         }
         else
         {
-          message->setNonce(this->currentToken);
+          message->setNonce(this->nonceVerifyAdversary);
           if(startChallenge)
           {
             partialKeyCreated=true;
@@ -1329,7 +1331,7 @@ namespace client
           }
           message->set_DH_key( partialKey->getMessage(), partialKey->length() );
           cipherRes=this->cipher_client->toSecureForm( message,aesKey);
-          this->currentToken++;
+          //this->currentToken++;
        }
         break;
 
@@ -2545,7 +2547,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
              return true;         
         }    
       }
-      else if(comand_line.compare(0,4,"send")==0 && clientPhase == ClientPhase::INGAME_PHASE)
+      else if(comand_line.compare(0,4,"send")==0 && clientPhase == ClientPhase::INGAME_PHASE && this->currTokenChat<(UINT32_MAX-4))
       {
         std::string appSec = comand_line.substr(4);
         std::string app = comand_line.substr(5);
@@ -2952,11 +2954,11 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                 {
                   if(startingMatch)
                   {
-                    this->currentToken=generateRandomNonce();
+                    this->currentToken=0;
                     
                    
-                    this->currTokenChat=this->currentToken+TOKEN_GAP+2;
-                    this->currTokenChatAdv=this->currentToken+TOKEN_GAP+1;
+                    this->currTokenChat=TOKEN_GAP+1;//da stare attenti
+                    this->currTokenChatAdv=TOKEN_GAP;
                     keyExchangeClientSend();
                     
                   }
@@ -3029,16 +3031,16 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                    nonceAdv=0;
                    if(!startingMatch)
                    {
-                     this->currentToken=*message->getNonce()+1;
-                     this->currTokenChatAdv=this->currentToken+TOKEN_GAP+1;
-                     this->currTokenChat=this->currentToken +TOKEN_GAP;
-                     currTokenIninzialized=true;
+                     this->currentToken=0;
+                     this->currTokenChatAdv=TOKEN_GAP+1;
+                     this->currTokenChat=TOKEN_GAP;
+                     //currTokenIninzialized=true;
                      keyExchangeClientSend();
                    }
                    else
                    {
                      setcomandTimer(ComandToTimer::START ); 
-                     this->currentToken++;
+                    // this->currentToken++;
                    }
                    if(!chatWait.empty())
                    {
