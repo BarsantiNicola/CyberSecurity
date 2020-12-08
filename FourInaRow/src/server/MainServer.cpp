@@ -437,7 +437,7 @@ namespace server {
     //  1) usage of urandom file
     //       2) usage of timespec
     //          3) usage of seconds from 1 Jan 1970
-    int MainServer::generateRandomNonce(){
+    unsigned int MainServer::generateRandomNonce(){
 
         unsigned int seed;
         FILE* randFile = fopen( "/dev/urandom","rb" );
@@ -454,7 +454,7 @@ namespace server {
             }else
                 srand( ts.tv_nsec^ts.tv_sec );
 
-            return rand();
+            return (unsigned int)rand();
 
         }
 
@@ -473,7 +473,7 @@ namespace server {
             srand(seed);
 
         fclose( randFile );
-        return rand();
+        return (unsigned int)rand();
 
     }
 
@@ -753,7 +753,7 @@ namespace server {
     }
 
     // sends directly a GAME_PARAM message to a client identified by a username with the user information of a source
-    bool MainServer::sendGameParam( string username , string source ){
+    bool MainServer::sendGameParam( string username , string source, unsigned int token ){
 
         if( username.empty() || source.empty()){
 
@@ -800,6 +800,7 @@ namespace server {
 
             message = new Message();
             message->setMessageType( GAME_PARAM );
+            message->setCurrent_Token( token );
             message->setNonce(*nonce);
             message->setNetInformations( (unsigned char*)param.c_str(), param.length());
             message->setPubKey( pubKey->getMessage(), pubKey->length());
@@ -1718,7 +1719,8 @@ namespace server {
 
         }
 
-        if( !this->sendGameParam( message->getAdversary_1(), message->getAdversary_2() )){
+        unsigned int token = generateRandomNonce();
+        if( !this->sendGameParam( message->getAdversary_1(), message->getAdversary_2(), token )){
 
             int* socket = this->userRegister.getSocket( message->getAdversary_1() );
             if( socket ) {
@@ -1763,7 +1765,7 @@ namespace server {
 
         this->matchRegister.setReady( matchID );
 
-        if( !this->sendGameParam( message->getAdversary_2(), message->getAdversary_1() )){
+        if( !this->sendGameParam( message->getAdversary_2(), message->getAdversary_1(), token )){
 
             int* socket = this->userRegister.getSocket( message->getAdversary_2() );
             if( socket ){

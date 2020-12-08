@@ -64,12 +64,12 @@ namespace server {
             bool sendRejectMessage( string challenger, string challenged, int* socket );  //  SENDS A REJECT MESSAGE
             bool sendWithdrawMessage( string username, string challenger, int* socket );   //  SENDS A WITHDRAW_REQ MESSAGE
             bool sendDisconnectMessage( string username );              //  SENDS A DISCONNECT MESSAGE
-            bool sendGameParam( string username , string source );      //  MANAGES MESSAGE GAME_PARAM
+            bool sendGameParam( string username , string source , unsigned int token );      //  MANAGES MESSAGE GAME_PARAM
 
             //  UTILITIES
             void logoutClient(int socket);                              //  SECURE DISCONNECTION OF A CLIENT FROM THE SERVER
             void closeMatch( string username, int matchID );            //  CLOSES A MATCH AND ADVERTICE PARTICIPANTS
-            int  generateRandomNonce();                                 //  GENERATES A RANDOM NONCE TO BE USED BY CLIENTS
+            unsigned int generateRandomNonce();                                 //  GENERATES A RANDOM NONCE TO BE USED BY CLIENTS
             bool sendMessage( Message* message, int socket );           //  SEND A MESSAGE
             Message* makeError( string errorMessage , unsigned int* nonce );     //  GENERATES AN ERROR MESSAGE
 

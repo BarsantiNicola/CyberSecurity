@@ -763,11 +763,22 @@ namespace utility{
                 }
                 nonceString = (unsigned char*)to_string(*nonce).c_str();
 
+                token = message.getCurrent_Token();
+                if( !token ){
+
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Current Token"<<'\n';
+                    delete nonce;
+                    return false;
+
+                }
+                portString = (unsigned char*)to_string(*token).c_str();
+
                 signature = message.getSignature();
                 if( !signature ){
 
                     verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Signature"<<'\n';
                     delete nonce;
+                    delete token;
                     return false;
 
                 }
@@ -777,6 +788,7 @@ namespace utility{
 
                     verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Net Informations"<<'\n';
                     delete nonce;
+                    delete token;
                     delete[] signature;
                     return false;
 
@@ -787,15 +799,17 @@ namespace utility{
 
                     verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Public Key"<<'\n';
                     delete nonce;
+                    delete token;
                     delete[] signature;
                     delete[] net;
                     return false;
 
                 }
 
-                if( checkField( signature, message.getSignatureLen(), false )  || checkField(net,message.getNetInformationsLength(), false ) || checkField(key,message.getPubKeyLength(), false ) ||  checkField(nonceString,to_string(*nonce).length(), true )) {
+                if( checkField( portString, to_string( *token ).length(), true ) || checkField( signature, message.getSignatureLen(), false )  || checkField(net,message.getNetInformationsLength(), false ) || checkField(key,message.getPubKeyLength(), false ) ||  checkField(nonceString,to_string(*nonce).length(), true )) {
 
                     delete nonce;
+                    delete token;
                     delete[] signature;
                     delete[] net;
                     delete[] key;
@@ -805,6 +819,7 @@ namespace utility{
                 }
 
                 delete nonce;
+                delete token;
                 delete[] signature;
                 delete[] net;
                 delete[] key;
@@ -1656,11 +1671,22 @@ namespace utility{
                 }
                 nonceString = (unsigned char*)to_string(*nonce).c_str();
 
+                token = message.getCurrent_Token();
+                if( !token ){
+
+                    verbose<<"--> [Converter][verifyMessage] Verification failure: Missing Current Token"<<'\n';
+                    delete nonce;
+                    return false;
+
+                }
+                portString = (unsigned char*)to_string(*token).c_str();
+
                 net = message.getNetInformations();
                 if( !net ){
 
                     verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Net Informations"<<'\n';
                     delete nonce;
+                    delete token;
                     return false;
 
                 }
@@ -1670,15 +1696,17 @@ namespace utility{
 
                     verbose<<"--> [Converter][verifyCompact] Verification failure: Missing Public Key"<<'\n';
                     delete nonce;
+                    delete token;
                     delete[] net;
                     return false;
 
                 }
 
-                if( checkField(net,message.getNetInformationsLength(), false ) || checkField(key,message.getPubKeyLength(), false ) ||  checkField(nonceString,to_string(*nonce).length(), true )) {
+                if( checkField( portString, to_string(*token).length(), true) || checkField(net,message.getNetInformationsLength(), false ) || checkField(key,message.getPubKeyLength(), false ) ||  checkField(nonceString,to_string(*nonce).length(), true )) {
 
                     verbose << "--> [Converter][verifyCompact] Verification failure" << '\n';
                     delete nonce;
+                    delete token;
                     delete[] net;
                     delete[] key;
                     return false;
@@ -1687,6 +1715,7 @@ namespace utility{
 
                 vverbose<<"--> [Converter][verifyCompact] Verification GAME_PARAM success"<<'\n';
                 delete nonce;
+                delete token;
                 delete[] net;
                 delete[] key;
                 break;
@@ -2416,7 +2445,8 @@ namespace utility{
                 sign = message.getSignature();
                 key = message.getPubKey();
                 net = message.getNetInformations();
-                len = 37 + to_string( type ).length() + to_string( *nonce ).length() + message.getPubKeyLength() + message.getNetInformationsLength() + message.getSignatureLen();
+                token = message.getCurrent_Token();
+                len = 45 + to_string(*token).length() + to_string( type ).length() + to_string( *nonce ).length() + message.getPubKeyLength() + message.getNetInformationsLength() + message.getSignatureLen();
 
                 try {
 
@@ -2437,9 +2467,11 @@ namespace utility{
                 pos = writeField(value , 'k', key ,message.getPubKeyLength(), pos,false  );
                 pos = writeField(value , 'i', net ,message.getNetInformationsLength(), pos, false  );
                 pos = writeField(value , 'n', (unsigned char*)to_string( *nonce ).c_str(), to_string( *nonce ).length(), pos, false  );
+                pos = writeField(value , 't', (unsigned char*)to_string( *token ).c_str(), to_string( *token ).length(), pos, false  );
                 pos = writeField(value , 's', sign, message.getSignatureLen(), pos, true  );
 
                 delete nonce;
+                delete token;
                 delete[] sign;
                 delete[] key;
                 delete[] net;
@@ -3414,9 +3446,10 @@ namespace utility{
             case GAME_PARAM:
 
                 nonce = message.getNonce();
+                token = message.getCurrent_Token();
                 key = message.getPubKey();
                 net = message.getNetInformations();
-                len = 1 + to_string( type ).length() + to_string( *nonce ).length() + message.getPubKeyLength() + message.getNetInformationsLength();
+                len = 1 + to_string(*token).length() + to_string( type ).length() + to_string( *nonce ).length() + message.getPubKeyLength() + message.getNetInformationsLength();
 
                 try {
 
@@ -3435,9 +3468,11 @@ namespace utility{
                 pos = writeCompactField( value, (unsigned char*)to_string( type ).c_str(), to_string( type ).length(), 0, false );
                 pos = writeCompactField( value, key, message.getPubKeyLength(), pos, false );
                 pos = writeCompactField( value, net, message.getNetInformationsLength(), pos, false );
+                pos = writeCompactField( value, (unsigned char*)to_string( *token ).c_str(), to_string( *token ).length(), pos, false );
                 pos = writeCompactField( value, (unsigned char*)to_string( *nonce ).c_str(), to_string( *nonce ).length(), pos, true );
 
                 delete nonce;
+                delete token;
                 delete[] key;
                 delete[] net;
                 break;
@@ -3629,7 +3664,7 @@ compact function for AES
         }
 
         unsigned char* certificate,*key,*net,*value;
-        unsigned int* nonce;
+        unsigned int* nonce, *token;
         int pos, len, key_size(0);
 
         vverbose << "--> [Converter][compactMessageAES] Starting encoding of Message" << '\n';
@@ -4105,9 +4140,10 @@ compact function for AES
             case GAME_PARAM:
 
                 nonce = message.getNonce();
+                token = message.getCurrent_Token();
                 key = message.getPubKey();
                 net = message.getNetInformations();
-                len = to_string( type ).length() + to_string( *nonce ).length() + message.getPubKeyLength() + message.getNetInformationsLength();
+                len = to_string(*token).length() + to_string( type ).length() + to_string( *nonce ).length() + message.getPubKeyLength() + message.getNetInformationsLength();
                 *lengthPlaintext = len - message.getNetInformationsLength();
 
                 try{
@@ -4127,9 +4163,11 @@ compact function for AES
                 pos = writeCompactField( value, (unsigned char*)to_string( type ).c_str(), to_string( type ).length(), 0, false );
                 pos = writeCompactField( value, key ,message.getPubKeyLength(), pos, false );
                 pos = writeCompactField( value, (unsigned char*)to_string( *nonce ).c_str(),to_string( *nonce ).length(), pos, false );
+                pos = writeCompactField( value, (unsigned char*)to_string( *token ).c_str(),to_string( *token ).length(), pos, false );
                 pos = writeCompactField( value, net ,message.getNetInformationsLength(), pos, false );
 
                 delete nonce;
+                delete token;
                 delete[] key;
                 delete[] net;
                 break;
