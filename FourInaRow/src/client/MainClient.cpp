@@ -371,7 +371,7 @@ namespace client
         return false;
       }
       this->receiveNonce = *nonce_s+1;
-      if(this->receiveNonce>(UINT_MAX-52))
+      if(this->receiveNonce>(UINT32_MAX-52))
       {
         ReceiveNonceOutOfBound=true;
       }
@@ -476,7 +476,7 @@ namespace client
         if(!res)
           return false;
         this->receiveNonce = *nonce_s +1;
-        if(this->receiveNonce>(UINT_MAX-52))
+        if(this->receiveNonce>(UINT32_MAX-52))
         {
           ReceiveNonceOutOfBound=true;
         }
@@ -731,7 +731,7 @@ namespace client
       return false;
     advUsername=message->getUsername();
     this->receiveNonce = *nonce_s+1;
-    if(this->receiveNonce>(UINT_MAX-52))
+    if(this->receiveNonce>(UINT32_MAX-52))
     {
       ReceiveNonceOutOfBound=true;
     }
@@ -833,7 +833,7 @@ namespace client
       return false;
     
     this->receiveNonce=(*message->getNonce())+1;
-    if(this->receiveNonce>(UINT_MAX-52))
+    if(this->receiveNonce>(UINT32_MAX-52))
     {
       ReceiveNonceOutOfBound=true;
     }
@@ -1066,7 +1066,7 @@ namespace client
      adv_username_1 = challenged_username;
      delete challenge_register;
      this->receiveNonce=(*message->getNonce()) + 1;
-     if(this->receiveNonce>(UINT_MAX-52))
+     if(this->receiveNonce>(UINT32_MAX-52))
      {
       ReceiveNonceOutOfBound=true;
      }
@@ -1109,7 +1109,7 @@ namespace client
     if(!res)
       return false;
     this->receiveNonce=(*message->getNonce())+1;
-    if(this->receiveNonce>(UINT_MAX-52))
+    if(this->receiveNonce>(UINT32_MAX-52))
     {
       ReceiveNonceOutOfBound=true;
     }
@@ -1229,7 +1229,7 @@ namespace client
     if(!res)
       return false;
      this->receiveNonce=(*message->getNonce())+1;
-     if(this->receiveNonce>(UINT_MAX-52))
+     if(this->receiveNonce>(UINT32_MAX-52))
      {
       ReceiveNonceOutOfBound=true;
      }
@@ -1272,7 +1272,7 @@ namespace client
     if(!res)
       return false;
      this->receiveNonce=(*message->getNonce())+1;
-     if(this->receiveNonce>(UINT_MAX-52))
+     if(this->receiveNonce>(UINT32_MAX-52))
      {
        ReceiveNonceOutOfBound=true;
      }
@@ -1498,7 +1498,7 @@ namespace client
     }
     if(!cipherRes)
       return nullptr;
-    if(this->sendNonce+52>(UINT_MAX/2)&&clientPhase!= ClientPhase::INGAME_PHASE)
+    if(this->sendNonce+52>(UINT32_MAX/2)&&clientPhase!= ClientPhase::INGAME_PHASE)
     {
       SendNonceOutOfBound=true;
     }
@@ -2087,7 +2087,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 
     }
     this->receiveNonce = *nonce_s+1;
-    if(this->receiveNonce>(UINT_MAX-52))
+    if(this->receiveNonce>(UINT32_MAX-52))
     {
       ReceiveNonceOutOfBound=true;
     }
@@ -2110,6 +2110,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     //std:cout<<errorMessage<<'\n';
     if(errorMessage.compare("Invalid request. User doesn't exists")==0)
     {
+      reqStatus="none";
       textualMessageToUser="Invalid request. User doesn't exist.";
       if(clientPhase!=ClientPhase::USER_LIST_PHASE)
       {
@@ -2120,6 +2121,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     }
     else if(errorMessage.compare("Invalid Request. You have to send a valid username")==0)
     {
+      reqStatus="none";
       textualMessageToUser="Invalid Request. You have to send a valid username.";
       if(clientPhase!=ClientPhase::USER_LIST_PHASE)
       {
@@ -2300,6 +2302,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         cout<<'\n';
         if(!regex_match(password,controlPassword))
         {
+          
           textual_interface_manager->printLoginInterface();
           string app="password format is invalid";
           textual_interface_manager->printMessage( app );
@@ -2316,6 +2319,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           printWhiteSpace();
           base<<"\t# Insert a command:";
           std::cout.flush();
+          return false;
         }
         cipher_client->newRSAParameter(username,password);
         if(!cipher_client->getRSA_is_start())
@@ -2335,7 +2339,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           if(loginProtocol(username,&socketIsClosed))
           {
             this->sendNonce=0;
-            this->receiveNonce=(UINT_MAX/2);
+            this->receiveNonce=(UINT32_MAX/2);
         
             this->username=username;
             this->logged=true;
@@ -2347,9 +2351,15 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           }
           else
           {
-             textual_interface_manager->printLoginInterface();
+
+             if(!certificateProtocol())
+               exit(1);
+             textual_interface_manager->printLoginInterface();             
+
              string app="User already logged";
              textual_interface_manager->printMessage( app );
+
+
              //printWhiteSpace();
              //std::cout<<"login failed retry"<<'\n';
              printWhiteSpace();
@@ -2844,11 +2854,15 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                     res=receiveLogoutProtocol(message);
                     if(!res)
                       continue;
+                    if(!certificateProtocol())
+                      exit(1);
                     textual_interface_manager->printLoginInterface();
                     printWhiteSpace();
                     base<<"\t# Insert a command:";
                     std::cout.flush();
                     cipher_client->resetRSA_is_start();
+
+                    
                 }
                 break;
               case USER_LIST:

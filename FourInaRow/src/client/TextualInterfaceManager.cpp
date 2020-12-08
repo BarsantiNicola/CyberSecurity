@@ -157,7 +157,7 @@ namespace client{
             args[a] = nullptr;
 
         switch( command ){
-           case CLEAR:
+            case CLEAR:
                 args[0] = (char*)"/usr/bin/clear";
                 break;
             case RAW:
@@ -525,7 +525,7 @@ namespace client{
 	//  applies colors to the login interface and prints it
 	void TextualInterfaceManager::printLoginInterface(){
 
-       // execCommand( CLEAR );
+        execCommand( CLEAR );
 
 	    for( int a = 0; a<adj_y; a++ )
             base<<'\n';
@@ -565,7 +565,7 @@ namespace client{
 	void TextualInterfaceManager::printMainInterface(string username,string activeUser,string serverStatus,string matchStatus,string pendingStatus){
 
 		string value;
-       // execCommand( CLEAR );
+        execCommand( CLEAR );
 		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::USERNAME , username , main_page );
 		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::ACTIVE_USER , activeUser , value );
 		value = insertElement(InterfacePage::MAIN_PAGE_0, InputType::SERVER_STATUS , serverStatus , value );
@@ -625,7 +625,7 @@ namespace client{
 
 	void TextualInterfaceManager::printGameInterface(bool myMove, string timer,string chat,string gameboard){
 
-       // execCommand( CLEAR );
+        execCommand( CLEAR );
 
         int col = 0;
         for( int a = 0; a<adj_y; a++ )
@@ -816,7 +816,7 @@ namespace client{
 
 	void TextualInterfaceManager::printSetterPage(){
 
-       // execCommand(CLEAR);
+        execCommand(CLEAR);
 
 	    for( int a = 0; a<adj_y; a++ )
 	        base<<'\n';
@@ -845,7 +845,7 @@ namespace client{
     //  prints a page to show a win message for a game
     void TextualInterfaceManager::printWinGame(){
 
-        //execCommand(CLEAR);
+        execCommand(CLEAR);
 
         for( int a = 0; a<adj_y; a++ )
             base<<'\n';
@@ -869,7 +869,7 @@ namespace client{
     //  prints a page to show a lose message for a game
     void TextualInterfaceManager::printLoseGame(){
 
-     //   execCommand(CLEAR);
+        execCommand(CLEAR);
 
         for( int a = 0; a<adj_y; a++ )
             base<<'\n';
@@ -891,7 +891,7 @@ namespace client{
     //  prints a page to show a tie message for a game
     void TextualInterfaceManager::printTieGame(){
 
-      //  execCommand(CLEAR);
+        execCommand(CLEAR);
 
         for( int a = 0; a<adj_y; a++ )
             base<<'\n';
