@@ -82,6 +82,7 @@ namespace client
    }
    catch(exception e)
    {
+     verbose<<"-->[MainClient][certificateProtocol] connection closed"<<'\n';
      notConnected=true;
      return false;
    }
@@ -102,7 +103,10 @@ namespace client
    {
      verbose<<"-->[MainClient][certificateProtocol] error certificate protocol!!"<<'\n';
      if(socketIsClosed)
+     {
+        verbose<<"-->[MainClient][certificateProtocol] connection closed"<<'\n';
        notConnected=true;
+     }
      return false;
    }
     vverbose<<"-->[MainClient][certificateProtocol] message decifred!!"<<'\n';
@@ -156,7 +160,10 @@ namespace client
       if(!res)
       {
         if(socketIsClosed)
+        {
+          verbose<<"-->[MainClient][loginProtocol] connection closed"<<'\n';
           notConnected=true;
+        }
         return false;
       }
       try
@@ -166,6 +173,7 @@ namespace client
       }
       catch(exception e)
       {
+        verbose<<"-->[MainClient][loginProtocol] connection closed for exception"<<'\n';
         notConnected=true;
         return false;
       }
@@ -201,7 +209,10 @@ namespace client
         if(!res)
         {
           if(*socketIsClosed)
+          {
+            verbose<<"-->[MainClient][loginProtocol] connection closed for socket"<<'\n';
             notConnected=true;
+          }
           return false;
         }
         try
@@ -210,6 +221,7 @@ namespace client
         }
         catch(exception e)
         {
+          verbose<<"-->[MainClient][loginProtocol] connection closed exception2"<<'\n';
           notConnected=true;
           return false;
         }
@@ -643,7 +655,10 @@ namespace client
      if(!res)
     {
       if(socketIsClosed)
-      notConnected=true;
+      {
+        verbose<<"-->[MainClient][keyExchangeClientSend] connection lost"<<'\n';
+        notConnected=true;
+      }
       return false;
     }
     return true;
@@ -1610,10 +1625,16 @@ namespace client
 bool MainClient::startConnectionServer(const char* myIP,int myPort)
 {
   bool res;
+  this->clientPhase= ClientPhase::NO_PHASE;
+  this->username = "";
+  this->logged=false;
+  this->startChallenge=false;
   this->myIP=myIP;
   this->myPort=myPort;
   this->sendNonce=0;
   this->receiveNonce=0;
+  this->SendNonceOutOfBound=false;
+  this->ReceiveNonceOutOfBound=false;
   if(connection_manager!=nullptr)
   {
     delete connection_manager;
@@ -2808,8 +2829,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           }
           if(idSock==connection_manager->getserverSocket())
           {
-            vverbose<<"[MainClient][client] message from server"<<'\n';
+            vverbose<<"-->[MainClient][client] message from server"<<'\n';
             message=connection_manager->getMessage(connection_manager->getserverSocket());
+            vverbose<<"-->[MainClient][client] message received"<<'\n';
             if(message==nullptr)
             {
               continue;
@@ -2832,7 +2854,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
               case USER_LIST:
                if(clientPhase==ClientPhase::USER_LIST_PHASE || implicitUserListReq)
                {
-                 
+                 vverbose<<"[MainClient][client] received userList"<<'\n';
                  res=receiveUserListProtocol(message);
                  if(!res)
                  {
@@ -3063,10 +3085,12 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     }
      catch(exception& e )
      {
+       verbose<<e.what()<<'\n';
        time_expired=false;
        startingMatch=false;
        clientPhase= ClientPhase::NO_PHASE;
        firstMove=false;
+       verbose<<"-->[MainClient][client] for exception"<<'\n';
        notConnected=true;
        startChallenge=false;
        implicitUserListReq=false;
