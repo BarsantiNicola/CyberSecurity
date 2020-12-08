@@ -111,17 +111,21 @@ namespace client
    {
      return false;
    }
-   string snonce = to_string( *messRet->getNonce() );
+   if(myNonceVerify!=*messRet->getCurrent_Token())
+   {
+     return false;
+   }
+   this->serverNonceVerify=*messRet->getNonce();
+   
+  /* string snonce = to_string( *messRet->getNonce() );
    
    unsigned int* nonceApp=new unsigned int((unsigned int)atoi(snonce.substr(0,snonce.length()/2).c_str())*10000);
-   this->sendNonce = *nonceApp;
+   //this->sendNonce = *nonceApp;
    delete nonceApp;
    nonceApp =new unsigned int((unsigned int)atoi(snonce.substr(snonce.length()/2,snonce.length()).c_str())*10000);
    this->receiveNonce=*nonceApp;
-   delete nonceApp;
+   delete nonceApp;*/
    
-   vverbose<<"-->[MainClient][certificateProtocol] the vaulue of send nonce is "<<this->sendNonce<<'\n';
-   vverbose<<"-->[MainClient][certificateProtocol] the vaulue of receive nonce is "<<this->receiveNonce<<'\n';
    //res = cipher_client-> getSessionKey( netRet->getMessage() ,netRet->length() );
    //vverbose<<"-->[MainClient][certificateProtocol] sessionKey obtained"<<'\n';
    return res;
@@ -132,7 +136,7 @@ namespace client
   bool MainClient::loginProtocol(std::string username,bool *socketIsClosed)
   {
     bool res;
-    int* nonce_s;
+    unsigned int* nonce_s;
     bool connection_res;
     Message* retMess;
     Message* sendMess;
@@ -172,7 +176,7 @@ namespace client
       }
       nonce_s=retMess->getNonce();
       verbose<<"-->[MainClient][loginProtocol] the recived nonce is:"<<*nonce_s<<'\n';
-      if(*nonce_s<(this->receiveNonce))
+      if(*nonce_s!=(this->myNonceVerify))
       {
         delete nonce_s;
         verbose<<"-->[MainClient][loginProtocol] nonce not equal"<<'\n';
@@ -186,7 +190,7 @@ namespace client
         verbose<<"-->[MainClient][loginProtocol] error to dec"<<'\n';
         return false;
       }
-      this->receiveNonce = *retMess->getNonce() + 1;
+      //this->receiveNonce = *retMess->getNonce() + 1;
       if(retMess->getMessageType()==LOGIN_OK)
       {
         sendMess=createMessage(MessageType::KEY_EXCHANGE, nullptr,nullptr,0,nullptr,this->sendNonce,false);
@@ -254,7 +258,7 @@ namespace client
     bool MainClient::receiveUserListProtocol(Message* message)
   {
       verbose<<"--> [MainClient][reciveUserListProtocol] start receiveUserListProtocol:"<<'\n';
-      int* nonce_s;
+      unsigned int* nonce_s;
       bool res;
       string search="-";
       
@@ -327,7 +331,7 @@ namespace client
   bool MainClient::reciveDisconnectProtocol(Message* message)
   {
       vverbose<<"-->[MainClient][reciveDiconnectProtocol] starting disconnectProtocol"<<'\n';
-      int* nonce_s;
+      unsigned int* nonce_s;
       bool res;
       if(message==nullptr)
       {
@@ -355,6 +359,10 @@ namespace client
         return false;
       }
       this->receiveNonce = *nonce_s+1;
+      if(this->receiveNonce>(UINT_MAX-52))
+      {
+        ReceiveNonceOutOfBound=true;
+      }
       delete nonce_s;
       //verbose<<"--> [MainClient][reciveLogoutProtocol] decript start"<<'\n';
       res=cipher_client->fromSecureForm( message , username ,aesKeyServer,false);
@@ -424,7 +432,7 @@ namespace client
 */
     bool MainClient::receiveRankProtocol(Message* message)
   {
-      int* nonce_s;
+      unsigned int* nonce_s;
       bool res;
       if(message==nullptr)
       {
@@ -456,6 +464,10 @@ namespace client
         if(!res)
           return false;
         this->receiveNonce = *nonce_s +1;
+        if(this->receiveNonce>(UINT_MAX-52))
+        {
+          ReceiveNonceOutOfBound=true;
+        }
         delete nonce_s;
         clientPhase=ClientPhase::NO_PHASE;
         unsigned char* userList=message->getRankList();
@@ -509,7 +521,7 @@ namespace client
 */
   bool MainClient::receiveLogoutProtocol(Message* message)
   {
-      int* nonce_s;
+      unsigned int* nonce_s;
       bool res;
       if(message==nullptr)
       {
@@ -554,7 +566,7 @@ namespace client
   {
       unsigned char* app; 
       int len;
-      int* nonce_s=message->getNonce();
+      unsigned int* nonce_s=message->getNonce();
       bool res;
       if(message==nullptr)
       {
@@ -563,7 +575,7 @@ namespace client
       }
       nonce_s=message->getNonce();
       verbose<<"-->[MainClient][keyExchangeReciveProtocol] the recived nonce is:"<<*nonce_s<<'\n';
-      if((*nonce_s<(this->receiveNonce) && exchangeWithServer) || ( exchangeWithServer && currTokenIninzialized && *nonce_s!=(this->currentToken) ))
+      if((*nonce_s!=(this->myNonceVerify) && exchangeWithServer) || ( exchangeWithServer && currTokenIninzialized && *nonce_s!=(this->currentToken) ))
       {
         verbose<<"--> [MainClient][keyExchangeProtocol] nonce not valid"<<'\n';
         delete nonce_s;
@@ -586,7 +598,7 @@ namespace client
           if(this->aesKeyServer==nullptr||this->aesKeyServer->iv==nullptr || this->aesKeyServer->sessionKey==nullptr)
             return false;
           vverbose<<"-->[MainClient][keyExchangeReciveProtoco] key iv "<<aesKeyServer->iv<<" session key: "<<aesKeyServer->sessionKey<<'\n';//da eliminare
-          this->receiveNonce = *nonce_s+1;
+          //this->receiveNonce = *nonce_s+1;
           delete nonce_s;
           
           return true;
@@ -618,7 +630,7 @@ namespace client
   bool MainClient::keyExchangeClientSend()
   {
     bool res;
-    int* nonce_s;
+    unsigned int* nonce_s;
     bool connection_res;
     bool socketIsClosed;
     Message* retMess;
@@ -677,7 +689,7 @@ namespace client
   bool MainClient::receiveChallengeProtocol(Message* message)//da continuare con il challenge_register
   {
     bool res;
-    int* nonce_s;
+    unsigned int* nonce_s;
     string advUsername="";
     ChallengeInformation *data=nullptr;
     if(message==nullptr)
@@ -704,6 +716,10 @@ namespace client
       return false;
     advUsername=message->getUsername();
     this->receiveNonce = *nonce_s+1;
+    if(this->receiveNonce>(UINT_MAX-52))
+    {
+      ReceiveNonceOutOfBound=true;
+    }
     delete nonce_s;
     verbose<<"--> [MainClient][reciveChallengeProtocol] the actual send nonce is:"<<sendNonce<<'\n';
     data=new ChallengeInformation(advUsername);
@@ -776,7 +792,7 @@ namespace client
   bool MainClient::receiveRejectProtocol(Message* message)
   {
     bool res;
-    int* nonce_s;
+    unsigned int* nonce_s;
     string advUsername="";
     ChallengeInformation *data=nullptr;
     if(message==nullptr)
@@ -802,6 +818,10 @@ namespace client
       return false;
     
     this->receiveNonce=(*message->getNonce())+1;
+    if(this->receiveNonce>(UINT_MAX-52))
+    {
+      ReceiveNonceOutOfBound=true;
+    }
     verbose<<"--> [MainClient][reciveRejectProtocol] the actual send nonce is:"<<sendNonce<<'\n';
     
     base<<"\n \n";
@@ -867,7 +887,7 @@ namespace client
   bool MainClient::reciveChatProtocol(Message* message)
   {
     bool res;
-    int* nonce_s;
+    unsigned int* nonce_s;
     bool socketIsClosed=false;
     Message* messageACK;
     string advUsername="";
@@ -1004,7 +1024,7 @@ namespace client
   bool MainClient::receiveAcceptProtocol(Message* message)
   {
     bool res;
-    int* nonce_s;
+    unsigned int* nonce_s;
     string advUsername="";
     ChallengeInformation *data=nullptr;
     if(message==nullptr)
@@ -1031,6 +1051,10 @@ namespace client
      adv_username_1 = challenged_username;
      delete challenge_register;
      this->receiveNonce=(*message->getNonce()) + 1;
+     if(this->receiveNonce>(UINT_MAX-52))
+     {
+      ReceiveNonceOutOfBound=true;
+     }
      verbose<<"--> [MainClient][reciveAcceptProtocol] the actual send nonce is:"<<sendNonce<<'\n';
      challenge_register= nullptr;
      challenge_register = new ChallengeRegister();
@@ -1042,7 +1066,7 @@ namespace client
   bool MainClient::receiveGameParamProtocol(Message* message)
   {
     bool res;
-    int* nonce_s;
+    unsigned int* nonce_s;
     int keyLen;
     std::string app;
     std::string advUsername="";
@@ -1070,6 +1094,10 @@ namespace client
     if(!res)
       return false;
     this->receiveNonce=(*message->getNonce())+1;
+    if(this->receiveNonce>(UINT_MAX-52))
+    {
+      ReceiveNonceOutOfBound=true;
+    }
     verbose<<"--> [MainClient][reciveGameProtocol] the actual nonce is:"<<sendNonce<<'\n';
     //advPort= message->getPort();
     pubKeyAdv=message->getPubKey();
@@ -1162,7 +1190,7 @@ namespace client
   bool MainClient::receiveWithDraw(Message* message)
   {
     bool res;
-    int* nonce_s;
+    unsigned int* nonce_s;
     string advUsername="";
     ChallengeInformation *data=nullptr;
     if(message==nullptr)
@@ -1186,6 +1214,10 @@ namespace client
     if(!res)
       return false;
      this->receiveNonce=(*message->getNonce())+1;
+     if(this->receiveNonce>(UINT_MAX-52))
+     {
+      ReceiveNonceOutOfBound=true;
+     }
      //clientPhase=START_GAME_PHASE;
      adv_username_1 = "";
      //devo eliminare dal challenge_register
@@ -1201,7 +1233,7 @@ namespace client
   bool MainClient::receiveWithDrawOkProtocol(Message* message)
   {
     bool res;
-    int* nonce_s;
+    unsigned int* nonce_s;
     string advUsername="";
     ChallengeInformation *data=nullptr;
     if(message==nullptr)
@@ -1225,6 +1257,10 @@ namespace client
     if(!res)
       return false;
      this->receiveNonce=(*message->getNonce())+1;
+     if(this->receiveNonce>(UINT_MAX-52))
+     {
+       ReceiveNonceOutOfBound=true;
+     }
      //clientPhase=START_GAME_PHASE;
      adv_username_1 = "";
      challenged_username.clear();
@@ -1244,16 +1280,16 @@ namespace client
     switch(type)
     {
       case CERTIFICATE_REQ:
+        this->myNonceVerify=generateRandomNonce();
         message->setMessageType( CERTIFICATE_REQ );
-        message->setNonce(0);
+        message->setNonce(this->myNonceVerify);
         break;
       case LOGIN_REQ:
         message->setMessageType( LOGIN_REQ );
-        message->setNonce(this->sendNonce);
+        message->setNonce(this->serverNonceVerify);
         message->setPort( this->myPort );
         message->setUsername(param );
         cipherRes=cipher_client->toSecureForm( message,aesKey);
-        this->sendNonce++;
         verbose<<"--> [MainClient][createMessage] the actual send nonce is:"<<this->sendNonce<<'\n';
         break;
         
@@ -1261,11 +1297,11 @@ namespace client
         message->setMessageType( KEY_EXCHANGE );
         if(!keyExchWithClient)
         {
-          message->setNonce(this->sendNonce);
+          message->setNonce(this->serverNonceVerify);
           partialKey = this->cipher_client->getPartialKey();
           message->set_DH_key( partialKey->getMessage(), partialKey->length() );
           cipherRes=this->cipher_client->toSecureForm( message,aesKey);
-          this->sendNonce++;
+          
           verbose<<"--> [MainClient][createMessage] the actual send nonce is:"<<sendNonce<<'\n';
         }
         else
@@ -1447,6 +1483,10 @@ namespace client
     }
     if(!cipherRes)
       return nullptr;
+    if(this->sendNonce+52>(UINT_MAX/2)&&clientPhase!= ClientPhase::INGAME_PHASE)
+    {
+      SendNonceOutOfBound=true;
+    }
     verbose<<"--> [MainClient][createMessage] Message created"<<'\n';
     return message;
   }
@@ -1574,7 +1614,20 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
   this->myPort=myPort;
   this->sendNonce=0;
   this->receiveNonce=0;
-  connection_manager=new ConnectionManager(false,this->myIP,this->myPort);
+  if(connection_manager!=nullptr)
+  {
+    delete connection_manager;
+    connection_manager=nullptr;
+  }
+  try
+  {
+    connection_manager=new ConnectionManager(false,this->myIP,this->myPort);
+  }
+  catch(std::bad_alloc& e)
+  {
+    connection_manager=nullptr;
+    return false;
+  }
   try
   {
     res=connection_manager->createConnectionWithServerTCP(this->serverIP,this->serverPort);
@@ -1837,7 +1890,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     NetMessage* netGameMess;
     Message* messG;
     unsigned int gameMessLen=0;
-    int* c_nonce;
+    unsigned int* c_nonce;
     int appLen;
     unsigned char* c_app;
     Message* messageACK;
@@ -2003,7 +2056,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     bool res;  
            
     res=cipher_client->fromSecureForm( message , username ,aesKeyServer,true);
-    int *nonce_s=message->getNonce();
+    unsigned int *nonce_s=message->getNonce();
     verbose<<"-->[MainClient][errorHandler] the recived nonce is:"<<*nonce_s<<'\n';
     if(res==false || *nonce_s<(this->receiveNonce))
     {
@@ -2013,6 +2066,10 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 
     }
     this->receiveNonce = *nonce_s+1;
+    if(this->receiveNonce>(UINT_MAX-52))
+    {
+      ReceiveNonceOutOfBound=true;
+    }
     printWhiteSpace();
     std::cout<<"error to server request try again. \n"<<endl;
     stringstream sstr;
@@ -2256,6 +2313,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           bool socketIsClosed=false;
           if(loginProtocol(username,&socketIsClosed))
           {
+            this->sendNonce=0;
+            this->receiveNonce=(UINT_MAX/2);
+        
             this->username=username;
             this->logged=true;
             if(!sendImplicitUserListReq())
@@ -2605,6 +2665,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           cout.flush();
           return false;
         }
+
       }
       else if(comand_line.compare(0,8,"withdraw")==0&&logged==true && (clientPhase!=INGAME_PHASE||clientPhase!=START_GAME_PHASE))
       {
@@ -2766,7 +2827,6 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                     base<<"\t# Insert a command:";
                     std::cout.flush();
                     cipher_client->resetRSA_is_start();
-
                 }
                 break;
               case USER_LIST:
@@ -2779,7 +2839,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                    if(clientPhase==ClientPhase::NO_PHASE)
                    {
                      printWhiteSpace();
-                     cout<<"error to show the online users list"<<'\n';
+                     base<<"error to show the online users list"<<'\n';
                      printWhiteSpace();
                      base<<"\t# Insert a command:";
                      cout.flush();
@@ -2972,6 +3032,14 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         }
         
       }
+      if(SendNonceOutOfBound==true||ReceiveNonceOutOfBound==true)
+      {
+        if(sendLogoutProtocol())
+        {
+          SendNonceOutOfBound=false;
+          ReceiveNonceOutOfBound=false;
+        }
+      }
       if(messageChatToACK!=nullptr)
       {
         if(difftime(time(NULL),startWaitChatAck)>SLEEP_TIME)
@@ -3161,8 +3229,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 */  
   int main(int argc, char** argv)
   {
-    Logger::setThreshold(  NO_VERBOSE );
-    //Logger::setThreshold(  VERY_VERBOSE );
+   // Logger::setThreshold(  NO_VERBOSE );
+    Logger::setThreshold(  VERY_VERBOSE );
     client::MainClient* main_client;
     signal(SIGTSTP,signalHandler);
     if(argc==1)

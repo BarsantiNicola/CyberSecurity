@@ -580,4 +580,12 @@ funzione che restituisce un vector di id di socket pronti in caso non ci siano d
   {
     return fileno(stdin);
   }
+/*
+--------------destructor-----------------
+*/
+  ConnectionManager::~ConnectionManager()
+  {
+    closeConnection(serverSocket);
+    closeConnection(socketUDP);
+  }
 }
