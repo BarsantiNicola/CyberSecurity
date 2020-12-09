@@ -371,7 +371,7 @@ namespace client
         return false;
       }
       this->receiveNonce = *nonce_s+1;
-      if(this->receiveNonce>(UINT32_MAX-52))
+      if(this->receiveNonce>(UINT32_MAX-SAFE_ZONE))
       {
         ReceiveNonceOutOfBound=true;
       }
@@ -476,7 +476,7 @@ namespace client
         if(!res)
           return false;
         this->receiveNonce = *nonce_s +1;
-        if(this->receiveNonce>(UINT32_MAX-52))
+        if(this->receiveNonce>(UINT32_MAX-SAFE_ZONE))
         {
           ReceiveNonceOutOfBound=true;
         }
@@ -525,6 +525,10 @@ namespace client
     {
       verbose<<"-->[MainClient][sendLogoutProtocol] LOGOUT_PHASE"<<'\n';
       clientPhase=ClientPhase::LOGOUT_PHASE;
+    }
+    else
+    {
+      this->sendNonce--;
     }
     return res;
   }
@@ -731,7 +735,7 @@ namespace client
       return false;
     advUsername=message->getUsername();
     this->receiveNonce = *nonce_s+1;
-    if(this->receiveNonce>(UINT32_MAX-52))
+    if(this->receiveNonce>(UINT32_MAX-SAFE_ZONE))
     {
       ReceiveNonceOutOfBound=true;
     }
@@ -833,7 +837,7 @@ namespace client
       return false;
     
     this->receiveNonce=(*message->getNonce())+1;
-    if(this->receiveNonce>(UINT32_MAX-52))
+    if(this->receiveNonce>(UINT32_MAX-SAFE_ZONE))
     {
       ReceiveNonceOutOfBound=true;
     }
@@ -915,18 +919,21 @@ namespace client
     if(*nonce_s!=(this->currTokenChatAdv))
     {
       verbose<<"--> [MainClient][reciveChatProtocol] error the nonce isn't valid "<<*nonce_s<<" != "<<this->currTokenChatAdv<< '\n';
-      
-      res=cipher_client->fromSecureForm( message , username ,aesKeyClient,false);
-      if(!res)
+      if(*nonce_s<this->currTokenChatAdv)
       {
-        verbose<<"--> [MainClient][reciveChatProtocol] error to decrypt "<<this->currTokenChatAdv<<" != "<<*nonce_s<<'\n';
-        return false;
-      }
-      messageACK=createMessage(ACK,nullptr,nullptr,0,aesKeyClient,*nonce_s,false);
-      connection_manager->sendMessage(*messageACK,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
+        res=cipher_client->fromSecureForm( message , username ,aesKeyClient,false);
+        if(!res)
+        {
+          verbose<<"--> [MainClient][reciveChatProtocol] error to decrypt "<<this->currTokenChatAdv<<" != "<<*nonce_s<<'\n';
+          return false;
+        }
+        messageACK=createMessage(ACK,nullptr,nullptr,0,aesKeyClient,*nonce_s,false);
+        connection_manager->sendMessage(*messageACK,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
       delete nonce_s;
       return true;
-      }
+     }
+     return false;
+    }
     if(message->getMessageType()!=CHAT)
     {
       verbose<<"--> [MainClient][reciveChatProtocol] message type not expected"<<'\n';
@@ -947,7 +954,8 @@ namespace client
     printWhiteSpace();
     base<<"\t# Insert a command:";
     cout.flush();
-    this->currTokenChatAdv+=2;
+    if(this->currTokenChatAdv<(UINT32_MAX-2))
+      this->currTokenChatAdv+=2;
     return true;
   }
 /*
@@ -1066,10 +1074,10 @@ namespace client
      adv_username_1 = challenged_username;
      delete challenge_register;
      this->receiveNonce=(*message->getNonce()) + 1;
-     if(this->receiveNonce>(UINT32_MAX-52))
+    /* if(this->receiveNonce>(UINT32_MAX-SAFE_ZONE))
      {
       ReceiveNonceOutOfBound=true;
-     }
+     }*/
      verbose<<"--> [MainClient][reciveAcceptProtocol] the actual send nonce is:"<<sendNonce<<'\n';
      challenge_register= nullptr;
      challenge_register = new ChallengeRegister();
@@ -1109,10 +1117,10 @@ namespace client
     if(!res)
       return false;
     this->receiveNonce=(*message->getNonce())+1;
-    if(this->receiveNonce>(UINT32_MAX-52))
+   /* if(this->receiveNonce>(UINT32_MAX-SAFE_ZONE))
     {
       ReceiveNonceOutOfBound=true;
-    }
+    }*/
     verbose<<"--> [MainClient][reciveGameProtocol] the actual nonce is:"<<sendNonce<<'\n';
     //advPort= message->getPort();
     pubKeyAdv=message->getPubKey();
@@ -1231,7 +1239,7 @@ namespace client
     if(!res)
       return false;
      this->receiveNonce=(*message->getNonce())+1;
-     if(this->receiveNonce>(UINT32_MAX-52))
+     if(this->receiveNonce>(UINT32_MAX-SAFE_ZONE))
      {
       ReceiveNonceOutOfBound=true;
      }
@@ -1274,7 +1282,7 @@ namespace client
     if(!res)
       return false;
      this->receiveNonce=(*message->getNonce())+1;
-     if(this->receiveNonce>(UINT32_MAX-52))
+     if(this->receiveNonce>(UINT32_MAX-SAFE_ZONE))
      {
        ReceiveNonceOutOfBound=true;
      }
@@ -1500,9 +1508,11 @@ namespace client
     }
     if(!cipherRes)
       return nullptr;
-    if(this->sendNonce+52>(UINT32_MAX/2)&&clientPhase!= ClientPhase::INGAME_PHASE)
+    if(this->sendNonce+SAFE_ZONE>(UINT32_MAX/2)&&(clientPhase!= ClientPhase::INGAME_PHASE)&&(type!=MessageType::LOGOUT_REQ))
     {
       SendNonceOutOfBound=true;
+      this->sendNonce--;
+      return nullptr;
     }
     verbose<<"--> [MainClient][createMessage] Message created"<<'\n';
     return message;
@@ -1930,9 +1940,12 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     }
     if(*c_nonce!=this->currentToken)
     {
-      vverbose<<"-->[MainClient][ReceiveGameMove] nonce not valid: "<<*c_nonce<<" !="<<this->currentToken<<'\n';
-      messageACK=createMessage(ACK,nullptr,nullptr,0,aesKeyClient,*c_nonce,false);
-      connection_manager->sendMessage(*messageACK,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
+      if(*c_nonce<this->currentToken)
+      {
+        vverbose<<"-->[MainClient][ReceiveGameMove] nonce not valid: "<<*c_nonce<<" !="<<this->currentToken<<'\n';
+        messageACK=createMessage(ACK,nullptr,nullptr,0,aesKeyClient,*c_nonce,false);
+        connection_manager->sendMessage(*messageACK,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
+      }
       delete c_nonce;
       return;
     }
@@ -2089,7 +2102,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 
     }
     this->receiveNonce = *nonce_s+1;
-    if(this->receiveNonce>(UINT32_MAX-52))
+    if(this->receiveNonce>(UINT32_MAX-SAFE_ZONE))
     {
       ReceiveNonceOutOfBound=true;
     }
@@ -2428,7 +2441,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         }
       }
       
-      else if(comand_line.compare(0,9,"challenge")==0 && clientPhase!=INGAME_PHASE && logged)
+      else if(comand_line.compare(0,10,"challenge ")==0 && clientPhase!=INGAME_PHASE && logged)
       {
          
       	 string app=comand_line.substr(10);
@@ -2518,7 +2531,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
          }
          sendImplicitUserListReq();
       }
-      else if(comand_line.compare(0,9,"put token")==0 && clientPhase == ClientPhase::INGAME_PHASE )
+      else if(comand_line.compare(0,10,"put token ")==0 && clientPhase == ClientPhase::INGAME_PHASE )
       {
         
         int column;
@@ -2547,11 +2560,10 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
              return true;         
         }    
       }
-      else if(comand_line.compare(0,4,"send")==0 && clientPhase == ClientPhase::INGAME_PHASE && this->currTokenChat<(UINT32_MAX-4))
+      else if(comand_line.compare(0,5,"send ")==0 && clientPhase == ClientPhase::INGAME_PHASE && this->currTokenChat<(UINT32_MAX-4))
       {
-        std::string appSec = comand_line.substr(4);
         std::string app = comand_line.substr(5);
-        if(appSec.empty()||app.empty())
+        if(app.empty())
         {
           textual_interface_manager->printGameInterface(startingMatch, std::to_string(15)," ",game->printGameBoard());
           textual_interface_manager->printMessage( string("failed to send chat "));
@@ -2594,7 +2606,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
           return false;         
         }
       }
-      else if(comand_line.compare(0,6,"accept")==0 && clientPhase!=INGAME_PHASE && logged)
+      else if(comand_line.compare(0,7,"accept ")==0 && clientPhase!=INGAME_PHASE && logged)
       {
          
       	 std::string app=comand_line.substr(7);
@@ -2633,7 +2645,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
          }
       }
 
-      else if(comand_line.compare(0,6,"reject")==0 && clientPhase!=INGAME_PHASE && logged)
+      else if(comand_line.compare(0,7,"reject ")==0 && clientPhase!=INGAME_PHASE && logged)
       {
         
       	 string app=comand_line.substr(7);
@@ -2670,7 +2682,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
          res=sendImplicitUserListReq();
       }
       
-      else if(comand_line.compare(0,4,"quit")==0 && clientPhase==INGAME_PHASE)
+      else if(comand_line.compare("quit")==0 && clientPhase==INGAME_PHASE)
       {
         bool ret=sendDisconnectProtocol();
         if(!ret)
@@ -2684,7 +2696,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         }
       }
      
-      else if(comand_line.compare(0,6,"logout")==0&&logged==true&& clientPhase!=INGAME_PHASE)
+      else if(comand_line.compare("logout")==0&&logged==true&& clientPhase!=INGAME_PHASE)
       {
         //ESEGUO LOGOUT
         bool ret=sendLogoutProtocol();
@@ -2700,7 +2712,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         }
 
       }
-      else if(comand_line.compare(0,8,"withdraw")==0&&logged==true && (clientPhase!=INGAME_PHASE||clientPhase!=START_GAME_PHASE))
+      else if(comand_line.compare("withdraw")==0&&logged==true && (clientPhase!=INGAME_PHASE||clientPhase!=START_GAME_PHASE))
       {
        
         bool ret=sendWithDrawProtocol();
@@ -3173,6 +3185,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 
   void MainClient::clearGameParam()
   {
+    reqStatus="none";
     vverbose<<"-->[MainClient][clearGameParam] chat reseted"<<'\n';
     textual_interface_manager->resetChat();
     setcomandTimer(ComandToTimer::STOP );

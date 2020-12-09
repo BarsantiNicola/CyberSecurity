@@ -21,6 +21,7 @@
 #include<regex>
 #define SLEEP_TIME 2
 #define TOKEN_GAP 50
+#define SAFE_ZONE 150
 #define NUMBER_SEPARATOR 4
 #define MAX_LENGTH_CHAT 200
 using namespace utility;
