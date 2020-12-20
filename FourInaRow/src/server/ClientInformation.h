@@ -21,18 +21,17 @@ class ClientInformation{
         private:
             string IPaddress;
             int socket;
-            int* nonce;
-            int* receiveNonce;
-            int* sendNonce;
+            unsigned int* receiveNonce;
+            unsigned int* sendNonce;
 
         public:
             ClientInformation( string IPaddress, int socket );
             string getIPaddress();
             int getSocket();
-            int* getNonce();
-            int* getSendNonce();
-            int* getReceiveNonce();
-            void setNonce( int nonce );
+            unsigned int* getSendNonce();
+            unsigned int* getReceiveNonce();
+            void setSendNonce( unsigned int nonce );
+            void setReceiveNonce( unsigned int nonce );
             void updateIP( int port );
             void updateSendNonce();
             void updateReceiveNonce( int nonce );

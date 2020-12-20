@@ -21,9 +21,9 @@ namespace cipher
 {
   class CipherAES{
   private:
-    unsigned char* iv;
+    unsigned char* iv=nullptr;
     int ivLength;
-    unsigned char* key;
+    unsigned char* key=nullptr;
     int keyLen;
   public:
     CipherAES();

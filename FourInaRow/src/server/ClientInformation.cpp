@@ -7,7 +7,6 @@ namespace server{
 
         this->IPaddress = IPaddress;
         this->socket = socket;
-        this->nonce = nullptr;
         this->sendNonce = nullptr;
         this->receiveNonce = nullptr;
 
@@ -31,27 +30,19 @@ namespace server{
 
     }
 
-    int* ClientInformation::getNonce(){
-
-        if( !this->nonce ) return nullptr;
-
-        return new int(*(this->nonce));
-
-    }
-
-    int* ClientInformation::getReceiveNonce(){
+    unsigned int* ClientInformation::getReceiveNonce(){
 
         if( !this->receiveNonce ) return nullptr;
 
-        return new int(*(this->receiveNonce));
+        return new unsigned int(*(this->receiveNonce));
 
     }
 
-    int* ClientInformation::getSendNonce(){
+    unsigned int* ClientInformation::getSendNonce(){
 
         if( !this->sendNonce ) return nullptr;
 
-        return new int(*(this->sendNonce));
+        return new unsigned int(*(this->sendNonce));
 
     }
 
@@ -61,15 +52,16 @@ namespace server{
     //                                                                                           //
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
-    //  Function to set the nonce, from the given nonce it derives two values one will be used by the client to contact
-    //  the server and the other will be used from the server to reply
-    void ClientInformation::setNonce( int nonce ){
+    //  Function to set the nonce used to send messages to clients
+    void ClientInformation::setSendNonce( unsigned int nonce ){
 
-        string snonce = to_string( nonce );
-        this->nonce = new int(nonce);
+        this->sendNonce = new unsigned int(nonce);
 
-        this->sendNonce = new int(((unsigned int)atoi(snonce.substr(snonce.length()/2, snonce.length()).c_str())*10000));
-        this->receiveNonce = new int(((unsigned int)atoi(snonce.substr(0,snonce.length()/2).c_str())*10000));
+    }
+
+    void ClientInformation::setReceiveNonce( unsigned int nonce ){
+
+        this->receiveNonce = new unsigned int( nonce );
 
     }
 

@@ -43,6 +43,7 @@ namespace utility
       int getsocketUDP();
       int getserverSocket();
       int getstdinDescriptor();
+      ~ConnectionManager();
     private:
       void copyBuffer(unsigned char*,unsigned char*,int,int);
       void initArray(unsigned char*,unsigned char,int);

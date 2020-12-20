@@ -23,20 +23,16 @@
   </component>
   <component name="CMakeSettings">
     <configurations>
-      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" ENABLED="true" />
+      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
     </configurations>
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4cbb8ddf-e807-44fa-ae33-bda27674b47b" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/client/data/lose_art.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/client/data/tie_art.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/client/data/win_art.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/program" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/program" beforeDir="false" afterPath="$PROJECT_DIR$/program" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/client/TextualInterfaceManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/TextualInterfaceManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/client/TextualInterfaceManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/TextualInterfaceManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/client/data/setter_art.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/client/data/setter_art.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../debug" beforeDir="false" afterPath="$PROJECT_DIR$/../debug" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/MainServer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MainServer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server/MainServer.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/server/MainServer.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utility/Converter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/utility/Converter.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,7 +60,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="cf.first.check.clang-format" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/client/data" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -77,13 +73,6 @@
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/client/data" />
     </key>
-  </component>
-  <component name="RunManager">
-    <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -232,7 +221,12 @@
       <workItem from="1606916198879" duration="7978000" />
       <workItem from="1607015309498" duration="651000" />
       <workItem from="1607032098759" duration="1889000" />
-      <workItem from="1607069664879" duration="3255000" />
+      <workItem from="1607069664879" duration="3409000" />
+      <workItem from="1607253325222" duration="668000" />
+      <workItem from="1607358034424" duration="1180000" />
+      <workItem from="1607364958696" duration="5989000" />
+      <workItem from="1607418438927" duration="4821000" />
+      <workItem from="1607436611784" duration="1032000" />
     </task>
     <servers />
   </component>

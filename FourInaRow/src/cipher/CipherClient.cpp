@@ -62,6 +62,9 @@ namespace cipher
       exit(1);
     }
    }
+/*
+--------------------destructor------------------
+*/
    CipherClient::~CipherClient()
    {
      if(RSA_is_start)
@@ -69,7 +72,9 @@ namespace cipher
      delete this->dh;
      delete this->aes;
    }
-/*------------------------------function toSecureForm------------------------------------*/
+/*
+------------------------------function toSecureForm------------------------------------
+*/
    bool CipherClient::toSecureForm( Message* message, SessionKey* aesKey  )
    {
      bool correct=false;

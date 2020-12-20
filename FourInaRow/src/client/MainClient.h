@@ -20,7 +20,8 @@
 #include<csignal>
 #include<regex>
 #define SLEEP_TIME 2
-#define TOKEN_GAP 45
+#define TOKEN_GAP 50
+#define SAFE_ZONE 150
 #define NUMBER_SEPARATOR 4
 #define MAX_LENGTH_CHAT 200
 using namespace utility;
@@ -64,7 +65,13 @@ namespace client
   {
     private:
 
+      unsigned int nonceVerifyAdversary=0;
+      unsigned int myNonceVerify=0;
+      unsigned int serverNonceVerify=0;
+      bool SendNonceOutOfBound=false;
+      bool ReceiveNonceOutOfBound=false;
       std::thread timerThread;
+      string reqStatus="none";
       bool partialKeyCreated=false;
       NetMessage* partialKey;
       int nonceAdv=0;
@@ -103,7 +110,7 @@ namespace client
       cipher::SessionKey* aesKeyServer=nullptr;
       cipher::SessionKey* aesKeyClient=nullptr;
       ChallengeRegister* challenge_register=new ChallengeRegister();
-      ConnectionManager* connection_manager;//da inizializzare nel main
+      ConnectionManager* connection_manager=nullptr;//da inizializzare nel main
       TextualInterfaceManager* textual_interface_manager=nullptr;
       cipher::CipherClient* cipher_client;
       bool loginProtocol(std::string username,bool *socketIsClosed);//ok

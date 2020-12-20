@@ -189,13 +189,13 @@ namespace utility {
 
     }
 
-    bool Message::setNonce( int nonce ){
+    bool Message::setNonce( unsigned int nonce ){
 
         if( !this->nonce ){
 
             try {
 
-                this->nonce = new int( nonce );
+                this->nonce = new unsigned int( nonce );
 
             }catch (bad_alloc e) {
 
@@ -212,13 +212,13 @@ namespace utility {
 
     }
 
-    bool Message::setCurrent_Token( int current_token ){
+    bool Message::setCurrent_Token( unsigned int current_token ){
 
         if( !this->current_token ){
 
             try {
 
-                this->current_token = new int( current_token );
+                this->current_token = new unsigned int( current_token );
 
             }catch( bad_alloc e ){
 
@@ -595,13 +595,13 @@ namespace utility {
 
     string Message::getAdversary_2(){ return this->adv_username_2; }
 
-    int* Message::getNonce(){
+    unsigned int* Message::getNonce(){
 
         if( !this->nonce ) return nullptr;
 
         try{
 
-            return new int( *(this->nonce));
+            return new unsigned int( *(this->nonce));
 
         }catch( bad_alloc e ){
 
@@ -612,13 +612,13 @@ namespace utility {
 
     }
 
-    int* Message::getCurrent_Token(){
+    unsigned int* Message::getCurrent_Token(){
 
         if( !this->current_token ) return nullptr;
 
         try {
 
-            return new int( *(this->current_token));
+            return new unsigned int( *(this->current_token));
 
         }catch( bad_alloc e ){
 
