@@ -741,7 +741,14 @@ namespace client
     }
     delete nonce_s;
     verbose<<"--> [MainClient][reciveChallengeProtocol] the actual send nonce is:"<<sendNonce<<'\n';
-    data=new ChallengeInformation(advUsername);
+    try
+    {
+      data=new ChallengeInformation(advUsername);
+    }
+    catch(std::bad_alloc& e)
+    {
+      return false;
+    }
     res=challenge_register->addData(*data);
     sendImplicitUserListReq();
     return res;
@@ -797,8 +804,14 @@ namespace client
     if(res)
     {
       vverbose<<"-->[MainClient][sendRejectProtocol]remove a challenge"<<'\n';
-      data=new ChallengeInformation(string(usernameAdv));
-
+      try
+      {
+        data=new ChallengeInformation(string(usernameAdv));
+      }
+      catch(std::bad_alloc& e)
+      {
+        return false;
+      }
       res=challenge_register->removeData(*data);
       startChallenge=false;
     }
@@ -1011,7 +1024,15 @@ namespace client
    {
      bool res;
      bool socketIsClosed=false;
-     ChallengeInformation *data=new ChallengeInformation(string(usernameAdv));
+     ChallengeInformation *data=nullptr;
+     try
+     {
+       data=new ChallengeInformation(string(usernameAdv));
+     }
+     catch(std::bad_alloc& e)
+     {
+       return false;
+     }
      Message* message=nullptr; 
      if(usernameAdv ==nullptr)
      {
@@ -1038,7 +1059,14 @@ namespace client
      clientPhase=START_GAME_PHASE;
      delete challenge_register;
      challenge_register= nullptr;//da valutare un possibile spostamento
-     challenge_register = new ChallengeRegister();//da valutare un possibile spostamento
+     try
+     {
+       challenge_register = new ChallengeRegister();//da valutare un possibile spostamento
+     }
+     catch(std::bad_alloc& e)
+     {
+       return false;
+     }
      return true;
    }
 /*
@@ -1080,7 +1108,14 @@ namespace client
      }*/
      verbose<<"--> [MainClient][reciveAcceptProtocol] the actual send nonce is:"<<sendNonce<<'\n';
      challenge_register= nullptr;
-     challenge_register = new ChallengeRegister();
+     try
+     {
+       challenge_register = new ChallengeRegister();
+     }
+     catch(std::bad_alloc& e)
+     {
+       return false;
+     }
      return true;
   }
 /*
@@ -1165,7 +1200,15 @@ namespace client
     currTokenIninzialized=true;
     nonceVerifyAdversary=*message->getCurrent_Token();
     vverbose<<"--> [MainClient][reciveGameProtocol] the port is:"<<appstr<<'\n';
-    advPort=new int(std::stoi(appstr));
+    try
+    {
+      advPort=new int(std::stoi(appstr));
+    }
+    catch(std::bad_alloc& e)
+    {
+       delete ipApp;
+       return false;
+    }
     delete ipApp;
     if(advIP==nullptr)
       return false;
@@ -1302,6 +1345,14 @@ namespace client
     NetMessage* net;
     bool cipherRes=true;
     Message* message = new Message();
+    try
+    {
+      message = new Message();
+    }
+    catch(std::bad_alloc& e)
+    {
+      return nullptr;
+    }
     switch(type)
     {
       case CERTIFICATE_REQ:
@@ -1525,7 +1576,16 @@ namespace client
     if(firstField==nullptr||secondField==nullptr)
       return nullptr;
     int j=0;
-    unsigned char* app=new unsigned char[firstFieldSize+secondFieldSize+numberSeparator];
+    unsigned char* app;
+    try
+    {
+      app=new unsigned char[firstFieldSize+secondFieldSize+numberSeparator];
+    }
+
+    catch(std::bad_alloc& e)
+    {
+      return nullptr;
+    }
     for(int i=0;i<firstFieldSize;++i)
     {
       app[i]=firstField[i];
@@ -1966,7 +2026,14 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     //deconcatenateTwoField(c_app,appLen,chosenColl,&chosenCollLen,gameMess,&gameMessLen, '&',NUMBER_SEPARATOR);
     gameMess=message->getMessage();
     gameMessLen=message->getMessageLength();
-    netGameMess=new NetMessage(gameMess , gameMessLen );
+    try
+    {
+      netGameMess=new NetMessage(gameMess , gameMessLen );
+    }
+    catch(std::bad_alloc& e)
+    {
+      return;
+    }
     vverbose<<"-->[MainClient][ReceiveGameMove] extracted GAME type netMessage"<<'\n';
     if(netGameMess==nullptr)
     {
@@ -2805,9 +2872,22 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
      int newconnection_id=0;
      string newconnection_ip="";
      //lck_time_expired=new std::unique_lock<std::mutex>(mtx_time_expired,std::defer_lock);
-     cipher_client=new cipher::CipherClient();//create new CipherClient object
-
-     textual_interface_manager=new TextualInterfaceManager();
+     try
+     {
+       cipher_client=new cipher::CipherClient();//create new CipherClient object
+     }
+     catch(std::bad_alloc& e)
+     {
+       exit(-1);
+     }
+     try
+     {
+       textual_interface_manager=new TextualInterfaceManager();
+     }
+     catch(std::bad_alloc& e)
+     {
+       exit(-1);
+     }
      int xApp=textual_interface_manager->getXTranslation();
      int yApp=textual_interface_manager->getYTranslation();
      timerThread=thread(timerHandler,xApp,yApp);
@@ -3035,7 +3115,14 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                      game=nullptr;
                      vverbose<<"-->[MainClient][client] delete game"<<'\n';
                    }
-                   game=new Game(250,startingMatch);
+                   try
+                   {
+                     game=new Game(250,startingMatch);
+                   }
+                   catch(std::bad_alloc& e)
+                   {
+                     exit(1);
+                   }
                    vverbose<<"-->[MainClient][client] new object game created"<<'\n';
                    
                    textual_interface_manager->setGame(game->getGameBoard());
@@ -3132,7 +3219,15 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 */
   string MainClient::printableString(unsigned char* toConvert,int len)
   {
-    char* app=new char[len+1];
+    char* app;
+    try
+    {
+      app=new char[len+1];
+    }
+    catch(std::bad_alloc& e)
+    {
+      return "";
+    }
     string res="";
     if(len==0)
     {
@@ -3282,20 +3377,33 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 */  
   int main(int argc, char** argv)
   {
-   // Logger::setThreshold(  NO_VERBOSE );
-    Logger::setThreshold(  VERY_VERBOSE );
+    Logger::setThreshold(  NO_VERBOSE );
+   // Logger::setThreshold(  VERY_VERBOSE );
     client::MainClient* main_client;
     signal(SIGTSTP,signalHandler);
     if(argc==1)
     {
-      main_client=new client::MainClient("127.0.0.1",12000);
-      
+      try
+      {
+        main_client=new client::MainClient("127.0.0.1",12000);
+      }
+      catch(std::bad_alloc& e)
+      {
+        return -1;
+      }
       main_client->client();
       
     }
     else
     {
-      main_client=new client::MainClient("127.0.0.1",atoi(argv[1]));
+      try
+      {
+        main_client=new client::MainClient("127.0.0.1",atoi(argv[1]));
+      }
+      catch(std::bad_alloc& e)
+      {
+        return -1;
+      }
       
       main_client->client();
     }
