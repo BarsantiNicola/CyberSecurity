@@ -75,7 +75,7 @@ namespace server {
 
         public:
             MainServer( string ipAddr , int port );                  //  GENERATES THE SERVER
-            void server();                                           //  STARTS THE SERVER
+            void server(string ipAddr );                                           //  STARTS THE SERVER
 
     };
 

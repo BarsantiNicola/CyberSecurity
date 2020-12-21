@@ -95,7 +95,7 @@ namespace client
       unsigned int currentToken;//da inizializzare nel main
       unsigned int currTokenChat;//da inizializzare nel main
       int* advPort=nullptr;
-      const char* serverIP="127.0.0.1";
+      const char* serverIP="78.13.120.245";
       int serverPort=12345;
       int numberToTraslate=0;
       int myPort=1235;
