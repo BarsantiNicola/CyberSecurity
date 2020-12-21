@@ -634,7 +634,13 @@ namespace client
         vverbose<<"-->[MainClient][keyExchangeReciveProtoco] key iv "<<aesKeyClient->iv<<" session key: "<<aesKeyClient->sessionKey<<'\n';//da eliminare
         delete nonce_s;
         vverbose<<"-->[MainClient][keyExchangeReciveProtoco] nonce_s deleted"<<'\n';
+        if(messageToACK!=nullptr)
+        {
+          delete messageToACK;
+          messageToACK=nullptr;
+        }
         return true;
+      
        } 
       }
       return false;
@@ -664,6 +670,16 @@ namespace client
         notConnected=true;
       }
       return false;
+    }
+    if(messageToACK!=nullptr)
+    {
+      delete messageToACK;
+      messageToACK=nullptr;
+    }
+    if(startingMatch)
+    {
+      messageToACK=sendMess;
+      time(&startWaitAck);
     }
     return true;
   
@@ -974,6 +990,34 @@ namespace client
 /*
 ---------------------receiveACKProtocol-------------------------
 */
+  bool MainClient::receiveACKProtocol(Message* message)
+  {
+    bool res;
+    vverbose<<"--> [MainClient][reciveACKCProtocol] starting receive ACK protocol"<<'\n';
+    if(messageToACK==nullptr)
+      return false;
+    if(message==nullptr)
+      return false;
+    if(message->getMessageType()!=ACK)
+      return false;
+    
+    res=cipher_client->fromSecureForm( message , username ,aesKeyClient,false);
+    if(!res)
+    {
+      verbose<<"--> [MainClient][reciveACKProtocol] error to decrypt"<<'\n';
+      return false;
+    }   
+    if(*message->getNonce() != *messageToACK->getNonce())
+    {
+        verbose<<"--> [MainClient][reciveACKProtocol] tokenChatProtocol recived is "<<*message->getCurrent_Token()<<" expected "<<messageChatToACK->getCurrent_Token()<<'\n';
+       return false;
+    }
+    delete messageToACK;
+    messageToACK=nullptr;
+    return true;
+  }
+
+
   bool MainClient::receiveACKChatProtocol(Message* message)
   {	
     bool res;
@@ -3103,6 +3147,14 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
              switch(message->getMessageType())
              {
                case KEY_EXCHANGE:
+                 if(keyExchangeMade)
+                 {
+                   Message* messageACK=createMessage(ACK,nullptr,nullptr,0,aesKeyClient,nonceVerifyAdversary,false);
+                   bool socketIsClosed=false;
+                   connection_manager->sendMessage(*messageACK,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
+                   delete messageACK;
+                   break;
+                 }
                  if(keyExchangeReciveProtocol(message,false))
                  {
                    vverbose<<"-->[MainClient][client] keyExchangeReciveProtocol finished correctly"<<'\n';
@@ -3135,6 +3187,11 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                      this->currTokenChat=TOKEN_GAP;
                      //currTokenIninzialized=true;
                      keyExchangeClientSend();
+                     Message* messageACK=createMessage(ACK,nullptr,nullptr,0,aesKeyClient,nonceVerifyAdversary,false);
+                     bool socketIsClosed=false;
+                     connection_manager->sendMessage(*messageACK,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
+                     delete messageACK;
+                   
                    }
                    else
                    {
@@ -3151,7 +3208,9 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                    printWhiteSpace();
                    base<<"\t# Insert a command:";
                    cout.flush();
+                   keyExchangeMade=true;
                  }
+                 
                  //vverbose<<"-->[MainClient][client] finish KEY_EXCHANGE"<<'\n';
                  break;
                case MOVE:
@@ -3161,7 +3220,18 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                  reciveChatProtocol(message);
                  break;
                case ACK:
-                 receiveACKChatProtocol(message);
+                 if(messageToACK!=nullptr)
+                 {
+                    if(receiveACKProtocol(message))
+                    {
+                      textual_interface_manager->printGameInterface(startingMatch, std::to_string(15)," ",game->printGameBoard());
+                      printWhiteSpace();
+                      base<<"\t# Insert a command:";
+                      cout.flush();
+                    }
+                  }
+                 else
+                  receiveACKChatProtocol(message);
                  break;
              }
              
@@ -3183,7 +3253,16 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
         {
            bool socketIsClosed;
            connection_manager->sendMessage(*messageChatToACK,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
-          
+           time(&startWaitChatAck);
+        }
+      }
+      if(messageToACK!=nullptr)
+      {
+        if(difftime(time(NULL),startWaitAck)>SLEEP_TIME)
+        {
+           bool socketIsClosed;
+           connection_manager->sendMessage(*messageToACK,connection_manager->getsocketUDP(),&socketIsClosed,(const char*)advIP,*advPort);
+           time(&startWaitAck);
         }
       }
       if(timeIsExpired() && clientPhase==ClientPhase::INGAME_PHASE)
@@ -3280,6 +3359,12 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 
   void MainClient::clearGameParam()
   {
+    keyExchangeMade=false;
+    if(messageToACK!=nullptr)
+    {
+      delete messageToACK;
+      messageToACK=nullptr;
+    }
     reqStatus="none";
     vverbose<<"-->[MainClient][clearGameParam] chat reseted"<<'\n';
     textual_interface_manager->resetChat();
@@ -3377,8 +3462,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 */  
   int main(int argc, char** argv)
   {
-    Logger::setThreshold(  NO_VERBOSE );
-   // Logger::setThreshold(  VERY_VERBOSE );
+    //Logger::setThreshold(  NO_VERBOSE );
+    Logger::setThreshold(  VERY_VERBOSE );
     client::MainClient* main_client;
     signal(SIGTSTP,signalHandler);
     if(argc==1)
