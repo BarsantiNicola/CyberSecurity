@@ -3385,7 +3385,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     {
       try
       {
-        main_client=new client::MainClient("192.168.1.8",12000);
+        main_client=new client::MainClient("127.0.0.1",12000);
       }
       catch(std::bad_alloc& e)
       {
@@ -3398,7 +3398,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     {
       try
       {
-        main_client=new client::MainClient("192.168.1.8",atoi(argv[1]));
+        main_client=new client::MainClient("127.0.0.1",atoi(argv[1]));
       }
       catch(std::bad_alloc& e)
       {

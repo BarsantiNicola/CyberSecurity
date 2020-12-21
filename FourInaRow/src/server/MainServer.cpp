@@ -2154,8 +2154,8 @@ namespace server {
 int main() {
 
     Logger::setThreshold( VERBOSE );
-    MainServer* server = new MainServer( string("192.168.1.8") , 12345 );
-    server->server(string("192.168.1.8"));
+    MainServer* server = new MainServer( string("127.0.0.1") , 12345 );
+    server->server(string("127.0.0.1"));
     return 0;
 
 
