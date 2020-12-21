@@ -405,7 +405,7 @@ funzione che restituisce un vector di id di socket pronti in caso non ci siano d
       {
         return nullptr;
       }
-      len=recv(socket,(void*)buffer,BUFFER_LENGTH,0);
+      len=recv(socket,(void*)buffer,BUFFER_LENGTH,MSG_WAITALL);
       vverbose<<"-->[ConnectionManager][getMessage] byte recived "<<len<<'\n';
       if(len==0)
       {
