@@ -65,6 +65,8 @@ namespace client
   {
     private:
 
+      bool keyExchangeMade=false;
+      Message* messageToACK=nullptr;
       unsigned int nonceVerifyAdversary=0;
       unsigned int myNonceVerify=0;
       unsigned int serverNonceVerify=0;
@@ -87,6 +89,7 @@ namespace client
       int currTokenChatAdv;
       int nUser=0;
       time_t startWaitChatAck;
+      time_t startWaitAck;
       unsigned int sendNonce;
       unsigned int receiveNonce;
       bool logged=false;
@@ -113,6 +116,7 @@ namespace client
       ConnectionManager* connection_manager=nullptr;//da inizializzare nel main
       TextualInterfaceManager* textual_interface_manager=nullptr;
       cipher::CipherClient* cipher_client;
+      bool receiveACKProtocol(Message* message);
       bool loginProtocol(std::string username,bool *socketIsClosed);//ok
       string printableString(unsigned char* toConvert,int len);//ok
       bool sendChallengeProtocol(const char* adversaryUsername,int size);//ok

@@ -20,7 +20,7 @@ namespace server {
 
     //  starts the server. The function doesn't return. It will continue until a fatal error happens or the user manually close
     //  the program by typing Control-C
-    void MainServer::server() {
+    void MainServer::server( string myIPaddr ) {
 
         Message *message;
         Message *response;
@@ -49,7 +49,10 @@ namespace server {
             if( socket != -1 && !ipAddr.empty() ){
 
                 base<<"---> [MainServer][server] New client connection received on socket: "<<socket<<'\n';
-                this->clientRegister.addClient( ipAddr, socket );
+                if( !ipAddr.compare("127.0.0.1"))
+                	this->clientRegister.addClient(myIPaddr, socket);
+                else
+                	this->clientRegister.addClient( ipAddr, socket );
                 continue;
 
             }
@@ -783,6 +786,7 @@ namespace server {
         }
 
         string param = this->clientRegister.getClientNetInformation( *(this->userRegister.getSocket(source)));
+        cout<<"NET INFO: "<<param<<endl;
         NetMessage* pubKey = this->cipherServer.getPubKey( source );
 
         if( !pubKey || param.empty() ){
@@ -2151,7 +2155,7 @@ int main() {
 
     Logger::setThreshold( VERBOSE );
     MainServer* server = new MainServer( string("127.0.0.1") , 12345 );
-    server->server();
+    server->server(string("127.0.0.1"));
     return 0;
 
 
