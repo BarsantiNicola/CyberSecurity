@@ -131,4 +131,9 @@ namespace client
    }
    return vectorRes;
  }
+ void ChallengeRegister::clearRegister()
+ {
+   challengeInformationList.clear();
+   vverbose<<"-->[ChallengeRegister][clearRegister] clear complete size:"<<(int)challengeInformationList.size()<<'\n';
+ }
 }

@@ -1,5 +1,6 @@
 #include<string>
 #include"ChallengeInformation.h"
+#include"../Logger.h"
 #include<exception>
 #include<stdexcept>
 #include<vector>
@@ -19,6 +20,7 @@ namespace client
       vector<string> getUserlistString();
       ChallengeInformation* getData(int dataPosition);
       string printChallengeList();
+      void clearRegister();
       ~ChallengeRegister();
   };
 }

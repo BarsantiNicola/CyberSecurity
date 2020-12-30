@@ -228,6 +228,7 @@ namespace client
         if(retMess==nullptr)
           return false;
         res=keyExchangeReciveProtocol(retMess,true);
+        challenge_register->clearRegister();
         verbose<<"-->[MainClient][loginProtocol] loginProtocol finished "<<'\n';
         return res;
       }
@@ -382,6 +383,7 @@ namespace client
         return false; 
       clientPhase=ClientPhase::NO_PHASE;
       clearGameParam();
+      challenge_register->clearRegister();
       sendImplicitUserListReq();
       return true;
   }
