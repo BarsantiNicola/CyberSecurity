@@ -3046,8 +3046,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                  {
                    if(clientPhase==ClientPhase::NO_PHASE)
                    {
-                     printWhiteSpace();
-                     cout<<"error to show the rank users list"<<'\n';
+
+                     textual_interface_manager->printMessage("error to show the rank users list"); 
                      printWhiteSpace();
                      base<<"\t# Insert a command:";
                      cout.flush();
@@ -3059,8 +3059,8 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                 res=receiveChallengeProtocol(message);
                 if(!res)
                 {
-                     printWhiteSpace();
-                     cout<<"error to recive challengeProtocol"<<'\n';
+                     
+                     textual_interface_manager->printMessage("error to recive challengeProtocol");                     
                      printWhiteSpace();
                      base<<"\t# Insert a command:";
                      cout.flush();
@@ -3123,10 +3123,10 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                 res=errorHandler(message);
                 if(res)
                 {
+                  textual_interface_manager->printMainInterface(this->username,std::to_string(nUser),"online",reqStatus,std::to_string(challenge_register->getDimension()));
+                  textual_interface_manager->printMessage("an error occured");
                   printWhiteSpace();
-                  cout<<"an error occured"<<'\n';
-                  printWhiteSpace();
-                  std::cout<<"\t# Insert a comand:";
+                  base<<"\t# Insert a comand:";
                   cout.flush();
                   
                 }
