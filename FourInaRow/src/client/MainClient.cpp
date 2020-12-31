@@ -3124,7 +3124,7 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
                 if(res)
                 {
                   textual_interface_manager->printMainInterface(this->username,std::to_string(nUser),"online",reqStatus,std::to_string(challenge_register->getDimension()));
-                  textual_interface_manager->printMessage("an error occured");
+                  textual_interface_manager->printMessage("you cannot logout,withdraw the challenge first");
                   printWhiteSpace();
                   base<<"\t# Insert a comand:";
                   cout.flush();
@@ -3483,6 +3483,18 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
     }
     else
     {
+      std::regex controlNumberPort("[[:digit:]]+");
+      if(!regex_match(string(argv[1]),controlNumberPort))
+      {
+        base<<"error port not valid program closed"<<'\n';
+        return -1;
+      }
+     
+      if(atoi(argv[1])>65535)
+      {
+        base<<"error port over 65535 program closed"<<'\n';
+        return -1;
+      }
       try
       {
         main_client=new client::MainClient("127.0.0.1",atoi(argv[1]));
