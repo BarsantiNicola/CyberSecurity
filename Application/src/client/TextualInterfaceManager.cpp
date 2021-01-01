@@ -808,37 +808,37 @@ namespace client{
             }
         }
         base<<'\n';
-
-       // base<<"\t# Insert a command:";
         base.flush();
 
 	}
 
+	//  prints the setter page used to generate the screen configuration
 	void TextualInterfaceManager::printSetterPage(){
 
-        execCommand(CLEAR);
+        	execCommand(CLEAR);
 
-	    for( int a = 0; a<adj_y; a++ )
-	        base<<'\n';
+	    	for( int a = 0; a<adj_y; a++ )
+	        	base<<'\n';
 
-	    for( int a = 0; a<34; a++ ) {
-            for (int b = 0; b < adj_x; b++)
-                base << ' ';
+	    	for( int a = 0; a<34; a++ ) {
+            		for (int b = 0; b < adj_x; b++)
+                		base << ' ';
 
-            switch (a) {
+          	  	switch (a) {
 
-                case 15:
-                case 16:
-                    base << "\033[0;31m" << setter_page.substr(a * 121, 2) << "\033[0m"
-                         << setter_page.substr(a * 121 + 2, 116) << "\033[0;31m" << setter_page.substr(a * 121 + 118, 3)
-                         << "\033[0m";
-                    break;
+          		      	case 15:
+         	   	    	case 16:
+                		    base << "\033[0;31m" << setter_page.substr(a * 121, 2) << "\033[0m"
+                		         << setter_page.substr(a * 121 + 2, 116) << "\033[0;31m" << setter_page.substr(a * 121 + 118, 3)
+                		         << "\033[0m";
+                	    	    break;
 
-                default:
-                    base << "\033[0;31m" << setter_page.substr(a * 121, 121) << "\033[0m";
+                	    	default:
+                	            base << "\033[0;31m" << setter_page.substr(a * 121, 121) << "\033[0m";
 
-            }
-        }
+            		}
+        	}
+        	base<<'\n';
 
 	}
 
@@ -863,6 +863,7 @@ namespace client{
 
 
         }
+        base<<'\n';
 
     }
 
@@ -885,6 +886,7 @@ namespace client{
             else
                 base << "\033[0;34m" << lose_page.substr(a * 121, 121) << "\033[0m";
         }
+        base<<'\n';
 
     }
 
@@ -907,6 +909,7 @@ namespace client{
             else
                 base << "\033[0;34m" << tie_page.substr(a * 121, 121) << "\033[0m";
         }
+        base<<'\n';
 
     }
 
@@ -920,7 +923,7 @@ namespace client{
         // Reset terminal to normal "cooked" mode
         execCommand(COOKED);
         switch(input){
-            case 13:
+            case 13:     //  ENTER
 
                 out.open ("data/screen_size.conf", ios::out );
                 if (out.is_open()) {
@@ -930,16 +933,16 @@ namespace client{
                 out.close();
                 return true;
 
-            case 65:
+            case 65:    //  DOWN
                 if( adj_y > 0 ) adj_y--;
                 break;
-            case 66:
+            case 66:    //  UP
                 if( adj_y < 20 ) adj_y++;
                 break;
-            case 67:
+            case 67:    //  RIGHT
                 if( adj_x < 50 ) adj_x++;
                 break;
-            case 68:
+            case 68:    //  LEFT
                 if( adj_x > 0 ) adj_x--;
                 break;
             default:;
