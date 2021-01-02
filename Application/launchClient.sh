@@ -8,10 +8,15 @@ MAIN_PACKAGE="src/Logger.cpp"
 SERVER_PACKAGE="src/server/SQLConnector.cpp src/server/ClientInformation.cpp src/server/UserInformation.cpp src/server/MatchInformation.cpp src/server/ClientRegister.cpp src/server/MatchRegister.cpp src/server/UserRegister.cpp"
 CLIENT_PACKAGE="src/client/ChallengeInformation.cpp src/client/Game.cpp src/client/MainClient.cpp src/client/TextualInterfaceManager.cpp src/client/ChallengeRegister.cpp"
 
-g++ $UTILITY_PACKAGE $CIPHER_PACKAGE $MAIN_PACKAGE $SERVER_PACKAGE $CLIENT_PACKAGE -o program -lssl -lcrypto -lmysqlcppconn -pthread
+
+if ! test -f "client"; then
+	echo "Creation of client executable.."
+	g++ $UTILITY_PACKAGE $CIPHER_PACKAGE $MAIN_PACKAGE $SERVER_PACKAGE $CLIENT_PACKAGE -o client -lssl -lcrypto -lmysqlcppconn -pthread
+fi
 
 echo -n "Insert socket: "
 read SOCKET
-./program $SOCKET
-rm program
+
+./client $SOCKET
+
 

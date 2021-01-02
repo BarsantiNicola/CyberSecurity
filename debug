@@ -1,1 +1,3 @@
 DOC
+
+- UML manca una dipendenza tra MySQLConnector e MainServer
