@@ -433,50 +433,16 @@ namespace server {
         base<<"------> [MainServer][closeMatch] Match "<<matchID<<" closed"<<'\n';
 
     }
+   
 
     //  the function generates a random nonce to be given to the clients the perform their requests.
-    //  Only nonce derived from the one generated from the server are admitted
-    //  for the nonce generation we try three different approaches to obtain a seed
-    //  1) usage of urandom file
-    //       2) usage of timespec
-    //          3) usage of seconds from 1 Jan 1970
     unsigned int MainServer::generateRandomNonce(){
 
-        unsigned int seed;
-        FILE* randFile = fopen( "/dev/urandom","rb" );
-        struct timespec ts;
+	unsigned int nonce;
+	RAND_poll();
 
-        if( !randFile ){
-
-            verbose<<" [MainServer][generateRandomNonce] Error, unable to locate urandom file"<<'\n';
-            if( timespec_get( &ts, TIME_UTC )==0 ) {
-
-                verbose << "--> [MainServer][generateRandomNonce] Error, unable to use timespec" << '\n';
-                srand( time( nullptr ));
-
-            }else
-                srand( ts.tv_nsec^ts.tv_sec );
-
-            return (unsigned int)rand();
-
-        }
-
-        if( fread( &seed, 1, sizeof( seed ),randFile ) != sizeof( seed )){
-
-            verbose<<" [MainServer][generateRandomNonce] Error, unable to load enough data to generate seed"<<'\n';
-            if( timespec_get( &ts, TIME_UTC ) == 0 ) {
-
-                verbose << "--> [MainServer][generateRandomNonce] Error, unable to use timespec" << '\n';
-                srand( time( NULL ));
-
-            }else
-                srand( ts.tv_nsec^ts.tv_sec );
-
-        }else
-            srand(seed);
-
-        fclose( randFile );
-        return (unsigned int)rand();
+	RAND_bytes( (unsigned char*)&nonce, sizeof(unsigned int) );
+        return nonce;
 
     }
 
