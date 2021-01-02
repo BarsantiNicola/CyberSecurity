@@ -1973,39 +1973,11 @@ bool MainClient::startConnectionServer(const char* myIP,int myPort)
 */
   int MainClient::generateRandomNonce()
   {
-    unsigned int seed;
-      FILE* randFile = fopen( "/dev/urandom","rb" );
-      struct timespec ts;
+	unsigned int nonce;
+	RAND_poll();
 
-      if( !randFile )
-      {
-        verbose<<" [MainClient][generateRandomNonce] Error, unable to locate urandom file"<<'\n';
-        if( timespec_get( &ts, TIME_UTC )==0 )
-        {
-          verbose << "--> [MainClient][generateRandomNonce] Error, unable to use timespec" << '\n';
-          srand( time( nullptr ));
-        }
-        else
-          srand( ts.tv_nsec^ts.tv_sec );
-        return rand();
-      }
-
-      if( fread( &seed, 1, sizeof( seed ),randFile ) != sizeof( seed ))
-      {
-        verbose<<" [MainClient][generateRandomNonce] Error, unable to load enough data to generate seed"<<'\n';
-        if( timespec_get( &ts, TIME_UTC ) == 0 )
-        {
-          verbose << "--> [MainClient][generateRandomNonce] Error, unable to use timespec" << '\n';
-          srand( time( NULL ));
-        }
-        else
-          srand( ts.tv_nsec^ts.tv_sec );
-      }
-      else
-        srand(seed);
-
-      fclose( randFile );
-      return rand();
+	RAND_bytes( (unsigned char*)&nonce, sizeof(unsigned int) );
+        return nonce;
 
     }
 /*
